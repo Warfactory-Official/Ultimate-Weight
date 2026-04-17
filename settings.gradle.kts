@@ -18,10 +18,6 @@ rootProject.name = "warfactory-ultimate-weight"
 
 prism {
     sharedCommon("shared")
-
-
-
-
     version("1.20.1") {
         common()
         fabric()
