@@ -9,13 +9,13 @@
   "environment": "*",
   "accessWidener": "${mod_id}.accesswidener",
   "entrypoints": {
-    "main": ["com.warfactory.ultimateweight.UltimateWeightFabric261"],
-    "client": ["com.warfactory.ultimateweight.client.UltimateWeightFabric261Client"]
+    "main": ["com.warfactory.ultimateweight.fabric.UltimateWeightFabric"],
+    "client": ["com.warfactory.ultimateweight.fabric.client.UltimateWeightFabricClient"]
   },
   "mixins": ["${mod_id}.mixins.json"],
   "depends": {
     "fabricloader": ">=${fabric_loader_version}",
-    "minecraft": "~26.1",
+    "minecraft": "~1.20.1",
     "java": ">=${java_version}"
   }
 }

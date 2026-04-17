@@ -28,9 +28,9 @@ prism {
         neoforge()
         lexForge()
     }
-    version("26.1") {
-        fabric()
-    }
+//    version("26.1") {
+//        fabric()
+//    }
     version("1.12.2") {
         legacyForge()
     }

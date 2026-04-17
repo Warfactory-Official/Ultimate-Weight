@@ -22,10 +22,10 @@ prism {
 
     sharedCommon {
         dependencies {
-            api("org.yaml:snakeyaml:2.6")
-            api("it.unimi.dsi:fastutil:8.5.12")
-            jarJar("org.yaml:snakeyaml:2.6")
-            jarJar("it.unimi.dsi:fastutil:8.5.12")
+            implementation("org.yaml:snakeyaml:2.6")
+            implementation("it.unimi.dsi:fastutil:8.5.12")
+            shadow("org.yaml:snakeyaml:2.6")
+            shadow("it.unimi.dsi:fastutil:8.5.12")
         }
     }
 
@@ -51,15 +51,19 @@ prism {
             loaderVersion = "52.1.9"
             loaderVersionRange = "[52,)"
         }
+        fabric {
+           loaderVersion = "0.16.14"
+            fabricApi("0.116.11+1.21.1")
+        }
     }
 
     // Single-loader: just fabric
-    version("26.1") {
-        fabric {
-            loaderVersion = "0.18.6"
-            fabricApi("0.145.2+26.1.1")
-        }
-    }
+//    version("26.1") {
+//        fabric {
+//            loaderVersion = "0.18.6"
+//            fabricApi("0.145.2+26.1.1")
+//        }
+//    }
 
     // Legacy Forge 1.12.2
     version("1.12.2") {
