@@ -9,6 +9,7 @@ public final class PlayerWeightData1201 implements IPlayerWeightData1201 {
     private double currentStamina;
     private double maxStamina;
     private boolean staminaEnabled;
+    private boolean exhausted;
 
     @Override
     public double getCurrentWeightKg() {
@@ -88,5 +89,15 @@ public final class PlayerWeightData1201 implements IPlayerWeightData1201 {
     @Override
     public void setStaminaEnabled(boolean value) {
         staminaEnabled = value;
+    }
+
+    @Override
+    public boolean isExhausted() {
+        return exhausted;
+    }
+
+    @Override
+    public void setExhausted(boolean value) {
+        exhausted = value;
     }
 }

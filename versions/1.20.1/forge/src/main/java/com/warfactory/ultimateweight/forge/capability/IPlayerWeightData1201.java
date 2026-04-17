@@ -35,4 +35,8 @@ public interface IPlayerWeightData1201 {
     boolean isStaminaEnabled();
 
     void setStaminaEnabled(boolean value);
+
+    boolean isExhausted();
+
+    void setExhausted(boolean value);
 }

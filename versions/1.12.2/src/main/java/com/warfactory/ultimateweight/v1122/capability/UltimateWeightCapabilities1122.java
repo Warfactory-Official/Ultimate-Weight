@@ -34,6 +34,7 @@ public final class UltimateWeightCapabilities1122 {
                     tag.setDouble("currentStamina", instance.getCurrentStamina());
                     tag.setDouble("maxStamina", instance.getMaxStamina());
                     tag.setBoolean("staminaEnabled", instance.isStaminaEnabled());
+                    tag.setBoolean("staminaExhausted", instance.isExhausted());
                     return tag;
                 }
 
@@ -57,6 +58,7 @@ public final class UltimateWeightCapabilities1122 {
                     instance.setCurrentStamina(tag.getDouble("currentStamina"));
                     instance.setMaxStamina(tag.getDouble("maxStamina"));
                     instance.setStaminaEnabled(tag.getBoolean("staminaEnabled"));
+                    instance.setExhausted(tag.getBoolean("staminaExhausted"));
                 }
             },
             PlayerWeightData1122::new

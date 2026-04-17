@@ -22,8 +22,14 @@ public final class UltimateWeightForgeStateHooks implements UltimateWeight1201.P
     }
 
     @Override
-    public void onStamina(ServerPlayer player, double currentStamina, double maxStamina, boolean staminaEnabled) {
-        UltimateWeightCapabilities1201.updateStamina(player, currentStamina, maxStamina, staminaEnabled);
+    public void onStamina(
+        ServerPlayer player,
+        double currentStamina,
+        double maxStamina,
+        boolean staminaEnabled,
+        boolean exhausted
+    ) {
+        UltimateWeightCapabilities1201.updateStamina(player, currentStamina, maxStamina, staminaEnabled, exhausted);
     }
 
     @Override
@@ -35,7 +41,8 @@ public final class UltimateWeightForgeStateHooks implements UltimateWeight1201.P
         return new UltimateWeight1201.StaminaState(
             data.getCurrentStamina(),
             data.getMaxStamina(),
-            data.isStaminaEnabled()
+            data.isStaminaEnabled(),
+            data.isExhausted()
         );
     }
 }

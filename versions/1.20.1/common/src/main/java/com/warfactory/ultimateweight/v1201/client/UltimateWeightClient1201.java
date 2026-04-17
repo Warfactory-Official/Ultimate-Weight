@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 
 public final class UltimateWeightClient1201 {
     private static final double EPSILON = 0.000001D;
+    private static final int EXHAUSTED_HUD_COLOR = 11184810;
 
     private UltimateWeightClient1201() {
     }
@@ -24,7 +25,8 @@ public final class UltimateWeightClient1201 {
 
         int x = 8;
         int y = 8;
-        int color = hudColor(latest.totalWeightKg(), latest.carryCapacityKg(), latest.hardLocked());
+        boolean exhausted = UltimateWeightClientState1201.isExhausted();
+        int color = hudColor(latest.totalWeightKg(), latest.carryCapacityKg(), latest.hardLocked(), exhausted);
         int accent = (color & 16777215) | -16777216;
         Component text = Component.translatable(
             "hud.wfweight.status",
@@ -44,7 +46,7 @@ public final class UltimateWeightClient1201 {
         var latestStamina = UltimateWeightClientState1201.latestStamina();
         if (latestStamina.staminaEnabled() && latestStamina.maxStamina() > EPSILON) {
             int staminaY = y + 14;
-            int staminaColor = staminaHudColor(latestStamina.currentStamina(), latestStamina.maxStamina());
+            int staminaColor = staminaHudColor(latestStamina.currentStamina(), latestStamina.maxStamina(), exhausted);
             int staminaAccent = (staminaColor & 16777215) | -16777216;
             Component staminaText = Component.translatable(
                 "hud.wfweight.stamina",
@@ -64,7 +66,10 @@ public final class UltimateWeightClient1201 {
         }
     }
 
-    private static int hudColor(double totalWeightKg, double carryCapacityKg, boolean hardLocked) {
+    private static int hudColor(double totalWeightKg, double carryCapacityKg, boolean hardLocked, boolean exhausted) {
+        if (exhausted) {
+            return EXHAUSTED_HUD_COLOR;
+        }
         if (hardLocked) {
             return 14556416;
         }
@@ -79,7 +84,10 @@ public final class UltimateWeightClient1201 {
         return 10919845;
     }
 
-    private static int staminaHudColor(double currentStamina, double maxStamina) {
+    private static int staminaHudColor(double currentStamina, double maxStamina, boolean exhausted) {
+        if (exhausted) {
+            return EXHAUSTED_HUD_COLOR;
+        }
         if (maxStamina <= EPSILON) {
             return 10919845;
         }

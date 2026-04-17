@@ -43,4 +43,40 @@ public final class StaminaMath {
         }
         return multiplier;
     }
+
+    public static double exhaustionThreshold(WeightConfig.Stamina stamina, double maxStamina) {
+        if (stamina == null || maxStamina <= 0.0D) {
+            return 0.0D;
+        }
+        return clamp(stamina.exhaustionThreshold(), maxStamina);
+    }
+
+    public static double recoveryThreshold(WeightConfig.Stamina stamina, double maxStamina) {
+        if (stamina == null || maxStamina <= 0.0D) {
+            return 0.0D;
+        }
+        return Math.max(exhaustionThreshold(stamina, maxStamina), maxStamina * stamina.recoveryPercent());
+    }
+
+    public static boolean resolveExhausted(
+        WeightConfig.Stamina stamina,
+        double currentStamina,
+        double maxStamina,
+        boolean staminaEnabled,
+        boolean currentlyExhausted
+    ) {
+        if (!staminaEnabled || stamina == null || maxStamina <= EPSILON) {
+            return false;
+        }
+
+        double clampedStamina = clamp(currentStamina, maxStamina);
+        if (currentlyExhausted) {
+            double recoveryThreshold = recoveryThreshold(stamina, maxStamina);
+            if (recoveryThreshold <= EPSILON) {
+                return clampedStamina <= EPSILON;
+            }
+            return clampedStamina + EPSILON < recoveryThreshold;
+        }
+        return clampedStamina <= exhaustionThreshold(stamina, maxStamina) + EPSILON;
+    }
 }

@@ -84,6 +84,8 @@ public final class WeightConfigCodec {
                 ),
                 doubleValue(stamina, "jumpStaminaLoss", defaults.stamina().jumpStaminaLoss()),
                 doubleValue(stamina, "staminaGainRate", defaults.stamina().staminaGainRate()),
+                doubleValue(stamina, "exhaustionThreshold", defaults.stamina().exhaustionThreshold()),
+                doubleValue(stamina, "recoveryPercent", defaults.stamina().recoveryPercent()),
                 booleanValue(stamina, "drainWhileRunning", defaults.stamina().drainWhileRunning()),
                 booleanValue(stamina, "drainOnJump", defaults.stamina().drainOnJump()),
                 staminaPenaltyRules(stamina, defaults.stamina().penalties())
@@ -189,6 +191,8 @@ public final class WeightConfigCodec {
         stamina.put("sprintStaminaLossRate", Double.valueOf(config.stamina().sprintStaminaLossRate()));
         stamina.put("jumpStaminaLoss", Double.valueOf(config.stamina().jumpStaminaLoss()));
         stamina.put("staminaGainRate", Double.valueOf(config.stamina().staminaGainRate()));
+        stamina.put("exhaustionThreshold", Double.valueOf(config.stamina().exhaustionThreshold()));
+        stamina.put("recoveryPercent", Double.valueOf(config.stamina().recoveryPercent()));
         stamina.put("drainWhileRunning", Boolean.valueOf(config.stamina().drainWhileRunning()));
         stamina.put("drainOnJump", Boolean.valueOf(config.stamina().drainOnJump()));
         stamina.put("penalties", penalties);

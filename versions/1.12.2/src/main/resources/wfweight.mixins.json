@@ -9,6 +9,7 @@
     "InventoryPlayerMixin"
   ],
   "client": [
+    "MixinEntityPlayerSP",
     "MixinPlayerControllerMP"
   ],
   "injectors": {

@@ -39,6 +39,7 @@ public final class UltimateWeightState1122 {
     private static final UUID SPEED_MODIFIER_ID = UUID.fromString("8f13a597-e735-4a4f-90b3-6eea0430e255");
     private static final String SPEED_MODIFIER_NAME = UltimateWeightCommon.MOD_ID + "_move_speed";
     private static final double EPSILON = 0.000001D;
+    private static final int EXHAUSTED_HUD_COLOR = 11184810;
     private static final Map<UUID, ServerPlayerState> SERVER_STATES = new Object2ObjectOpenHashMap<UUID, ServerPlayerState>();
     private static volatile PacketWeightUpdate1122 latestClientUpdate = PacketWeightUpdate1122.empty();
     private static volatile PacketStaminaUpdate1122 latestClientStaminaUpdate = PacketStaminaUpdate1122.empty();
@@ -75,6 +76,7 @@ public final class UltimateWeightState1122 {
             newData.setCurrentStamina(oldData.getCurrentStamina());
             newData.setMaxStamina(oldData.getMaxStamina());
             newData.setStaminaEnabled(oldData.isStaminaEnabled());
+            newData.setExhausted(oldData.isExhausted());
         }
     }
 
@@ -134,7 +136,9 @@ public final class UltimateWeightState1122 {
                 player.motionY = 0.0D;
                 return;
             }
+
             player.motionY *= latestClientUpdate.getJumpMultiplier();
+
             return;
         }
 
@@ -153,6 +157,8 @@ public final class UltimateWeightState1122 {
 
         if (data != null) {
             player.motionY *= data.getJumpMultiplier();
+            player.motionX *= data.getSpeedMultiplier();
+            player.motionZ *= data.getSpeedMultiplier();
         }
     }
 
@@ -246,6 +252,9 @@ public final class UltimateWeightState1122 {
         if (isEffectImmune(player)) {
             return 10919845;
         }
+        if (hudExhausted(player)) {
+            return EXHAUSTED_HUD_COLOR;
+        }
         PacketWeightUpdate1122 update = latestClientUpdate;
         double totalWeightKg = update.getCarryCapacityKg() > EPSILON
             ? update.getTotalWeightKg()
@@ -273,7 +282,8 @@ public final class UltimateWeightState1122 {
             return false;
         }
         if (player.world.isRemote) {
-            return latestClientStaminaUpdate.isStaminaEnabled();
+            IPlayerWeightData1122 data = resolveStaminaData(player);
+            return data != null ? data.isStaminaEnabled() : latestClientStaminaUpdate.isStaminaEnabled();
         }
         IPlayerWeightData1122 data = UltimateWeightCapabilities1122.get(player);
         return data != null && data.isStaminaEnabled();
@@ -284,7 +294,8 @@ public final class UltimateWeightState1122 {
             return 0.0D;
         }
         if (player.world.isRemote) {
-            return latestClientStaminaUpdate.getCurrentStamina();
+            IPlayerWeightData1122 data = resolveStaminaData(player);
+            return data != null ? data.getCurrentStamina() : latestClientStaminaUpdate.getCurrentStamina();
         }
         IPlayerWeightData1122 data = UltimateWeightCapabilities1122.get(player);
         return data == null ? 0.0D : data.getCurrentStamina();
@@ -295,13 +306,42 @@ public final class UltimateWeightState1122 {
             return 0.0D;
         }
         if (player.world.isRemote) {
-            return latestClientStaminaUpdate.getMaxStamina();
+            IPlayerWeightData1122 data = resolveStaminaData(player);
+            return data != null ? data.getMaxStamina() : latestClientStaminaUpdate.getMaxStamina();
         }
         IPlayerWeightData1122 data = UltimateWeightCapabilities1122.get(player);
         return data == null ? 0.0D : data.getMaxStamina();
     }
 
+    public static IPlayerWeightData1122 resolveStaminaData(EntityPlayer player) {
+        if (player == null) {
+            return null;
+        }
+
+        IPlayerWeightData1122 data = UltimateWeightCapabilities1122.get(player);
+        if (data == null || !player.world.isRemote) {
+            return data;
+        }
+
+        data.setCurrentStamina(latestClientStaminaUpdate.getCurrentStamina());
+        data.setMaxStamina(latestClientStaminaUpdate.getMaxStamina());
+        data.setStaminaEnabled(latestClientStaminaUpdate.isStaminaEnabled());
+        data.setExhausted(
+            resolveExhaustedState(
+                data.getCurrentStamina(),
+                data.getMaxStamina(),
+                data.isStaminaEnabled(),
+                data.isExhausted()
+            )
+        );
+        return data;
+    }
+
     public static int hudStaminaColor(EntityPlayer player) {
+        if (hudExhausted(player)) {
+            return EXHAUSTED_HUD_COLOR;
+        }
+
         double current = hudStamina(player);
         double max = hudMaxStamina(player);
         if (max <= EPSILON) {
@@ -315,6 +355,11 @@ public final class UltimateWeightState1122 {
             return 16759808;
         }
         return 5635925;
+    }
+
+    public static boolean hudExhausted(EntityPlayer player) {
+        IPlayerWeightData1122 data = resolveStaminaData(player);
+        return data != null && data.isExhausted();
     }
 
     private static void synchronize(EntityPlayerMP player, boolean forceSend) {
@@ -427,6 +472,14 @@ public final class UltimateWeightState1122 {
         }
         data.setMaxStamina(maxStamina);
         data.setStaminaEnabled(StaminaMath.isEnabled(stamina));
+        data.setExhausted(
+            resolveExhaustedState(
+                data.getCurrentStamina(),
+                data.getMaxStamina(),
+                data.isStaminaEnabled(),
+                data.isExhausted()
+            )
+        );
     }
 
     private static void syncStamina(EntityPlayerMP player, boolean forceSend) {
@@ -439,6 +492,7 @@ public final class UltimateWeightState1122 {
         boolean enabled = StaminaMath.isEnabled(stamina);
         double maxStamina = stamina.totalStamina();
         double currentStamina = data.getCurrentStamina();
+        boolean exhausted = data.isExhausted();
         boolean changed = false;
         boolean jumpedThisTick = getState(player).lastStaminaJumpTick == player.ticksExisted;
 
@@ -454,9 +508,6 @@ public final class UltimateWeightState1122 {
             if (stamina.drainWhileRunning() && isRunning(player)) {
                 currentStamina = drainValue(player, data, currentStamina, stamina.sprintStaminaLossRate());
                 drained = true;
-                if (currentStamina <= EPSILON) {
-                    player.setSprinting(false);
-                }
             }
 
             if (!drained && !jumpedThisTick) {
@@ -465,6 +516,10 @@ public final class UltimateWeightState1122 {
         }
 
         currentStamina = StaminaMath.clamp(currentStamina, maxStamina);
+        exhausted = resolveExhaustedState(currentStamina, maxStamina, enabled, exhausted);
+        if (exhausted) {
+            player.setSprinting(false);
+        }
         if (Math.abs(data.getCurrentStamina() - currentStamina) > EPSILON) {
             data.setCurrentStamina(currentStamina);
             changed = true;
@@ -475,6 +530,10 @@ public final class UltimateWeightState1122 {
         }
         if (data.isStaminaEnabled() != enabled) {
             data.setStaminaEnabled(enabled);
+            changed = true;
+        }
+        if (data.isExhausted() != exhausted) {
+            data.setExhausted(exhausted);
             changed = true;
         }
 
@@ -497,6 +556,12 @@ public final class UltimateWeightState1122 {
 
         double currentStamina = drainValue(player, data, data.getCurrentStamina(), baseLoss);
         data.setCurrentStamina(currentStamina);
+        data.setExhausted(
+            resolveExhaustedState(currentStamina, data.getMaxStamina(), data.isStaminaEnabled(), data.isExhausted())
+        );
+        if (data.isExhausted()) {
+            player.setSprinting(false);
+        }
         UltimateWeightNetwork1122.channel().sendTo(
             new PacketStaminaUpdate1122(
                 data.getCurrentStamina(),
@@ -520,6 +585,21 @@ public final class UltimateWeightState1122 {
         return StaminaMath.clamp(
             currentValue - (baseLoss * useMultiplier),
             data == null ? UltimateWeightCommon.bootstrap().config().stamina().totalStamina() : data.getMaxStamina()
+        );
+    }
+
+    private static boolean resolveExhaustedState(
+        double currentStamina,
+        double maxStamina,
+        boolean staminaEnabled,
+        boolean currentlyExhausted
+    ) {
+        return StaminaMath.resolveExhausted(
+            UltimateWeightCommon.bootstrap().config().stamina(),
+            currentStamina,
+            maxStamina,
+            staminaEnabled,
+            currentlyExhausted
         );
     }
 

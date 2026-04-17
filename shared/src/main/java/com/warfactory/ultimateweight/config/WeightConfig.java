@@ -352,6 +352,8 @@ public final class WeightConfig {
         private final double sprintStaminaLossRate;
         private final double jumpStaminaLoss;
         private final double staminaGainRate;
+        private final double exhaustionThreshold;
+        private final double recoveryPercent;
         private final boolean drainWhileRunning;
         private final boolean drainOnJump;
         private final List<UsagePenaltyRule> penalties;
@@ -361,6 +363,8 @@ public final class WeightConfig {
             double sprintStaminaLossRate,
             double jumpStaminaLoss,
             double staminaGainRate,
+            double exhaustionThreshold,
+            double recoveryPercent,
             boolean drainWhileRunning,
             boolean drainOnJump,
             Collection<UsagePenaltyRule> penalties
@@ -369,6 +373,8 @@ public final class WeightConfig {
             this.sprintStaminaLossRate = sprintStaminaLossRate < 0.0D ? 0.0D : sprintStaminaLossRate;
             this.jumpStaminaLoss = jumpStaminaLoss < 0.0D ? 0.0D : jumpStaminaLoss;
             this.staminaGainRate = staminaGainRate < 0.0D ? 0.0D : staminaGainRate;
+            this.exhaustionThreshold = exhaustionThreshold < 0.0D ? 0.0D : exhaustionThreshold;
+            this.recoveryPercent = recoveryPercent < 0.0D ? 0.0D : Math.min(1.0D, recoveryPercent);
             this.drainWhileRunning = drainWhileRunning;
             this.drainOnJump = drainOnJump;
             this.penalties = immutablePenaltyRules(penalties);
@@ -380,7 +386,7 @@ public final class WeightConfig {
             penalties.add(new UsagePenaltyRule(0.75D, 1.35D));
             penalties.add(new UsagePenaltyRule(1.00D, 1.70D));
             penalties.add(new UsagePenaltyRule(1.20D, 2.20D));
-            return new Stamina(100.0D, 0.10D, 2.0D, 0.08D, true, true, penalties);
+            return new Stamina(100.0D, 0.10D, 2.0D, 0.08D, 0.0D, 0.0D, true, true, penalties);
         }
 
         public double totalStamina() {
@@ -397,6 +403,14 @@ public final class WeightConfig {
 
         public double staminaGainRate() {
             return staminaGainRate;
+        }
+
+        public double exhaustionThreshold() {
+            return exhaustionThreshold;
+        }
+
+        public double recoveryPercent() {
+            return recoveryPercent;
         }
 
         public boolean drainWhileRunning() {

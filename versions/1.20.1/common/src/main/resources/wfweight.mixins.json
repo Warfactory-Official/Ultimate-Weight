@@ -7,7 +7,10 @@
     "ItemEntityMixin",
     "LivingEntityMixin"
   ],
-  "client": [],
+  "client": [
+    "ClientEntitySprintMixin",
+    "LocalPlayerMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

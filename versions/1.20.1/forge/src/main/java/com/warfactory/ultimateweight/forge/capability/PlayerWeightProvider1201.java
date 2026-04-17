@@ -30,6 +30,7 @@ public final class PlayerWeightProvider1201 implements ICapabilitySerializable<C
         tag.putDouble("currentStamina", data.getCurrentStamina());
         tag.putDouble("maxStamina", data.getMaxStamina());
         tag.putBoolean("staminaEnabled", data.isStaminaEnabled());
+        tag.putBoolean("staminaExhausted", data.isExhausted());
         return tag;
     }
 
@@ -43,6 +44,7 @@ public final class PlayerWeightProvider1201 implements ICapabilitySerializable<C
         data.setCurrentStamina(nbt.getDouble("currentStamina"));
         data.setMaxStamina(nbt.getDouble("maxStamina"));
         data.setStaminaEnabled(nbt.getBoolean("staminaEnabled"));
+        data.setExhausted(nbt.getBoolean("staminaExhausted"));
     }
 
     public void invalidate() {

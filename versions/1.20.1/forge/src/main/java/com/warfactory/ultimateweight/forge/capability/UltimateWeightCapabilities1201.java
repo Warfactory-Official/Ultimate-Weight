@@ -34,6 +34,7 @@ public final class UltimateWeightCapabilities1201 {
         newData.setCurrentStamina(oldData.getCurrentStamina());
         newData.setMaxStamina(oldData.getMaxStamina());
         newData.setStaminaEnabled(oldData.isStaminaEnabled());
+        newData.setExhausted(oldData.isExhausted());
     }
 
     public static void update(ServerPlayer player, com.warfactory.ultimateweight.core.WeightSnapshot snapshot, boolean effectImmune) {
@@ -49,7 +50,13 @@ public final class UltimateWeightCapabilities1201 {
         data.setHardLocked(!effectImmune && snapshot.hardLocked());
     }
 
-    public static void updateStamina(ServerPlayer player, double currentStamina, double maxStamina, boolean staminaEnabled) {
+    public static void updateStamina(
+        ServerPlayer player,
+        double currentStamina,
+        double maxStamina,
+        boolean staminaEnabled,
+        boolean exhausted
+    ) {
         IPlayerWeightData1201 data = get(player);
         if (data == null) {
             return;
@@ -58,5 +65,6 @@ public final class UltimateWeightCapabilities1201 {
         data.setCurrentStamina(currentStamina);
         data.setMaxStamina(maxStamina);
         data.setStaminaEnabled(staminaEnabled);
+        data.setExhausted(exhausted);
     }
 }

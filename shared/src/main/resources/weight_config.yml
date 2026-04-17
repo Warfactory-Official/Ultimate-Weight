@@ -68,6 +68,8 @@ stamina:
   sprintStaminaLossRate: 0.1
   jumpStaminaLoss: 2.0
   staminaGainRate: 0.08
+  exhaustionThreshold: 1.0
+  recoveryPercent: 0.3
   drainWhileRunning: true
   drainOnJump: true
   penalties:

@@ -324,7 +324,13 @@ public final class UltimateWeight1201 {
         runtime.currentStamina = persisted != null && persisted.maxStamina() > EPSILON
             ? StaminaMath.clamp(persisted.currentStamina(), runtime.maxStamina)
             : runtime.maxStamina;
-        stateListener.onStamina(player, runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled);
+        runtime.exhausted = resolveExhaustedState(
+            runtime.currentStamina,
+            runtime.maxStamina,
+            runtime.staminaEnabled,
+            persisted != null && persisted.exhausted()
+        );
+        stateListener.onStamina(player, runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled, runtime.exhausted);
     }
 
     private static void syncStamina(ServerPlayer player, boolean forceSend) {
@@ -340,9 +346,6 @@ public final class UltimateWeight1201 {
             if (stamina.drainWhileRunning() && isRunning(player)) {
                 runtime.currentStamina = drainStaminaValue(runtime, stamina.sprintStaminaLossRate());
                 drained = true;
-                if (runtime.currentStamina <= EPSILON) {
-                    player.setSprinting(false);
-                }
             }
 
             if (!drained && runtime.lastStaminaJumpTick != serverTicks) {
@@ -354,10 +357,20 @@ public final class UltimateWeight1201 {
         }
 
         runtime.currentStamina = StaminaMath.clamp(runtime.currentStamina, runtime.maxStamina);
+        runtime.exhausted = resolveExhaustedState(
+            runtime.currentStamina,
+            runtime.maxStamina,
+            runtime.staminaEnabled,
+            runtime.exhausted
+        );
+        if (runtime.exhausted) {
+            player.setSprinting(false);
+        }
         boolean changed = forceSend
             || Math.abs(runtime.currentStamina - runtime.lastSentStamina) > EPSILON
             || Math.abs(runtime.maxStamina - runtime.lastSentMaxStamina) > EPSILON
-            || runtime.staminaEnabled != runtime.lastSentStaminaEnabled;
+            || runtime.staminaEnabled != runtime.lastSentStaminaEnabled
+            || runtime.exhausted != runtime.lastSentExhausted;
         if (!changed) {
             return;
         }
@@ -365,7 +378,8 @@ public final class UltimateWeight1201 {
         runtime.lastSentStamina = runtime.currentStamina;
         runtime.lastSentMaxStamina = runtime.maxStamina;
         runtime.lastSentStaminaEnabled = runtime.staminaEnabled;
-        stateListener.onStamina(player, runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled);
+        runtime.lastSentExhausted = runtime.exhausted;
+        stateListener.onStamina(player, runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled, runtime.exhausted);
         transport.sendStaminaUpdate(
             player,
             new StaminaUpdatePacket1201(runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled)
@@ -390,6 +404,21 @@ public final class UltimateWeight1201 {
 
     private static boolean isRunning(Player player) {
         return player.isSprinting();
+    }
+
+    private static boolean resolveExhaustedState(
+        double currentStamina,
+        double maxStamina,
+        boolean staminaEnabled,
+        boolean currentlyExhausted
+    ) {
+        return StaminaMath.resolveExhausted(
+            UltimateWeightCommon.bootstrap().config().stamina(),
+            currentStamina,
+            maxStamina,
+            staminaEnabled,
+            currentlyExhausted
+        );
     }
 
     private static void applySpeedModifier(ServerPlayer player, double speedMultiplier) {
@@ -503,10 +532,12 @@ public final class UltimateWeight1201 {
         private double currentStamina;
         private double maxStamina;
         private boolean staminaEnabled;
+        private boolean exhausted;
         private long lastStaminaJumpTick = Long.MIN_VALUE;
         private double lastSentStamina = Double.NaN;
         private double lastSentMaxStamina = Double.NaN;
         private boolean lastSentStaminaEnabled;
+        private boolean lastSentExhausted;
     }
 
     public interface PlayerStateListener {
@@ -524,7 +555,13 @@ public final class UltimateWeight1201 {
             }
 
             @Override
-            public void onStamina(ServerPlayer player, double currentStamina, double maxStamina, boolean staminaEnabled) {
+            public void onStamina(
+                ServerPlayer player,
+                double currentStamina,
+                double maxStamina,
+                boolean staminaEnabled,
+                boolean exhausted
+            ) {
             }
 
             @Override
@@ -539,7 +576,7 @@ public final class UltimateWeight1201 {
 
         void onPlayerLeave(ServerPlayer player);
 
-        void onStamina(ServerPlayer player, double currentStamina, double maxStamina, boolean staminaEnabled);
+        void onStamina(ServerPlayer player, double currentStamina, double maxStamina, boolean staminaEnabled, boolean exhausted);
 
         StaminaState loadStamina(Player player);
     }
@@ -548,11 +585,13 @@ public final class UltimateWeight1201 {
         private final double currentStamina;
         private final double maxStamina;
         private final boolean staminaEnabled;
+        private final boolean exhausted;
 
-        public StaminaState(double currentStamina, double maxStamina, boolean staminaEnabled) {
+        public StaminaState(double currentStamina, double maxStamina, boolean staminaEnabled, boolean exhausted) {
             this.currentStamina = currentStamina;
             this.maxStamina = maxStamina;
             this.staminaEnabled = staminaEnabled;
+            this.exhausted = exhausted;
         }
 
         public double currentStamina() {
@@ -565,6 +604,10 @@ public final class UltimateWeight1201 {
 
         public boolean staminaEnabled() {
             return staminaEnabled;
+        }
+
+        public boolean exhausted() {
+            return exhausted;
         }
     }
 }
