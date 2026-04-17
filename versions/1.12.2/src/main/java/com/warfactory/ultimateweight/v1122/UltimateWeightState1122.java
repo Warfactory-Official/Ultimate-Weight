@@ -2,6 +2,7 @@ package com.warfactory.ultimateweight.v1122;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.config.WeightConfig;
+import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.core.StaminaMath;
 import com.warfactory.ultimateweight.core.ThresholdEffect;
 import com.warfactory.ultimateweight.core.WeightSnapshot;
@@ -18,7 +19,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
-import net.minecraft.entity.Entity;
+
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
@@ -31,9 +32,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketSetSlot;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 
 public final class UltimateWeightState1122 {
     private static final UUID SPEED_MODIFIER_ID = UUID.fromString("8f13a597-e735-4a4f-90b3-6eea0430e255");
@@ -91,16 +90,16 @@ public final class UltimateWeightState1122 {
         syncStamina(player, false);
     }
 
-    public static boolean onInventoryDelta(EntityPlayerMP player, WeightInventoryChangeEvent event) {
+    public static void onInventoryDelta(EntityPlayerMP player, WeightInventoryChangeEvent event) {
         if (player == null || event == null || !event.isDelta()) {
-            return false;
+            return;
         }
 
         ServerPlayerState state = getState(player);
         long currentFingerprint = fingerprint(player.inventory);
         if (state.lastFullScanFingerprint == currentFingerprint) {
             state.lastObservedFingerprint = currentFingerprint;
-            return false;
+            return;
         }
 
         double previousStackWeightKg = WeightViews1122.weightOf(event.getOldStack());
@@ -115,20 +114,32 @@ public final class UltimateWeightState1122 {
         state.lastObservedFingerprint = currentFingerprint;
         if (!update.updated()) {
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
-            return false;
+            return;
         }
 
         applyWeightUpdate(player, state, update, true, false);
-        return true;
     }
 
-    public static boolean shouldRejectPickup(EntityPlayer player, ItemStack stack) {
+    public static TextComponentTranslation pickupBlockMessage(EntityPlayer player, ItemStack stack) {
         if (isEffectImmune(player)) {
-            return false;
+            return null;
+        }
+        InventoryConstraintEvaluator.GroupLimitViolation violation = UltimateWeightCommon.bootstrap().constraintEvaluator().findAddedStackViolation(
+            WeightViews1122.player(player),
+            WeightViews1122.stack(stack)
+        );
+        if (violation != null) {
+            return new TextComponentTranslation(
+                "message.wfweight.group_limit_pickup_blocked",
+                violation.label(),
+                Integer.valueOf(violation.limit())
+            );
         }
         double currentWeightKg = WeightViews1122.totalWeight(player);
         double additionalWeightKg = WeightViews1122.weightOf(stack);
-        return currentWeightKg + additionalWeightKg >= UltimateWeightCommon.bootstrap().config().hardLockWeightKg() - EPSILON;
+        return currentWeightKg + additionalWeightKg >= UltimateWeightCommon.bootstrap().config().hardLockWeightKg() - EPSILON
+            ? new TextComponentTranslation("message.wfweight.pickup_blocked")
+            : null;
     }
 
     public static void onPlayerJump(EntityPlayer player) {
@@ -230,17 +241,6 @@ public final class UltimateWeightState1122 {
         latestClientStaminaUpdate = PacketStaminaUpdate1122.empty();
     }
 
-    public static String hudText(EntityPlayer player) {
-        PacketWeightUpdate1122 update = latestClientUpdate;
-        double totalWeightKg = update.getCarryCapacityKg() > EPSILON
-            ? update.getTotalWeightKg()
-            : WeightViews1122.totalWeight(player);
-        double carryCapacityKg = update.getCarryCapacityKg() > EPSILON
-            ? update.getCarryCapacityKg()
-            : UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg();
-        return UltimateWeightCommon.bootstrap().formatter().formatHud(totalWeightKg, carryCapacityKg);
-    }
-
     public static double hudWeightKg(EntityPlayer player) {
         PacketWeightUpdate1122 update = latestClientUpdate;
         return update.getCarryCapacityKg() > EPSILON
@@ -320,7 +320,7 @@ public final class UltimateWeightState1122 {
         return data == null ? 0.0D : data.getMaxStamina();
     }
 
-    public static IPlayerWeightData1122 resolveStaminaData(EntityPlayer player) {
+    public static IPlayerWeightData1122 resolveWeightData(EntityPlayer player) {
         if (player == null) {
             return null;
         }
@@ -330,6 +330,11 @@ public final class UltimateWeightState1122 {
             return data;
         }
 
+        data.setCurrentWeightKg(latestClientUpdate.getTotalWeightKg());
+        data.setCarryCapacityKg(latestClientUpdate.getCarryCapacityKg());
+        data.setSpeedMultiplier(latestClientUpdate.getSpeedMultiplier());
+        data.setJumpMultiplier(latestClientUpdate.getJumpMultiplier());
+        data.setHardLocked(latestClientUpdate.isHardLocked());
         data.setCurrentStamina(latestClientStaminaUpdate.getCurrentStamina());
         data.setMaxStamina(latestClientStaminaUpdate.getMaxStamina());
         data.setStaminaEnabled(latestClientStaminaUpdate.isStaminaEnabled());
@@ -342,6 +347,20 @@ public final class UltimateWeightState1122 {
             )
         );
         return data;
+    }
+
+    public static IPlayerWeightData1122 resolveStaminaData(EntityPlayer player) {
+        return resolveWeightData(player);
+    }
+
+    public static double effectiveSpeedMultiplier(EntityPlayer player) {
+        IPlayerWeightData1122 data = resolveWeightData(player);
+        return data == null ? 1.0D : data.getSpeedMultiplier();
+    }
+
+    public static double effectiveJumpMultiplier(EntityPlayer player) {
+        IPlayerWeightData1122 data = resolveWeightData(player);
+        return data == null ? 1.0D : data.getJumpMultiplier();
     }
 
     public static int hudStaminaColor(EntityPlayer player) {
@@ -475,14 +494,14 @@ public final class UltimateWeightState1122 {
         }
 
         WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
-        double maxStamina = stamina.totalStamina();
+        double maxStamina = UltimateWeightCommon.bootstrap().constraintEvaluator().resolveMaxStamina(WeightViews1122.player(player));
         if (data.getMaxStamina() <= EPSILON) {
             data.setCurrentStamina(maxStamina);
         } else {
             data.setCurrentStamina(StaminaMath.clamp(data.getCurrentStamina(), maxStamina));
         }
         data.setMaxStamina(maxStamina);
-        data.setStaminaEnabled(StaminaMath.isEnabled(stamina));
+        data.setStaminaEnabled(StaminaMath.isEnabled(stamina, maxStamina));
         data.setExhausted(
             resolveExhaustedState(
                 data.getCurrentStamina(),
@@ -500,8 +519,8 @@ public final class UltimateWeightState1122 {
         }
 
         WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
-        boolean enabled = StaminaMath.isEnabled(stamina);
-        double maxStamina = stamina.totalStamina();
+        double maxStamina = UltimateWeightCommon.bootstrap().constraintEvaluator().resolveMaxStamina(WeightViews1122.player(player));
+        boolean enabled = StaminaMath.isEnabled(stamina, maxStamina);
         double currentStamina = data.getCurrentStamina();
         boolean exhausted = data.isExhausted();
         boolean changed = false;
@@ -617,6 +636,7 @@ public final class UltimateWeightState1122 {
     private static boolean isRunning(EntityPlayer player) {
         return player.isSprinting();
     }
+
 
     private static void applySpeedModifier(EntityPlayer player, double speedMultiplier) {
         IAttributeInstance movement = player.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);

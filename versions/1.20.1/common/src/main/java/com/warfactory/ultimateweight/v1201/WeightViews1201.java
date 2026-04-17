@@ -93,8 +93,16 @@ public final class WeightViews1201 {
         }
 
         @Override
+        public Iterable<? extends WeightStackView> equipped() {
+            Inventory inventory = player.getInventory();
+            ArrayList<WeightStackView> equipped = new ArrayList<WeightStackView>(inventory.armor.size());
+            addStacks(equipped, inventory.armor);
+            return equipped;
+        }
+
+        @Override
         public double carryCapacityKg() {
-            return UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg();
+            return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
         }
 
         private static void addStacks(List<WeightStackView> target, List<ItemStack> source) {

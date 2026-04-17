@@ -1,6 +1,8 @@
 package com.warfactory.ultimateweight.v1201;
 
+import com.warfactory.ultimateweight.config.EquipmentBonusRules;
 import com.warfactory.ultimateweight.config.IConfigLoader;
+import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.config.WeightResolverRules;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
@@ -71,6 +73,8 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         root.put("precision", precisionMap(config));
         root.put("limits", limitsMap(config));
         root.put("rules", rulesMap(config));
+        root.put("groupLimits", groupLimitsMap(config));
+        root.put("equipmentBonuses", equipmentBonusesMap(config));
         root.put("movement", movementMap(config));
         root.put("fallDamage", fallDamageMap(config));
         root.put("stamina", staminaMap(config));
@@ -91,6 +95,8 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         Map<String, Object> movement = mapValue(root.get("movement"));
         Map<String, Object> fallDamage = mapValue(root.get("fallDamage"));
         Map<String, Object> stamina = mapValue(root.get("stamina"));
+        Map<String, Object> groupLimits = mapValue(root.get("groupLimits"));
+        Map<String, Object> equipmentBonuses = mapValue(root.get("equipmentBonuses"));
 
         return new WeightConfig(
             new WeightConfig.Precision(
@@ -103,6 +109,8 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
             doubleValue(limits, "defaultCarryCapacityKg", defaults.defaultCarryCapacityKg()),
             doubleValue(limits, "hardLockWeightKg", defaults.hardLockWeightKg()),
             resolverRules(rules, defaults.resolverRules()),
+            inventoryGroups(groupLimits, defaults.inventoryGroupRules()),
+            equipmentBonuses(equipmentBonuses, defaults.equipmentBonusRules()),
             thresholdRules(movement, defaults.thresholds()),
             new WeightConfig.FallDamage(
                 booleanValue(fallDamage, "enabled", defaults.fallDamage().enabled()),
@@ -121,11 +129,7 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
             ),
             new WeightConfig.Stamina(
                 doubleValue(stamina, "totalStamina", defaults.stamina().totalStamina()),
-                doubleValue(
-                    stamina,
-                    "sprintStaminaLossRate",
-                    defaults.stamina().sprintStaminaLossRate()
-                ),
+                doubleValue(stamina, "sprintStaminaLossRate", defaults.stamina().sprintStaminaLossRate()),
                 doubleValue(stamina, "jumpStaminaLoss", defaults.stamina().jumpStaminaLoss()),
                 doubleValue(stamina, "staminaGainRate", defaults.stamina().staminaGainRate()),
                 doubleValue(stamina, "exhaustionThreshold", defaults.stamina().exhaustionThreshold()),
@@ -192,6 +196,51 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         return builder.build();
     }
 
+    private static InventoryGroupRules inventoryGroups(Map<String, Object> groups, InventoryGroupRules fallback) {
+        InventoryGroupRules.Builder builder = new InventoryGroupRules.Builder();
+        copyGroups(builder, fallback);
+        for (Map.Entry<String, Object> entry : groups.entrySet()) {
+            String groupId = entry.getKey();
+            Map<String, Object> group = mapValue(entry.getValue());
+            if (groupId == null || groupId.trim().isEmpty()) {
+                continue;
+            }
+            builder.define(groupId, stringValue(group, "label", groupId), intValue(group, "limit", 0));
+            for (String exact : stringList(group.get("exact"))) {
+                builder.addExact(groupId, exact, 0);
+            }
+            for (String wildcard : stringList(group.get("wildcards"))) {
+                builder.addWildcard(groupId, wildcard);
+            }
+            for (String match : stringList(group.get("tags"))) {
+                builder.addMatch(groupId, match);
+            }
+        }
+        return builder.build();
+    }
+
+    private static EquipmentBonusRules equipmentBonuses(Map<String, Object> bonuses, EquipmentBonusRules fallback) {
+        EquipmentBonusRules.Builder builder = new EquipmentBonusRules.Builder();
+        copyEquipmentBonuses(builder, fallback);
+
+        Map<String, Object> exact = mapValue(bonuses.get("exact"));
+        for (Map.Entry<String, Object> entry : exact.entrySet()) {
+            EquipmentBonusRules.EquipmentBonus bonus = equipmentBonus(mapValue(entry.getValue()));
+            if (!bonus.isEmpty()) {
+                builder.putExact(entry.getKey(), 0, bonus);
+            }
+        }
+
+        Map<String, Object> wildcards = mapValue(bonuses.get("wildcards"));
+        for (Map.Entry<String, Object> entry : wildcards.entrySet()) {
+            EquipmentBonusRules.EquipmentBonus bonus = equipmentBonus(mapValue(entry.getValue()));
+            if (!bonus.isEmpty()) {
+                builder.putWildcard(entry.getKey(), bonus);
+            }
+        }
+        return builder.build();
+    }
+
     private static void copyRules(WeightResolverRules.Builder builder, WeightResolverRules rules) {
         Object2DoubleOpenHashMap<String> exact = rules.exactWeights();
         for (String key : exact.keySet()) {
@@ -204,6 +253,37 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         Object2DoubleOpenHashMap<String> matches = rules.matchWeights();
         for (String key : matches.keySet()) {
             builder.putMatchKey(key, matches.getDouble(key));
+        }
+    }
+
+    private static void copyGroups(InventoryGroupRules.Builder builder, InventoryGroupRules rules) {
+        for (InventoryGroupRules.GroupDefinition definition : rules.definitions()) {
+            builder.define(definition.id(), definition.label(), definition.limit());
+        }
+        for (Map.Entry<String, List<String>> entry : rules.exactMatches().entrySet()) {
+            for (String groupId : entry.getValue()) {
+                String key = stripModernExactKey(entry.getKey());
+                builder.addExact(groupId, key, 0);
+            }
+        }
+        for (Map.Entry<String, List<String>> entry : rules.wildcardMatches().entrySet()) {
+            for (String groupId : entry.getValue()) {
+                builder.addWildcard(groupId, entry.getKey());
+            }
+        }
+        for (Map.Entry<String, List<String>> entry : rules.dictionaryMatches().entrySet()) {
+            for (String groupId : entry.getValue()) {
+                builder.addMatch(groupId, entry.getKey());
+            }
+        }
+    }
+
+    private static void copyEquipmentBonuses(EquipmentBonusRules.Builder builder, EquipmentBonusRules rules) {
+        for (Map.Entry<String, EquipmentBonusRules.EquipmentBonus> entry : rules.exactBonuses().entrySet()) {
+            builder.putExact(stripModernExactKey(entry.getKey()), 0, entry.getValue());
+        }
+        for (Map.Entry<String, EquipmentBonusRules.EquipmentBonus> entry : rules.wildcardBonuses().entrySet()) {
+            builder.putWildcardKey(entry.getKey(), entry.getValue());
         }
     }
 
@@ -245,6 +325,36 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         rules.put("wildcards", wildcards);
         rules.put("tags", tags);
         return rules;
+    }
+
+    private static Map<String, Object> groupLimitsMap(WeightConfig config) {
+        LinkedHashMap<String, Object> groups = new LinkedHashMap<String, Object>();
+        InventoryGroupRules rules = config.inventoryGroupRules();
+        for (InventoryGroupRules.GroupDefinition definition : rules.definitions()) {
+            LinkedHashMap<String, Object> group = new LinkedHashMap<String, Object>();
+            group.put("label", definition.label());
+            group.put("limit", Integer.valueOf(definition.limit()));
+            group.put("exact", entriesForGroup(rules.exactMatches(), definition.id(), true));
+            group.put("wildcards", entriesForGroup(rules.wildcardMatches(), definition.id(), false));
+            group.put("tags", entriesForGroup(rules.dictionaryMatches(), definition.id(), false));
+            groups.put(definition.id(), group);
+        }
+        return groups;
+    }
+
+    private static Map<String, Object> equipmentBonusesMap(WeightConfig config) {
+        LinkedHashMap<String, Object> root = new LinkedHashMap<String, Object>();
+        LinkedHashMap<String, Object> exact = new LinkedHashMap<String, Object>();
+        for (Map.Entry<String, EquipmentBonusRules.EquipmentBonus> entry : config.equipmentBonusRules().exactBonuses().entrySet()) {
+            exact.put(stripModernExactKey(entry.getKey()), equipmentBonusMap(entry.getValue()));
+        }
+        LinkedHashMap<String, Object> wildcards = new LinkedHashMap<String, Object>();
+        for (Map.Entry<String, EquipmentBonusRules.EquipmentBonus> entry : config.equipmentBonusRules().wildcardBonuses().entrySet()) {
+            wildcards.put(entry.getKey(), equipmentBonusMap(entry.getValue()));
+        }
+        root.put("exact", exact);
+        root.put("wildcards", wildcards);
+        return root;
     }
 
     private static Map<String, Object> movementMap(WeightConfig config) {
@@ -359,6 +469,40 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
         return result;
     }
 
+    private static EquipmentBonusRules.EquipmentBonus equipmentBonus(Map<String, Object> source) {
+        LinkedHashMap<String, Integer> groupBonuses = new LinkedHashMap<String, Integer>();
+        Map<String, Object> groupLimits = mapValue(source.get("groupLimits"));
+        for (Map.Entry<String, Object> entry : groupLimits.entrySet()) {
+            Double value = numberValue(entry.getValue());
+            if (value != null && Math.abs(value.doubleValue()) > 0.000001D) {
+                groupBonuses.put(entry.getKey(), Integer.valueOf(value.intValue()));
+            }
+        }
+        return new EquipmentBonusRules.EquipmentBonus(
+            doubleValue(source, "carryCapacityKg", 0.0D),
+            doubleValue(source, "stamina", 0.0D),
+            groupBonuses
+        );
+    }
+
+    private static Map<String, Object> equipmentBonusMap(EquipmentBonusRules.EquipmentBonus bonus) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("carryCapacityKg", Double.valueOf(bonus.carryCapacityKg()));
+        map.put("stamina", Double.valueOf(bonus.stamina()));
+        map.put("groupLimits", new LinkedHashMap<String, Integer>(bonus.groupLimitBonuses()));
+        return map;
+    }
+
+    private static List<String> entriesForGroup(Map<String, List<String>> entries, String groupId, boolean stripExactSuffix) {
+        ArrayList<String> values = new ArrayList<String>();
+        for (Map.Entry<String, List<String>> entry : entries.entrySet()) {
+            if (entry.getValue().contains(groupId)) {
+                values.add(stripExactSuffix ? stripModernExactKey(entry.getKey()) : entry.getKey());
+            }
+        }
+        return values;
+    }
+
     private static int intValue(Map<String, Object> source, String key, int fallback) {
         Double value = numberValue(source.get(key));
         return value == null ? fallback : value.intValue();
@@ -381,6 +525,26 @@ public final class WeightConfigLoader1201 implements IConfigLoader {
 
     private static Double numberValue(Object value) {
         return value instanceof Number ? Double.valueOf(((Number) value).doubleValue()) : null;
+    }
+
+    private static String stringValue(Map<String, Object> source, String key, String fallback) {
+        Object value = source.get(key);
+        return value instanceof String ? (String) value : fallback;
+    }
+
+    private static List<String> stringList(Object value) {
+        if (!(value instanceof Iterable)) {
+            return Collections.emptyList();
+        }
+        ArrayList<String> result = new ArrayList<String>();
+        Iterator<?> iterator = ((Iterable<?>) value).iterator();
+        while (iterator.hasNext()) {
+            Object next = iterator.next();
+            if (next != null) {
+                result.add(next.toString());
+            }
+        }
+        return result;
     }
 
     private static String stripModernExactKey(String key) {

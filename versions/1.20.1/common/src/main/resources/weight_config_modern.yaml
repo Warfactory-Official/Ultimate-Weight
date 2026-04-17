@@ -33,6 +33,12 @@ rules:
     forge:dusts/redstone: 0.05
     minecraft:coals: 0.25
 
+groupLimits: {}
+
+equipmentBonuses:
+  exact: {}
+  wildcards: {}
+
 movement:
   thresholds:
     - percent: 0.5

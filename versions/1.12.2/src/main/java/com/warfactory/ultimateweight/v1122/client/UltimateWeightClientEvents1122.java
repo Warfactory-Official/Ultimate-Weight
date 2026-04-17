@@ -1,15 +1,20 @@
 package com.warfactory.ultimateweight.v1122.client;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+import com.warfactory.ultimateweight.config.EquipmentBonusRules;
+import com.warfactory.ultimateweight.config.InventoryGroupRules;
+import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.v1122.UltimateWeightConfigFile1122;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.MovementInput;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -18,7 +23,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 public final class UltimateWeightClientEvents1122 {
     @SubscribeEvent
     public void onTooltip(ItemTooltipEvent event) {
-        appendTooltip(event.getItemStack(), event.getToolTip());
+        appendTooltip(event.getItemStack(), event.getToolTip(), event.getEntityPlayer());
     }
 
     @SubscribeEvent
@@ -72,29 +77,77 @@ public final class UltimateWeightClientEvents1122 {
     }
 
     @SubscribeEvent
+    public void onInputUpdate(InputUpdateEvent event) {
+        MovementInput input = event.getMovementInput();
+        if (UltimateWeightState1122.effectiveSpeedMultiplier(event.getEntityPlayer()) < 0.00001D) {
+
+            input.moveForward = 0.0F;
+            input.moveStrafe = 0.0F;
+            event.getEntityPlayer().setSprinting(false);
+        }
+
+        if (UltimateWeightState1122.effectiveJumpMultiplier(event.getEntityPlayer()) < 0.00001D) {
+            input.jump = false;
+        }
+
+    }
+
+    @SubscribeEvent
     public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         UltimateWeightState1122.resetClientState();
         UltimateWeightConfigFile1122.reloadFromDisk();
     }
 
-    private static void appendTooltip(ItemStack stack, java.util.List<String> lines) {
+    private static void appendTooltip(ItemStack stack, java.util.List<String> lines, EntityPlayer player) {
         if (stack.isEmpty()) {
             return;
         }
 
         double singleWeightKg = UltimateWeightCommon.bootstrap().resolver().resolve(WeightViews1122.stack(stack)).singleItemWeightKg();
-        if (singleWeightKg <= 0.000001D) {
-            return;
+        if (singleWeightKg > 0.000001D) {
+            lines.add(TextFormatting.GRAY + I18n.format(
+                "tooltip.wfweight.weight",
+                UltimateWeightCommon.bootstrap().formatter().formatTooltipWeight(singleWeightKg)
+            ));
+            if (stack.getCount() > 1) {
+                lines.add(TextFormatting.DARK_GRAY + I18n.format(
+                    "tooltip.wfweight.stack_weight",
+                    UltimateWeightCommon.bootstrap().formatter().formatStackWeight(singleWeightKg * stack.getCount())
+                ));
+            }
         }
 
-        lines.add(TextFormatting.GRAY + I18n.format(
-            "tooltip.wfweight.weight",
-            UltimateWeightCommon.bootstrap().formatter().formatTooltipWeight(singleWeightKg)
-        ));
-        if (stack.getCount() > 1) {
-            lines.add(TextFormatting.DARK_GRAY + I18n.format(
-                "tooltip.wfweight.stack_weight",
-                UltimateWeightCommon.bootstrap().formatter().formatStackWeight(singleWeightKg * stack.getCount())
+        InventoryConstraintEvaluator evaluator = UltimateWeightCommon.bootstrap().constraintEvaluator();
+        for (InventoryConstraintEvaluator.GroupLimitDescription group : evaluator.describeStackGroups(
+            player == null ? null : WeightViews1122.player(player),
+            WeightViews1122.stack(stack)
+        )) {
+            lines.add(TextFormatting.DARK_AQUA + I18n.format(
+                "tooltip.wfweight.group_limit",
+                group.label(),
+                Integer.valueOf(group.limit())
+            ));
+        }
+
+        EquipmentBonusRules.EquipmentBonus bonus = evaluator.equipmentBonus(WeightViews1122.stack(stack));
+        if (bonus.carryCapacityKg() > 0.000001D) {
+            lines.add(TextFormatting.BLUE + I18n.format(
+                "tooltip.wfweight.attr_carry_capacity",
+                UltimateWeightCommon.bootstrap().formatter().formatTooltipWeight(bonus.carryCapacityKg())
+            ));
+        }
+        if (bonus.stamina() > 0.000001D) {
+            lines.add(TextFormatting.BLUE + I18n.format(
+                "tooltip.wfweight.attr_stamina",
+                UltimateWeightCommon.bootstrap().formatter().formatStaminaValue(bonus.stamina())
+            ));
+        }
+        for (java.util.Map.Entry<String, Integer> entry : bonus.groupLimitBonuses().entrySet()) {
+            InventoryGroupRules.GroupDefinition definition = UltimateWeightCommon.bootstrap().config().inventoryGroupRules().definition(entry.getKey());
+            lines.add(TextFormatting.BLUE + I18n.format(
+                "tooltip.wfweight.attr_group_limit",
+                definition == null ? entry.getKey() : definition.label(),
+                Integer.valueOf(entry.getValue().intValue())
             ));
         }
     }

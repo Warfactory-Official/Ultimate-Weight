@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.Minecraft;
 
 public final class UltimateWeightFabricClient implements ClientModInitializer {
     @Override
@@ -37,7 +38,7 @@ public final class UltimateWeightFabricClient implements ClientModInitializer {
             }
         );
 
-        ItemTooltipCallback.EVENT.register((stack, context, lines) -> UltimateWeight1201.appendTooltip(stack, lines));
+        ItemTooltipCallback.EVENT.register((stack, context, lines) -> UltimateWeight1201.appendTooltip(stack, lines, Minecraft.getInstance().player));
         HudRenderCallback.EVENT.register((graphics, tickDelta) -> UltimateWeightClient1201.renderHud(graphics));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             UltimateWeight1201.resetClientState();

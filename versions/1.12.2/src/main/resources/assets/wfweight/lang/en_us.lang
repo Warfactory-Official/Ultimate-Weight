@@ -1,6 +1,12 @@
 message.wfweight.pickup_blocked=Too heavy to pick that up.
 message.wfweight.transfer_blocked=Too heavy to transfer that item.
+message.wfweight.group_limit_pickup_blocked=Cannot carry more of %s (%s max).
+message.wfweight.group_limit_transfer_blocked=Cannot transfer more of %s (%s max).
 hud.wfweight.status=%s (%s)
 hud.wfweight.stamina=Stamina: %s / %s (%s)
 tooltip.wfweight.weight=Weight: %s
 tooltip.wfweight.stack_weight=Stack Weight: %s
+tooltip.wfweight.group_limit=Group: %s (%s max)
+tooltip.wfweight.attr_carry_capacity=Carry Capacity Bonus: +%s
+tooltip.wfweight.attr_stamina=Max Stamina Bonus: +%s
+tooltip.wfweight.attr_group_limit=Group Limit Bonus: %s +%s

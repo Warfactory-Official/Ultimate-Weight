@@ -5,8 +5,8 @@ precision:
 
 limits:
   defaultCarryCapacityKg: 120.0
-  hardLockWeightKg: 220.0
-  enableFailsafeFullScan: true
+  hardLockWeightKg: 150.0
+  enableFailsafeFullScan: false
   fullScanIntervalTicks: 600
 
 rules:
@@ -36,6 +36,12 @@ rules:
     paper: 0.03
     string: 0.02
 
+groupLimits: {}
+
+equipmentBonuses:
+  exact: {}
+  wildcards: {}
+
 movement:
   thresholds:
     - percent: 0.5
@@ -48,7 +54,7 @@ movement:
       speedMultiplier: 0.55
       jumpMultiplier: 0.65
     - percent: 1.2
-      speedMultiplier: 0.18
+      speedMultiplier: 0.0
       jumpMultiplier: 0.25
 
 fallDamage:

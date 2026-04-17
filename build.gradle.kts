@@ -11,6 +11,9 @@ prism {
         maven("WarfactoryMaven", "https://repo.warfactory.co/releases")
         maven("CleanroomMaven", "https://maven.cleanroommc.com")
         maven("GTCEu Maven", "https://maven.gtceu.com")
+        maven("GTNH Nexus", "https://nexus.gtnewhorizons.com/repository/public/")
+    maven("BlameJared", "https://maven.blamejared.com/")
+
 
     metadata {
         modId = "wfweight"
@@ -77,24 +80,31 @@ prism {
             mappingVersion = "39"
             username = "Developer"
             dependencies {
+                modCompileOnly("curse.maven:baubles-227083:2518667")
+                modRuntimeOnly("curse.maven:baubles-227083:2518667")
                 annotationProcessor ("org.ow2.asm:asm-debug-all:5.2")
                 annotationProcessor ("com.google.guava:guava:32.1.2-jre")
                 annotationProcessor ("com.google.code.gson:gson:2.8.9")
                 annotationProcessor ("zone.rong:mixinbooter:10.7")
                 modImplementation("curse.maven:mixin-booter-419286:7049694");
-                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
-                modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
-//                modRuntimeOnly("curse.maven:gregtech-ce-unofficial-557242:5519022")
-                modRuntimeOnly("curse.maven:ctm-267602:2915363")
+//                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
+//                modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
+//                modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
+//                modRuntimeOnly("com.cleanroommc:modularui:3.0.6")
+                modRuntimeOnly("io.github.chaosunity.forgelin:Forgelin-Continuous:2.3.20.0")
+
+//                modRuntimeOnly("curse.maven:ctm-267602:2915363")
 //                modRuntimeOnly("curse.maven:hbm-nuclear-tech-mod-community-edition-1312314:7685718")
                 modRuntimeOnly("curse.maven:storage-drawers-223852:5981297")
                 modRuntimeOnly("curse.maven:chameleon-230497:2450900")
-//                modRuntimeOnly("codechicken:codechickenlib:3.2.3.358")
+                modRuntimeOnly("codechicken:codechickenlib:3.2.3.358")
+                modRuntimeOnly("gregtech:gregtech:2.8.10-beta")
             }
         }
     }
 }
 
+//Dont know why it kept pulling those
 project(":common") {
     configurations.configureEach {
         exclude(group = "com.mojang", module = "logging")
@@ -102,14 +112,3 @@ project(":common") {
     }
 }
 
-//project(":1.12.2") {
-//    tasks.withType<Jar>().configureEach {
-//        manifest {
-//            attributes(
-//                "FMLCorePlugin" to "com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin",
-//                "FMLCorePluginContainsFMLMod" to "true",
-//                "ForceLoadAsMod" to "true"
-//            )
-//        }
-//    }
-//}

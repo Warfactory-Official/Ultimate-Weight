@@ -3,6 +3,8 @@ package com.warfactory.ultimateweight;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
+import com.warfactory.ultimateweight.config.EquipmentBonusRules;
+import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.config.WeightResolverRules;
 import com.warfactory.ultimateweight.core.PlayerWeightTracker;
@@ -28,6 +30,8 @@ class PlayerWeightTrackerTest {
             100.0D,
             125.0D,
             rules.build(),
+            InventoryGroupRules.empty(),
+            EquipmentBonusRules.empty(),
             Arrays.asList(
                 new WeightConfig.ThresholdRule(0.50D, 0.9D, 0.95D),
                 new WeightConfig.ThresholdRule(1.00D, 0.5D, 0.6D)

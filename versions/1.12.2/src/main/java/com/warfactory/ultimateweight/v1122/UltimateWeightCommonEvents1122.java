@@ -2,6 +2,7 @@ package com.warfactory.ultimateweight.v1122;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.v1122.capability.PlayerWeightProvider1122;
+import com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122;
 import com.warfactory.ultimateweight.v1122.event.WeightInventoryChangeEvent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,15 +11,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.client.event.InputUpdateEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-
-import java.util.concurrent.ForkJoinPool;
-
 public final class UltimateWeightCommonEvents1122 {
     private static final ResourceLocation PLAYER_WEIGHT_KEY = new ResourceLocation(
         UltimateWeightCommon.MOD_ID,
@@ -87,15 +86,14 @@ public final class UltimateWeightCommonEvents1122 {
         }
     }
 
+
     @SubscribeEvent
     public void onPickup(EntityItemPickupEvent event) {
         ItemStack stack = event.getItem().getItem();
-        if (UltimateWeightState1122.shouldRejectPickup(event.getEntityPlayer(), stack)) {
+        TextComponentTranslation message = UltimateWeightState1122.pickupBlockMessage(event.getEntityPlayer(), stack);
+        if (message != null) {
             event.setCanceled(true);
-            event.getEntityPlayer().sendStatusMessage(
-                new TextComponentTranslation("message.wfweight.pickup_blocked"),
-                true
-            );
+            event.getEntityPlayer().sendStatusMessage(message, true);
         }
     }
 
@@ -113,13 +111,4 @@ public final class UltimateWeightCommonEvents1122 {
         }
     }
 
-//    @SubscribeEvent
-//    public void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
-//        UltimateWeightState1122.markDirty(event.player);
-//    }
-//
-//    @SubscribeEvent
-//    public void onItemSmelted(PlayerEvent.ItemSmeltedEvent event) {
-//        UltimateWeightState1122.markDirty(event.player);
-//    }
 }

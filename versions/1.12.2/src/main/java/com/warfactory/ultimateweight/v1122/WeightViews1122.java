@@ -88,12 +88,33 @@ public final class WeightViews1122 {
                     views.add(new StackView(stack, 0));
                 }
             }
+            for (ItemStack stack : BaublesSupport1122.equipped(player)) {
+                if (!stack.isEmpty()) {
+                    views.add(new StackView(stack, 0));
+                }
+            }
             return views;
         }
 
         @Override
+        public Iterable<? extends WeightStackView> equipped() {
+            ArrayList<WeightStackView> equipped = new ArrayList<WeightStackView>();
+            for (ItemStack stack : player.inventory.armorInventory) {
+                if (!stack.isEmpty()) {
+                    equipped.add(new StackView(stack, 0));
+                }
+            }
+            for (ItemStack stack : BaublesSupport1122.equipped(player)) {
+                if (!stack.isEmpty()) {
+                    equipped.add(new StackView(stack, 0));
+                }
+            }
+            return equipped;
+        }
+
+        @Override
         public double carryCapacityKg() {
-            return UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg();
+            return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
         }
     }
 

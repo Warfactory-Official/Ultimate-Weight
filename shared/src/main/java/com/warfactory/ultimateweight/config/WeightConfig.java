@@ -13,6 +13,8 @@ public final class WeightConfig {
     private final double defaultCarryCapacityKg;
     private final double hardLockWeightKg;
     private final WeightResolverRules resolverRules;
+    private final InventoryGroupRules inventoryGroupRules;
+    private final EquipmentBonusRules equipmentBonusRules;
     private final List<ThresholdRule> thresholds;
     private final FallDamage fallDamage;
     private final Stamina stamina;
@@ -24,6 +26,8 @@ public final class WeightConfig {
         double defaultCarryCapacityKg,
         double hardLockWeightKg,
         WeightResolverRules resolverRules,
+        InventoryGroupRules inventoryGroupRules,
+        EquipmentBonusRules equipmentBonusRules,
         Collection<ThresholdRule> thresholds,
         FallDamage fallDamage,
         Stamina stamina
@@ -34,6 +38,8 @@ public final class WeightConfig {
         this.defaultCarryCapacityKg = defaultCarryCapacityKg <= 0.0D ? 120.0D : defaultCarryCapacityKg;
         this.hardLockWeightKg = hardLockWeightKg <= 0.0D ? 220.0D : hardLockWeightKg;
         this.resolverRules = resolverRules == null ? WeightResolverRules.empty() : resolverRules;
+        this.inventoryGroupRules = inventoryGroupRules == null ? InventoryGroupRules.empty() : inventoryGroupRules;
+        this.equipmentBonusRules = equipmentBonusRules == null ? EquipmentBonusRules.empty() : equipmentBonusRules;
         this.thresholds = immutableThresholds(thresholds);
         this.fallDamage = fallDamage == null ? FallDamage.defaults() : fallDamage;
         this.stamina = stamina == null ? Stamina.defaults() : stamina;
@@ -57,6 +63,8 @@ public final class WeightConfig {
             120.0D,
             220.0D,
             resolverRules,
+            InventoryGroupRules.empty(),
+            EquipmentBonusRules.empty(),
             thresholds,
             FallDamage.defaults(),
             Stamina.defaults()
@@ -85,6 +93,14 @@ public final class WeightConfig {
 
     public WeightResolverRules resolverRules() {
         return resolverRules;
+    }
+
+    public InventoryGroupRules inventoryGroupRules() {
+        return inventoryGroupRules;
+    }
+
+    public EquipmentBonusRules equipmentBonusRules() {
+        return equipmentBonusRules;
     }
 
     public List<ThresholdRule> thresholds() {

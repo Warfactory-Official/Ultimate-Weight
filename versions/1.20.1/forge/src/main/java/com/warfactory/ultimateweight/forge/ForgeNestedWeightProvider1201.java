@@ -32,7 +32,6 @@ public final class ForgeNestedWeightProvider1201 implements IWeightCompatProvide
         }
 
         double total = 0.0D;
-
         IItemHandler handler = stack.getCapability(ITEM_HANDLER_CAPABILITY).resolve().orElse(null);
         if (handler != null) {
             for (int slot = 0; slot < handler.getSlots(); slot++) {

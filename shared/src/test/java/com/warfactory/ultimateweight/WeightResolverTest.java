@@ -5,6 +5,8 @@ import com.hbm.weight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightStackView;
+import com.warfactory.ultimateweight.config.EquipmentBonusRules;
+import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.config.WeightResolverRules;
 import com.warfactory.ultimateweight.core.ResolvedWeight;
@@ -129,6 +131,8 @@ class WeightResolverTest {
             120.0D,
             220.0D,
             rules,
+            InventoryGroupRules.empty(),
+            EquipmentBonusRules.empty(),
             WeightConfig.defaults().thresholds(),
             WeightConfig.FallDamage.defaults(),
             WeightConfig.Stamina.defaults()

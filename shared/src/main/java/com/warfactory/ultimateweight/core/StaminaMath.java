@@ -14,6 +14,12 @@ public final class StaminaMath {
             && (stamina.drainWhileRunning() || stamina.drainOnJump());
     }
 
+    public static boolean isEnabled(WeightConfig.Stamina stamina, double maxStamina) {
+        return stamina != null
+            && maxStamina > EPSILON
+            && (stamina.drainWhileRunning() || stamina.drainOnJump());
+    }
+
     public static double clamp(double value, double maxValue) {
         if (maxValue <= 0.0D) {
             return 0.0D;

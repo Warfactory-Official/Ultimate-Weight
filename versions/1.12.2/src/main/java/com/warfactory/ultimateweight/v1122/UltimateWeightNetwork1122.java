@@ -39,12 +39,7 @@ public final class UltimateWeightNetwork1122 {
         @Override
         public IMessage onMessage(final PacketConfigFragment1122 message, MessageContext ctx) {
             IThreadListener thread = FMLCommonHandler.instance().getWorldThread(ctx.netHandler);
-            thread.addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    UltimateWeightState1122.receiveConfigFragment(message);
-                }
-            });
+            thread.addScheduledTask(() -> UltimateWeightState1122.receiveConfigFragment(message));
             return null;
         }
     }
@@ -53,12 +48,7 @@ public final class UltimateWeightNetwork1122 {
         @Override
         public IMessage onMessage(final PacketWeightUpdate1122 message, MessageContext ctx) {
             IThreadListener thread = FMLCommonHandler.instance().getWorldThread(ctx.netHandler);
-            thread.addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    UltimateWeightState1122.receiveWeightUpdate(message);
-                }
-            });
+            thread.addScheduledTask(() -> UltimateWeightState1122.receiveWeightUpdate(message));
             return null;
         }
     }
@@ -67,12 +57,7 @@ public final class UltimateWeightNetwork1122 {
         @Override
         public IMessage onMessage(final PacketStaminaUpdate1122 message, MessageContext ctx) {
             IThreadListener thread = FMLCommonHandler.instance().getWorldThread(ctx.netHandler);
-            thread.addScheduledTask(new Runnable() {
-                @Override
-                public void run() {
-                    UltimateWeightState1122.receiveStaminaUpdate(message);
-                }
-            });
+            thread.addScheduledTask(() -> UltimateWeightState1122.receiveStaminaUpdate(message));
             return null;
         }
     }

@@ -19,8 +19,9 @@ public abstract class ItemEntityMixin {
         }
 
         ItemEntity itemEntity = (ItemEntity) (Object) this;
-        if (UltimateWeight1201.shouldRejectPickup(serverPlayer, itemEntity.getItem())) {
-            serverPlayer.displayClientMessage(Component.translatable("message.wfweight.pickup_blocked"), true);
+        Component message = UltimateWeight1201.pickupBlockMessage(serverPlayer, itemEntity.getItem());
+        if (message != null) {
+            serverPlayer.displayClientMessage(message, true);
             callbackInfo.cancel();
         }
     }

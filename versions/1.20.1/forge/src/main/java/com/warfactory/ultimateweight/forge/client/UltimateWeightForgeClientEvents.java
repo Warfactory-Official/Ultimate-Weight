@@ -30,7 +30,7 @@ public final class UltimateWeightForgeClientEvents {
 
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
-        UltimateWeight1201.appendTooltip(event.getItemStack(), event.getToolTip());
+        UltimateWeight1201.appendTooltip(event.getItemStack(), event.getToolTip(), event.getEntity());
     }
 
     @SubscribeEvent

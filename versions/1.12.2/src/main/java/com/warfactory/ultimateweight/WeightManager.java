@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight;
 
+import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import net.minecraft.entity.player.EntityPlayer;
@@ -42,6 +43,26 @@ public final class WeightManager {
         }
 
         double additionalWeightKg = additionalWeightKg(player, slot, clickType, dragType);
+        ItemStack removedStack = removedStack(player, slot, clickType, dragType);
+        ItemStack addedStack = addedStack(player, slot, clickType, dragType);
+        InventoryConstraintEvaluator.GroupLimitViolation violation =
+            UltimateWeightCommon.bootstrap().constraintEvaluator().findDeltaViolation(
+                WeightViews1122.player(player),
+                removedStack.isEmpty() ? null : WeightViews1122.stack(removedStack),
+                addedStack.isEmpty() ? null : WeightViews1122.stack(addedStack)
+            );
+        if (violation != null) {
+            player.sendStatusMessage(
+                new TextComponentTranslation(
+                    "message.wfweight.group_limit_transfer_blocked",
+                    violation.label(),
+                    Integer.valueOf(violation.limit())
+                ),
+                true
+            );
+            return false;
+        }
+
         if (additionalWeightKg <= EPSILON) {
             return true;
         }
@@ -52,6 +73,30 @@ public final class WeightManager {
             player.sendStatusMessage(new TextComponentTranslation("message.wfweight.transfer_blocked"), true);
         }
         return allowed;
+    }
+
+    private static ItemStack addedStack(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
+        switch (clickType) {
+            case PICKUP:
+                return pickupAddedStack(player, slot, dragType);
+            case QUICK_MOVE:
+                return quickMoveAddedStack(player, slot);
+            case SWAP:
+                return swapAddedStack(player, slot, dragType);
+            default:
+                return ItemStack.EMPTY;
+        }
+    }
+
+    private static ItemStack removedStack(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
+        switch (clickType) {
+            case PICKUP:
+                return pickupRemovedStack(player, slot, dragType);
+            case SWAP:
+                return swapRemovedStack(player, slot, dragType);
+            default:
+                return ItemStack.EMPTY;
+        }
     }
 
     private static double additionalWeightKg(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
@@ -68,52 +113,101 @@ public final class WeightManager {
     }
 
     private static double pickupAdditionalWeightKg(EntityPlayer player, Slot slot, int dragType) {
+        return weightOf(pickupAddedStack(player, slot, dragType));
+    }
+
+    private static ItemStack pickupAddedStack(EntityPlayer player, Slot slot, int dragType) {
         if (!isPlayerInventorySlot(player, slot)) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
 
         ItemStack carried = player.inventory.getItemStack();
         if (carried.isEmpty() || !slot.isItemValid(carried)) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
 
         ItemStack existing = slot.getStack();
         if (existing.isEmpty()) {
-            return weightOf(placedStack(slot, carried, dragType));
+            return placedStack(slot, carried, dragType);
         }
 
         if (ItemStack.areItemsEqual(existing, carried) && ItemStack.areItemStackTagsEqual(existing, carried)) {
-            return weightOf(mergedStack(slot, existing, carried, dragType));
+            return mergedStack(slot, existing, carried, dragType);
         }
 
         ItemStack placed = placedStack(slot, carried, -1);
         if (placed.isEmpty()) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
-        return positiveDelta(weightOf(placed) - weightOf(existing));
+        return placed;
+    }
+
+    private static ItemStack pickupRemovedStack(EntityPlayer player, Slot slot, int dragType) {
+        if (!isPlayerInventorySlot(player, slot)) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack carried = player.inventory.getItemStack();
+        if (carried.isEmpty() || !slot.isItemValid(carried)) {
+            return ItemStack.EMPTY;
+        }
+
+        ItemStack existing = slot.getStack();
+        if (existing.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+
+        if (ItemStack.areItemsEqual(existing, carried) && ItemStack.areItemStackTagsEqual(existing, carried)) {
+            return ItemStack.EMPTY;
+        }
+        return existing;
     }
 
     private static double quickMoveAdditionalWeightKg(EntityPlayer player, Slot slot) {
+        return weightOf(quickMoveAddedStack(player, slot));
+    }
+
+    private static ItemStack quickMoveAddedStack(EntityPlayer player, Slot slot) {
         if (isPlayerInventorySlot(player, slot) || !slot.getHasStack() || !slot.canTakeStack(player)) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
-        return weightOf(slot.getStack());
+        return slot.getStack();
     }
 
     private static double swapAdditionalWeightKg(EntityPlayer player, Slot slot, int dragType) {
+        ItemStack added = swapAddedStack(player, slot, dragType);
+        if (added.isEmpty()) {
+            return 0.0D;
+        }
+        ItemStack outgoing = player.inventory.getStackInSlot(dragType);
+        return positiveDelta(weightOf(added) - weightOf(outgoing));
+    }
+
+    private static ItemStack swapAddedStack(EntityPlayer player, Slot slot, int dragType) {
         if (isPlayerInventorySlot(player, slot)
             || dragType < 0
             || dragType >= InventoryPlayer.getHotbarSize()
             || !slot.getHasStack()
             || !slot.canTakeStack(player)) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
 
         ItemStack outgoing = player.inventory.getStackInSlot(dragType);
         if (!outgoing.isEmpty() && !slot.isItemValid(outgoing)) {
-            return 0.0D;
+            return ItemStack.EMPTY;
         }
-        return positiveDelta(weightOf(slot.getStack()) - weightOf(outgoing));
+        return slot.getStack();
+    }
+
+    private static ItemStack swapRemovedStack(EntityPlayer player, Slot slot, int dragType) {
+        if (isPlayerInventorySlot(player, slot)
+            || dragType < 0
+            || dragType >= InventoryPlayer.getHotbarSize()
+            || !slot.getHasStack()
+            || !slot.canTakeStack(player)) {
+            return ItemStack.EMPTY;
+        }
+        return player.inventory.getStackInSlot(dragType);
     }
 
     private static ItemStack placedStack(Slot slot, ItemStack carried, int dragType) {

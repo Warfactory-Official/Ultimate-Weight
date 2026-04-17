@@ -10,7 +10,9 @@
   ],
   "client": [
     "ClientEntitySprintMixin",
-    "LocalPlayerMixin"
+    "InventoryMixin",
+    "LocalPlayerMixin",
+    "MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
