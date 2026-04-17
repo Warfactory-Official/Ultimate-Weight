@@ -27,6 +27,7 @@ prism {
         common()
         neoforge()
         lexForge()
+        fabric()
     }
 //    version("26.1") {
 //        fabric()
