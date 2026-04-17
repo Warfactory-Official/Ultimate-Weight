@@ -1,0 +1,6 @@
+{
+  "hud.wfweight.status": "%s (%s)",
+  "hud.wfweight.stamina": "Stamina: %s / %s (%s)",
+  "tooltip.wfweight.weight": "Weight: %s",
+  "tooltip.wfweight.stack_weight": "Stack Weight: %s"
+}

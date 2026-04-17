@@ -1,0 +1,11 @@
+[
+  {
+    "modid": "wfweight",
+    "name": "WarFactory Ultimate Weight",
+    "description": "A highly configurable, multi-version inventory weight system.",
+    "version": "${version}",
+    "mcversion": "1.12.2",
+    "authorList": ["WarFactory"],
+    "credits": ""
+  }
+]
