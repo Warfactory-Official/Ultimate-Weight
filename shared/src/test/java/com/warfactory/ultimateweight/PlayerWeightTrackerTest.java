@@ -4,6 +4,7 @@ import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
 import com.warfactory.ultimateweight.config.WeightConfig;
+import com.warfactory.ultimateweight.config.WeightResolverRules;
 import com.warfactory.ultimateweight.core.PlayerWeightTracker;
 import com.warfactory.ultimateweight.core.WeightInventoryCalculator;
 import com.warfactory.ultimateweight.core.WeightResolver;
@@ -11,15 +12,14 @@ import com.warfactory.ultimateweight.core.WeightUpdate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PlayerWeightTrackerTest {
     @Test
     void trackerUsesDirtyFlagThresholdsAndHardLockChecks() {
-        LinkedHashMap<String, Double> exact = new LinkedHashMap<String, Double>();
-        exact.put("minecraft:stone", 6.0D);
+        WeightResolverRules.Builder rules = new WeightResolverRules.Builder();
+        rules.putExact("minecraft:stone", 0, 6.0D);
 
         WeightConfig config = new WeightConfig(
             WeightConfig.Precision.defaults(),
@@ -27,14 +27,13 @@ class PlayerWeightTrackerTest {
             600L,
             100.0D,
             125.0D,
-            "uWeight",
-            exact,
-            Collections.<String, Double>emptyMap(),
-            Collections.<String, Double>emptyMap(),
+            rules.build(),
             Arrays.asList(
                 new WeightConfig.ThresholdRule(0.50D, 0.9D, 0.95D),
                 new WeightConfig.ThresholdRule(1.00D, 0.5D, 0.6D)
-            )
+            ),
+            WeightConfig.FallDamage.defaults(),
+            WeightConfig.Stamina.defaults()
         );
 
         PlayerWeightTracker tracker = new PlayerWeightTracker(

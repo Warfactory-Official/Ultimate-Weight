@@ -49,7 +49,9 @@ public final class UltimateWeightState1122 {
 
     public static void onPlayerJoin(EntityPlayerMP player) {
         ServerPlayerState state = getState(player);
-        state.lastObservedFingerprint = fingerprint(player.inventory);
+        long currentFingerprint = fingerprint(player.inventory);
+        state.lastObservedFingerprint = currentFingerprint;
+        state.lastFullScanFingerprint = currentFingerprint;
         state.acceptedSnapshot = InventorySnapshot.capture(player);
         state.acceptedWeightKg = WeightViews1122.totalWeight(player);
         UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
@@ -96,6 +98,11 @@ public final class UltimateWeightState1122 {
 
         ServerPlayerState state = getState(player);
         long currentFingerprint = fingerprint(player.inventory);
+        if (state.lastFullScanFingerprint == currentFingerprint) {
+            state.lastObservedFingerprint = currentFingerprint;
+            return false;
+        }
+
         double previousStackWeightKg = WeightViews1122.weightOf(event.getOldStack());
         double newStackWeightKg = WeightViews1122.weightOf(event.getNewStack());
         WeightUpdate update = UltimateWeightCommon.bootstrap().playerWeightTracker().applyDelta(
@@ -375,6 +382,9 @@ public final class UltimateWeightState1122 {
             WeightViews1122.player(player),
             player.ticksExisted
         );
+        if (update.updated()) {
+            state.lastFullScanFingerprint = fingerprint;
+        }
         applyWeightUpdate(player, state, update, inventoryChanged, forceSend);
     }
 
@@ -410,6 +420,7 @@ public final class UltimateWeightState1122 {
                 player.ticksExisted
             );
             if (reverted.updated()) {
+                state.lastFullScanFingerprint = state.lastObservedFingerprint;
                 snapshot = immune ? suppressEffects(reverted.snapshot()) : reverted.snapshot();
                 currentWeightKg = snapshot.totalWeightKg();
                 updateCapability(player, snapshot);
@@ -690,6 +701,7 @@ public final class UltimateWeightState1122 {
 
     private static final class ServerPlayerState {
         private long lastObservedFingerprint;
+        private long lastFullScanFingerprint = Long.MIN_VALUE;
         private InventorySnapshot acceptedSnapshot;
         private double acceptedWeightKg;
         private int lastThresholdIndex = Integer.MIN_VALUE;

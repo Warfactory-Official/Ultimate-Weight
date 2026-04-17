@@ -1,5 +1,9 @@
-package com.warfactory.ultimateweight.config;
+package com.warfactory.ultimateweight.v1201;
 
+import com.warfactory.ultimateweight.config.IConfigLoader;
+import com.warfactory.ultimateweight.config.WeightConfig;
+import com.warfactory.ultimateweight.config.WeightResolverRules;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,32 +18,79 @@ import java.util.Map;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
-public final class WeightConfigCodec {
-    public WeightConfig read(InputStream stream) throws IOException {
+public final class WeightConfigLoader1201 implements IConfigLoader {
+    public static final String FILE_NAME = "weight_config_modern.yaml";
+
+    @Override
+    public String bundledResource() {
+        return FILE_NAME;
+    }
+
+    @Override
+    public WeightConfig loadBundled() {
+        InputStream stream = WeightConfigLoader1201.class.getClassLoader().getResourceAsStream(FILE_NAME);
+        if (stream == null) {
+            return defaults();
+        }
+        try {
+            return load(stream);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to load bundled config " + FILE_NAME, exception);
+        }
+    }
+
+    @Override
+    public WeightConfig load(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return defaults();
+        }
+        Object rootObject = new Yaml().load(text);
+        if (!(rootObject instanceof Map)) {
+            return defaults();
+        }
+        return read(mapValue(rootObject));
+    }
+
+    @Override
+    public WeightConfig load(InputStream stream) throws IOException {
         Reader reader = new InputStreamReader(stream, StandardCharsets.UTF_8);
         try {
-            return read(reader);
+            Object rootObject = new Yaml().load(reader);
+            if (!(rootObject instanceof Map)) {
+                return defaults();
+            }
+            return read(mapValue(rootObject));
         } finally {
             reader.close();
         }
     }
 
-    public WeightConfig read(Reader reader) {
-        Object rootObject = new Yaml().load(reader);
-        if (!(rootObject instanceof Map)) {
-            return WeightConfig.defaults();
-        }
+    @Override
+    public String write(WeightConfig config) {
+        LinkedHashMap<String, Object> root = new LinkedHashMap<String, Object>();
+        root.put("precision", precisionMap(config));
+        root.put("limits", limitsMap(config));
+        root.put("rules", rulesMap(config));
+        root.put("movement", movementMap(config));
+        root.put("fallDamage", fallDamageMap(config));
+        root.put("stamina", staminaMap(config));
 
-        Map<String, Object> root = mapValue(rootObject);
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+        options.setIndent(2);
+        return new Yaml(options).dump(root);
+    }
+
+    private static WeightConfig read(Map<String, Object> root) {
+        WeightConfig defaults = defaults();
+        WeightConfig.Precision defaultPrecision = defaults.precision();
         Map<String, Object> precision = mapValue(root.get("precision"));
         Map<String, Object> limits = mapValue(root.get("limits"));
         Map<String, Object> rules = mapValue(root.get("rules"));
         Map<String, Object> movement = mapValue(root.get("movement"));
         Map<String, Object> fallDamage = mapValue(root.get("fallDamage"));
         Map<String, Object> stamina = mapValue(root.get("stamina"));
-
-        WeightConfig defaults = WeightConfig.defaults();
-        WeightConfig.Precision defaultPrecision = defaults.precision();
 
         return new WeightConfig(
             new WeightConfig.Precision(
@@ -51,10 +102,7 @@ public final class WeightConfigCodec {
             longValue(limits, "fullScanIntervalTicks", defaults.fullScanIntervalTicks()),
             doubleValue(limits, "defaultCarryCapacityKg", defaults.defaultCarryCapacityKg()),
             doubleValue(limits, "hardLockWeightKg", defaults.hardLockWeightKg()),
-            stringValue(rules, "componentOverrideKey", defaults.componentOverrideKey()),
-            doubleMap(rules, "exact", defaults.exactWeightsKg()),
-            doubleMap(rules, "groups", defaults.groupWeightsKg()),
-            doubleMap(rules, "prefixes", defaults.prefixWeightsKg()),
+            resolverRules(rules, defaults.resolverRules()),
             thresholdRules(movement, defaults.thresholds()),
             new WeightConfig.FallDamage(
                 booleanValue(fallDamage, "enabled", defaults.fallDamage().enabled()),
@@ -76,11 +124,7 @@ public final class WeightConfigCodec {
                 doubleValue(
                     stamina,
                     "sprintStaminaLossRate",
-                    doubleValue(
-                        stamina,
-                        "staminaLossRate",
-                        doubleValue(stamina, "setStaminaLossRate", defaults.stamina().sprintStaminaLossRate())
-                    )
+                    defaults.stamina().sprintStaminaLossRate()
                 ),
                 doubleValue(stamina, "jumpStaminaLoss", defaults.stamina().jumpStaminaLoss()),
                 doubleValue(stamina, "staminaGainRate", defaults.stamina().staminaGainRate()),
@@ -93,31 +137,74 @@ public final class WeightConfigCodec {
         );
     }
 
-    public WeightConfig read(String yamlText) {
-        if (yamlText == null || yamlText.trim().isEmpty()) {
-            return WeightConfig.defaults();
-        }
-        Object rootObject = new Yaml().load(yamlText);
-        if (!(rootObject instanceof Map)) {
-            return WeightConfig.defaults();
-        }
-        return read(new java.io.StringReader(yamlText));
+    private static WeightConfig defaults() {
+        WeightResolverRules.Builder builder = new WeightResolverRules.Builder();
+        builder.putExact("minecraft:water_bucket", 0, 4.5D);
+        builder.putExact("minecraft:lava_bucket", 0, 4.8D);
+        builder.putExact("minecraft:shield", 0, 5.0D);
+        builder.putExact("minecraft:elytra", 0, 6.0D);
+        builder.putMatch("minecraft:planks", 0.45D);
+        builder.putMatch("minecraft:logs", 2.4D);
+        builder.putMatch("c:ingots/iron", 0.9D);
+        builder.putMatch("forge:ingots/iron", 0.9D);
+        builder.putMatch("c:ingots/copper", 0.85D);
+        builder.putMatch("forge:ingots/copper", 0.85D);
+        builder.putMatch("c:ingots/gold", 1.3D);
+        builder.putMatch("forge:ingots/gold", 1.3D);
+        builder.putMatch("c:gems/diamond", 0.35D);
+        builder.putMatch("forge:gems/diamond", 0.35D);
+        builder.putMatch("c:gems/emerald", 0.32D);
+        builder.putMatch("forge:gems/emerald", 0.32D);
+        builder.putMatch("c:dusts/redstone", 0.05D);
+        builder.putMatch("forge:dusts/redstone", 0.05D);
+        builder.putMatch("minecraft:coals", 0.25D);
+        return WeightConfig.defaults(builder.build());
     }
 
-    public String write(WeightConfig config) {
-        LinkedHashMap<String, Object> root = new LinkedHashMap<String, Object>();
-        root.put("precision", precisionMap(config));
-        root.put("limits", limitsMap(config));
-        root.put("rules", rulesMap(config));
-        root.put("movement", movementMap(config));
-        root.put("fallDamage", fallDamageMap(config));
-        root.put("stamina", staminaMap(config));
+    private static WeightResolverRules resolverRules(Map<String, Object> rules, WeightResolverRules fallback) {
+        WeightResolverRules.Builder builder = new WeightResolverRules.Builder();
+        copyRules(builder, fallback);
 
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        options.setPrettyFlow(true);
-        options.setIndent(2);
-        return new Yaml(options).dump(root);
+        Map<String, Object> exact = mapValue(rules.get("exact"));
+        for (Map.Entry<String, Object> entry : exact.entrySet()) {
+            Double value = numberValue(entry.getValue());
+            if (value != null) {
+                builder.putExact(entry.getKey(), 0, value.doubleValue());
+            }
+        }
+
+        Map<String, Object> wildcards = mapValue(rules.get("wildcards"));
+        for (Map.Entry<String, Object> entry : wildcards.entrySet()) {
+            Double value = numberValue(entry.getValue());
+            if (value != null) {
+                builder.putWildcard(entry.getKey(), value.doubleValue());
+            }
+        }
+
+        Map<String, Object> tags = mapValue(rules.get("tags"));
+        for (Map.Entry<String, Object> entry : tags.entrySet()) {
+            Double value = numberValue(entry.getValue());
+            if (value != null) {
+                builder.putMatch(entry.getKey(), value.doubleValue());
+            }
+        }
+
+        return builder.build();
+    }
+
+    private static void copyRules(WeightResolverRules.Builder builder, WeightResolverRules rules) {
+        Object2DoubleOpenHashMap<String> exact = rules.exactWeights();
+        for (String key : exact.keySet()) {
+            builder.putExactKey(key, exact.getDouble(key));
+        }
+        Object2DoubleOpenHashMap<String> wildcard = rules.wildcardWeights();
+        for (String key : wildcard.keySet()) {
+            builder.putWildcardKey(key, wildcard.getDouble(key));
+        }
+        Object2DoubleOpenHashMap<String> matches = rules.matchWeights();
+        for (String key : matches.keySet()) {
+            builder.putMatchKey(key, matches.getDouble(key));
+        }
     }
 
     private static Map<String, Object> precisionMap(WeightConfig config) {
@@ -139,10 +226,24 @@ public final class WeightConfigCodec {
 
     private static Map<String, Object> rulesMap(WeightConfig config) {
         LinkedHashMap<String, Object> rules = new LinkedHashMap<String, Object>();
-        rules.put("componentOverrideKey", config.componentOverrideKey());
-        rules.put("exact", new LinkedHashMap<String, Double>(config.exactWeightsKg()));
-        rules.put("groups", new LinkedHashMap<String, Double>(config.groupWeightsKg()));
-        rules.put("prefixes", new LinkedHashMap<String, Double>(config.prefixWeightsKg()));
+        LinkedHashMap<String, Double> exact = new LinkedHashMap<String, Double>();
+        Object2DoubleOpenHashMap<String> exactRules = config.resolverRules().exactWeights();
+        for (String key : exactRules.keySet()) {
+            exact.put(stripModernExactKey(key), Double.valueOf(exactRules.getDouble(key)));
+        }
+        LinkedHashMap<String, Double> wildcards = new LinkedHashMap<String, Double>();
+        Object2DoubleOpenHashMap<String> wildcardRules = config.resolverRules().wildcardWeights();
+        for (String key : wildcardRules.keySet()) {
+            wildcards.put(key, Double.valueOf(wildcardRules.getDouble(key)));
+        }
+        LinkedHashMap<String, Double> tags = new LinkedHashMap<String, Double>();
+        Object2DoubleOpenHashMap<String> matchRules = config.resolverRules().matchWeights();
+        for (String key : matchRules.keySet()) {
+            tags.put(key, Double.valueOf(matchRules.getDouble(key)));
+        }
+        rules.put("exact", exact);
+        rules.put("wildcards", wildcards);
+        rules.put("tags", tags);
         return rules;
     }
 
@@ -155,7 +256,6 @@ public final class WeightConfigCodec {
             row.put("jumpMultiplier", Double.valueOf(threshold.jumpMultiplier()));
             thresholds.add(row);
         }
-
         LinkedHashMap<String, Object> movement = new LinkedHashMap<String, Object>();
         movement.put("thresholds", thresholds);
         return movement;
@@ -169,10 +269,7 @@ public final class WeightConfigCodec {
             "extraDamageMultiplierPerLoadPercent",
             Double.valueOf(config.fallDamage().extraDamageMultiplierPerLoadPercent())
         );
-        fallDamage.put(
-            "hardLockMultiplierBonus",
-            Double.valueOf(config.fallDamage().hardLockMultiplierBonus())
-        );
+        fallDamage.put("hardLockMultiplierBonus", Double.valueOf(config.fallDamage().hardLockMultiplierBonus()));
         fallDamage.put("maxDamageMultiplier", Double.valueOf(config.fallDamage().maxDamageMultiplier()));
         return fallDamage;
     }
@@ -185,7 +282,6 @@ public final class WeightConfigCodec {
             row.put("useMultiplier", Double.valueOf(penalty.useMultiplier()));
             penalties.add(row);
         }
-
         LinkedHashMap<String, Object> stamina = new LinkedHashMap<String, Object>();
         stamina.put("totalStamina", Double.valueOf(config.stamina().totalStamina()));
         stamina.put("sprintStaminaLossRate", Double.valueOf(config.stamina().sprintStaminaLossRate()));
@@ -197,26 +293,6 @@ public final class WeightConfigCodec {
         stamina.put("drainOnJump", Boolean.valueOf(config.stamina().drainOnJump()));
         stamina.put("penalties", penalties);
         return stamina;
-    }
-
-    private static Map<String, Double> doubleMap(
-        Map<String, Object> source,
-        String key,
-        Map<String, Double> fallback
-    ) {
-        Map<String, Object> raw = mapValue(source.get(key));
-        if (raw.isEmpty()) {
-            return fallback;
-        }
-
-        LinkedHashMap<String, Double> result = new LinkedHashMap<String, Double>();
-        for (Map.Entry<String, Object> entry : raw.entrySet()) {
-            Double value = numberValue(entry.getValue());
-            if (value != null) {
-                result.put(entry.getKey(), value);
-            }
-        }
-        return result;
     }
 
     private static List<WeightConfig.ThresholdRule> thresholdRules(
@@ -270,15 +346,14 @@ public final class WeightConfigCodec {
         return penalties.isEmpty() ? fallback : penalties;
     }
 
-    private static Map<String, Object> mapValue(Object raw) {
-        if (!(raw instanceof Map)) {
+    private static Map<String, Object> mapValue(Object value) {
+        if (!(value instanceof Map)) {
             return Collections.emptyMap();
         }
-
         LinkedHashMap<String, Object> result = new LinkedHashMap<String, Object>();
-        for (Map.Entry<?, ?> entry : ((Map<?, ?>) raw).entrySet()) {
+        for (Map.Entry<?, ?> entry : ((Map<?, ?>) value).entrySet()) {
             if (entry.getKey() != null) {
-                result.put(String.valueOf(entry.getKey()), entry.getValue());
+                result.put(entry.getKey().toString(), entry.getValue());
             }
         }
         return result;
@@ -301,31 +376,14 @@ public final class WeightConfigCodec {
 
     private static boolean booleanValue(Map<String, Object> source, String key, boolean fallback) {
         Object value = source.get(key);
-        if (value instanceof Boolean) {
-            return ((Boolean) value).booleanValue();
-        }
-        if (value instanceof String) {
-            return Boolean.parseBoolean((String) value);
-        }
-        return fallback;
-    }
-
-    private static String stringValue(Map<String, Object> source, String key, String fallback) {
-        Object value = source.get(key);
-        return value == null ? fallback : String.valueOf(value);
+        return value instanceof Boolean ? ((Boolean) value).booleanValue() : fallback;
     }
 
     private static Double numberValue(Object value) {
-        if (value instanceof Number) {
-            return Double.valueOf(((Number) value).doubleValue());
-        }
-        if (value instanceof String) {
-            try {
-                return Double.valueOf(Double.parseDouble((String) value));
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        return null;
+        return value instanceof Number ? Double.valueOf(((Number) value).doubleValue()) : null;
+    }
+
+    private static String stripModernExactKey(String key) {
+        return key != null && key.endsWith("@0") ? key.substring(0, key.length() - 2) : key;
     }
 }

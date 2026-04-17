@@ -1,172 +1,161 @@
 package com.warfactory.ultimateweight.core;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.hbm.weight.api.IWeightCompatProvider;
+import com.hbm.weight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightStackView;
 import com.warfactory.ultimateweight.config.WeightConfig;
+import com.warfactory.ultimateweight.config.WeightResolverRules;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.OptionalDouble;
 
 public final class WeightResolver {
-    private final String overrideKey;
+    private static final String STATIC_OVERRIDE_KEY = "uWeight";
+    private static final double COMPAT_MISS = Double.NaN;
+
     private final Object2DoubleOpenHashMap<String> exactWeights;
-    private final Object2DoubleOpenHashMap<String> groupWeights;
-    private final Object2DoubleOpenHashMap<String> prefixWeights;
-    private final List<String> orderedPrefixes;
+    private final Object2DoubleOpenHashMap<String> wildcardWeights;
+    private final Object2DoubleOpenHashMap<String> matchWeights;
+    private final Cache<String, Double> complexCache;
 
     public WeightResolver(WeightConfig config) {
-        this.overrideKey = config.componentOverrideKey();
-        this.exactWeights = toDoubleMap(config.exactWeightsKg(), false);
-        this.groupWeights = toDoubleMap(config.groupWeightsKg(), false);
-        this.prefixWeights = toPrefixMap(config.prefixWeightsKg());
-        this.orderedPrefixes = orderedPrefixes(prefixWeights.keySet());
+        WeightResolverRules rules = config == null ? WeightResolverRules.empty() : config.resolverRules();
+        this.exactWeights = rules.exactWeights();
+        this.wildcardWeights = rules.wildcardWeights();
+        this.matchWeights = rules.matchWeights();
+        this.complexCache = Caffeine.newBuilder().maximumSize(1024L).build();
     }
 
     public ResolvedWeight resolve(WeightStackView stack) {
-        WeightDataView data = stack.data();
-        if (data != null) {
-            Double override = data.getDouble(overrideKey);
+        Integer previousDepth = WeightResolutionContext.setDepth(stack == null ? 0 : stack.resolutionDepth());
+        try {
+            if (stack == null) {
+                return defaultWeight(0);
+            }
+
+            Double override = staticOverride(stack.data());
             if (override != null) {
                 return new ResolvedWeight(
                     override.doubleValue(),
                     stack.count(),
-                    ResolvedWeight.Source.COMPONENT_OVERRIDE,
-                    overrideKey
+                    ResolvedWeight.Source.STATIC_NBT_BYPASS,
+                    STATIC_OVERRIDE_KEY
                 );
             }
+
+            String complexKey = stack.complexCacheKey();
+            if (complexKey != null && !complexKey.isEmpty()) {
+                Double cached = complexCache.getIfPresent(complexKey);
+                if (cached != null) {
+                    if (!Double.isNaN(cached.doubleValue())) {
+                        return new ResolvedWeight(
+                            cached.doubleValue(),
+                            stack.count(),
+                            ResolvedWeight.Source.COMPLEX_NBT_CACHE,
+                            complexKey
+                        );
+                    }
+                    return resolveConfigured(stack);
+                }
+            }
+
+            Object nativeStack = stack.unwrap();
+            if (nativeStack != null) {
+                for (IWeightCompatProvider provider : WeightCompatRegistry.providers()) {
+                    OptionalDouble resolved = resolveCompat(provider, nativeStack);
+                    if (resolved.isPresent()) {
+                        double weight = resolved.getAsDouble();
+                        if (complexKey != null && !complexKey.isEmpty()) {
+                            complexCache.put(complexKey, Double.valueOf(weight));
+                        }
+                        return new ResolvedWeight(
+                            weight,
+                            stack.count(),
+                            ResolvedWeight.Source.COMPAT_API,
+                            provider.getClass().getName()
+                        );
+                    }
+                }
+            }
+
+            if (complexKey != null && !complexKey.isEmpty()) {
+                complexCache.put(complexKey, Double.valueOf(COMPAT_MISS));
+            }
+            return resolveConfigured(stack);
+        } finally {
+            WeightResolutionContext.restoreDepth(previousDepth);
+        }
+    }
+
+    public ResolvedWeight resolveConfigured(WeightStackView stack) {
+        if (stack == null) {
+            return defaultWeight(0);
         }
 
         WeightItemView item = stack.item();
-        String exactKey = normalizeKey(item.itemId(), false);
-        if (exactWeights.containsKey(exactKey)) {
+        String exactKey = WeightResolverRules.exactKey(item.itemId(), stack.metadata());
+        double exactWeight = exactWeights.getDouble(exactKey);
+        if (!Double.isNaN(exactWeight)) {
             return new ResolvedWeight(
-                exactWeights.getDouble(exactKey),
+                exactWeight,
                 stack.count(),
                 ResolvedWeight.Source.EXACT_ITEM,
                 exactKey
             );
         }
 
+        String wildcardKey = WeightResolverRules.wildcardKey(item.itemId());
+        double wildcardWeight = wildcardWeights.getDouble(wildcardKey);
+        if (!Double.isNaN(wildcardWeight)) {
+            return new ResolvedWeight(
+                wildcardWeight,
+                stack.count(),
+                ResolvedWeight.Source.WILDCARD_ITEM,
+                wildcardKey
+            );
+        }
+
         for (String key : safeMatchKeys(item.matchKeys())) {
-            String normalized = normalizeKey(key, false);
-            if (groupWeights.containsKey(normalized)) {
+            String matchKey = WeightResolverRules.matchKey(key);
+            double matchWeight = matchWeights.getDouble(matchKey);
+            if (!Double.isNaN(matchWeight)) {
                 return new ResolvedWeight(
-                    groupWeights.getDouble(normalized),
+                    matchWeight,
                     stack.count(),
-                    ResolvedWeight.Source.GROUP_MATCH,
-                    normalized
+                    ResolvedWeight.Source.DICTIONARY_MATCH,
+                    matchKey
                 );
             }
         }
 
-        String prefixMatch = findPrefix(item);
-        if (prefixMatch != null) {
-            return new ResolvedWeight(
-                prefixWeights.getDouble(prefixMatch),
-                stack.count(),
-                ResolvedWeight.Source.PREFIX_MATCH,
-                prefixMatch
-            );
-        }
-
-        return new ResolvedWeight(0.0D, stack.count(), ResolvedWeight.Source.DEFAULT, null);
+        return defaultWeight(stack.count());
     }
 
-    private String findPrefix(WeightItemView item) {
-        for (String key : safeMatchKeys(item.matchKeys())) {
-            String matched = matchPrefix(key);
-            if (matched != null) {
-                return matched;
-            }
+    private static OptionalDouble resolveCompat(IWeightCompatProvider provider, Object stack) {
+        try {
+            return provider == null ? OptionalDouble.empty() : provider.getUnitWeight(stack);
+        } catch (Throwable ignored) {
+            return OptionalDouble.empty();
         }
-        return matchPrefix(item.itemPath());
     }
 
-    private String matchPrefix(String rawCandidate) {
-        String candidate = normalizeKey(rawCandidate, true);
-        if (candidate.isEmpty()) {
+    private static Double staticOverride(WeightDataView data) {
+        if (data == null) {
             return null;
         }
-        for (String prefix : orderedPrefixes) {
-            if (candidate.startsWith(prefix)) {
-                return prefix;
-            }
-        }
-        return null;
-    }
-
-    private static Object2DoubleOpenHashMap<String> toDoubleMap(
-        Map<String, Double> source,
-        boolean stripNamespace
-    ) {
-        Object2DoubleOpenHashMap<String> result = new Object2DoubleOpenHashMap<String>();
-        result.defaultReturnValue(Double.NaN);
-        for (Map.Entry<String, Double> entry : source.entrySet()) {
-            result.put(normalizeKey(entry.getKey(), stripNamespace), entry.getValue().doubleValue());
-        }
-        return result;
-    }
-
-    private static Object2DoubleOpenHashMap<String> toPrefixMap(Map<String, Double> source) {
-        Object2DoubleOpenHashMap<String> result = toDoubleMap(source, true);
-        double ingotWeight = result.getDouble("ingot");
-        if (!Double.isNaN(ingotWeight)) {
-            if (!result.containsKey("block")) {
-                result.put("block", ingotWeight * 9.0D);
-            }
-            if (!result.containsKey("nugget")) {
-                result.put("nugget", ingotWeight / 9.0D);
-            }
-        }
-        return result;
-    }
-
-    private static List<String> orderedPrefixes(Collection<String> prefixes) {
-        ArrayList<String> ordered = new ArrayList<String>(prefixes);
-        Collections.sort(ordered, new Comparator<String>() {
-            @Override
-            public int compare(String left, String right) {
-                return Integer.compare(right.length(), left.length());
-            }
-        });
-        return ordered;
+        return data.getDouble(STATIC_OVERRIDE_KEY);
     }
 
     private static Collection<String> safeMatchKeys(Collection<String> keys) {
         return keys == null ? Collections.<String>emptyList() : keys;
     }
 
-    private static String normalizeKey(String value, boolean stripNamespace) {
-        if (value == null) {
-            return "";
-        }
-
-        String normalized = value.trim().toLowerCase();
-        if (stripNamespace) {
-            int separator = normalized.indexOf(':');
-            if (separator >= 0 && separator + 1 < normalized.length()) {
-                normalized = normalized.substring(separator + 1);
-            }
-        }
-
-        StringBuilder builder = new StringBuilder(normalized.length());
-        for (int index = 0; index < normalized.length(); index++) {
-            char character = normalized.charAt(index);
-            if (stripNamespace) {
-                if ((character >= 'a' && character <= 'z') || (character >= '0' && character <= '9')) {
-                    builder.append(character);
-                }
-            } else {
-                if (character != ' ') {
-                    builder.append(character);
-                }
-            }
-        }
-        return builder.toString();
+    private static ResolvedWeight defaultWeight(int count) {
+        return new ResolvedWeight(0.0D, count, ResolvedWeight.Source.DEFAULT, null);
     }
 }

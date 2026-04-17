@@ -30,10 +30,12 @@ public final class ResolvedWeight {
     }
 
     public enum Source {
-        COMPONENT_OVERRIDE,
+        STATIC_NBT_BYPASS,
+        COMPLEX_NBT_CACHE,
+        COMPAT_API,
         EXACT_ITEM,
-        GROUP_MATCH,
-        PREFIX_MATCH,
+        WILDCARD_ITEM,
+        DICTIONARY_MATCH,
         DEFAULT
     }
 }

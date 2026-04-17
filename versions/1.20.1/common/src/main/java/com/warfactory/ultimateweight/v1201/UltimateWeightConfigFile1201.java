@@ -8,12 +8,14 @@ import java.nio.file.Path;
 
 public final class UltimateWeightConfigFile1201 {
     private static Path configFile;
+    private static final WeightConfigLoader1201 CONFIG_LOADER = new WeightConfigLoader1201();
 
     private UltimateWeightConfigFile1201() {
     }
 
     public static synchronized void configure(Path configRoot) {
-        configFile = configRoot.resolve(UltimateWeightCommon.MOD_ID).resolve(UltimateWeightCommon.DEFAULT_CONFIG_RESOURCE);
+        UltimateWeightCommon.installConfigLoader(CONFIG_LOADER);
+        configFile = configRoot.resolve(UltimateWeightCommon.MOD_ID).resolve(WeightConfigLoader1201.FILE_NAME);
         ensureExists();
         reloadFromDisk();
     }

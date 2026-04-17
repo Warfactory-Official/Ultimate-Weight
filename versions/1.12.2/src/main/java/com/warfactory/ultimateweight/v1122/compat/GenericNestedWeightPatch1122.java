@@ -1,19 +1,32 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.hbm.weight.api.IWeightCompatProvider;
+import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
+import java.util.OptionalDouble;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 
-public final class GenericNestedWeightPatch1122 implements WeightViews1122.NestedWeightProvider {
+public final class GenericNestedWeightPatch1122 implements IWeightCompatProvider {
     private static final double EPSILON = 0.000001D;
 
     @Override
-    public double additionalWeight(ItemStack stack, int depth) {
+    public OptionalDouble getUnitWeight(Object rawStack) {
+        if (!(rawStack instanceof ItemStack)) {
+            return OptionalDouble.empty();
+        }
+
+        ItemStack stack = (ItemStack) rawStack;
         if (stack.isEmpty()) {
-            return 0.0D;
+            return OptionalDouble.empty();
+        }
+
+        int depth = WeightResolutionContext.currentDepth();
+        if (depth >= WeightViews1122.maxNestedDepth()) {
+            return OptionalDouble.empty();
         }
 
         IItemHandler handler = stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
@@ -26,18 +39,18 @@ public final class GenericNestedWeightPatch1122 implements WeightViews1122.Neste
                 }
             }
             if (total > EPSILON) {
-                return total;
+                return OptionalDouble.of(WeightViews1122.configuredWeightOf(stack, depth) + total);
             }
         }
 
         NBTTagCompound tag = stack.getTagCompound();
         if (tag == null || !tag.hasKey("BlockEntityTag", 10)) {
-            return 0.0D;
+            return OptionalDouble.empty();
         }
 
         NBTTagCompound blockEntityTag = tag.getCompoundTag("BlockEntityTag");
         if (!blockEntityTag.hasKey("Items", 9)) {
-            return 0.0D;
+            return OptionalDouble.empty();
         }
 
         double total = 0.0D;
@@ -48,6 +61,13 @@ public final class GenericNestedWeightPatch1122 implements WeightViews1122.Neste
                 total += WeightViews1122.stackWeight(nested, depth + 1);
             }
         }
-        return total;
+        return total > EPSILON
+            ? OptionalDouble.of(WeightViews1122.configuredWeightOf(stack, depth) + total)
+            : OptionalDouble.empty();
+    }
+
+    @Override
+    public int getPriority() {
+        return 100;
     }
 }

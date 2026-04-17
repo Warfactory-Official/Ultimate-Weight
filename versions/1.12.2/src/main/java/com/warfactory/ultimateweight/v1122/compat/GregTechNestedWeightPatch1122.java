@@ -1,36 +1,49 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.hbm.weight.api.IWeightCompatProvider;
+import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
+import java.util.OptionalDouble;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
 
 @SuppressWarnings("unused")
-public final class GregTechNestedWeightPatch1122 implements WeightViews1122.NestedWeightProvider {
+public final class GregTechNestedWeightPatch1122 implements IWeightCompatProvider {
     private static final String MOD_ID = "gregtech";
     private static final String INVENTORY = "Inventory";
     private static final String ITEMS = "Items";
 
     @Override
-    public double additionalWeight(ItemStack stack, int depth) {
+    public OptionalDouble getUnitWeight(Object rawStack) {
+        if (!(rawStack instanceof ItemStack)) {
+            return OptionalDouble.empty();
+        }
+
+        ItemStack stack = (ItemStack) rawStack;
         if (stack.isEmpty()) {
-            return 0.0D;
+            return OptionalDouble.empty();
+        }
+
+        int depth = WeightResolutionContext.currentDepth();
+        if (depth >= WeightViews1122.maxNestedDepth()) {
+            return OptionalDouble.empty();
         }
 
         ResourceLocation itemId = stack.getItem().getRegistryName();
         if (itemId == null || !itemId.toString().startsWith(MOD_ID + ":")) {
-            return 0.0D;
+            return OptionalDouble.empty();
         }
 
         NBTTagCompound tag = stack.getTagCompound();
         if (tag == null || !tag.hasKey(INVENTORY, 10)) {
-            return 0.0D;
+            return OptionalDouble.empty();
         }
 
         NBTTagCompound inventory = tag.getCompoundTag(INVENTORY);
         if (!inventory.hasKey(ITEMS, 9)) {
-            return 0.0D;
+            return OptionalDouble.empty();
         }
 
         double total = 0.0D;
@@ -41,6 +54,13 @@ public final class GregTechNestedWeightPatch1122 implements WeightViews1122.Nest
                 total += WeightViews1122.stackWeight(nested, depth + 1);
             }
         }
-        return total;
+        return total > 0.000001D
+            ? OptionalDouble.of(WeightViews1122.configuredWeightOf(stack, depth) + total)
+            : OptionalDouble.empty();
+    }
+
+    @Override
+    public int getPriority() {
+        return 300;
     }
 }

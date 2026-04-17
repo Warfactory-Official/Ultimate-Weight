@@ -1,25 +1,28 @@
 package com.warfactory.ultimateweight;
 
+import com.hbm.weight.api.WeightCompatRegistry;
+import com.warfactory.ultimateweight.config.IConfigLoader;
 import com.warfactory.ultimateweight.config.WeightConfig;
-import com.warfactory.ultimateweight.config.WeightConfigCodec;
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class UltimateWeightCommon {
     public static final String MOD_ID = "wfweight";
     public static final String MOD_NAME = "WarFactory Ultimate Weight";
-    public static final String DEFAULT_CONFIG_RESOURCE = "weight_config.yml";
     public static final String DEBUG_PROPERTY = MOD_ID + ".debug";
 
     private static final AtomicReference<UltimateWeightServices> SERVICES =
         new AtomicReference<UltimateWeightServices>();
+    private static final AtomicReference<IConfigLoader> CONFIG_LOADER =
+        new AtomicReference<IConfigLoader>();
     private static final AtomicBoolean DEBUG_ENABLED = new AtomicBoolean(readDebugProperty());
-    private static final WeightConfigCodec CONFIG_CODEC = new WeightConfigCodec();
 
     private UltimateWeightCommon() {
+    }
+
+    public static void installConfigLoader(IConfigLoader loader) {
+        CONFIG_LOADER.set(loader);
     }
 
     public static UltimateWeightServices bootstrap() {
@@ -36,11 +39,11 @@ public final class UltimateWeightCommon {
     }
 
     public static UltimateWeightServices applySyncedConfig(String yamlText) {
-        return replaceServices(CONFIG_CODEC.read(yamlText));
+        return replaceServices(requireConfigLoader().load(yamlText));
     }
 
     public static String serializeActiveConfig() {
-        return CONFIG_CODEC.write(bootstrap().config());
+        return requireConfigLoader().write(bootstrap().config());
     }
 
     public static boolean isDebugEnabled() {
@@ -57,6 +60,7 @@ public final class UltimateWeightCommon {
 
     public static void resetForTests() {
         SERVICES.set(null);
+        WeightCompatRegistry.clear();
         refreshDebugMode();
     }
 
@@ -71,18 +75,15 @@ public final class UltimateWeightCommon {
     }
 
     private static WeightConfig loadBundledConfig() {
-        InputStream stream = UltimateWeightCommon.class.getClassLoader().getResourceAsStream(
-            DEFAULT_CONFIG_RESOURCE
-        );
-        if (stream == null) {
-            return WeightConfig.defaults();
-        }
+        return requireConfigLoader().loadBundled();
+    }
 
-        try {
-            return CONFIG_CODEC.read(stream);
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to load bundled weight config", exception);
+    private static IConfigLoader requireConfigLoader() {
+        IConfigLoader loader = CONFIG_LOADER.get();
+        if (loader == null) {
+            throw new IllegalStateException("No config loader installed");
         }
+        return loader;
     }
 
     private static boolean readDebugProperty() {

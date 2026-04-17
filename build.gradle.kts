@@ -22,10 +22,12 @@ prism {
 
     sharedCommon {
         dependencies {
-            implementation("org.yaml:snakeyaml:2.6")
-            implementation("it.unimi.dsi:fastutil:8.5.12")
-            shadow("org.yaml:snakeyaml:2.6")
-            shadow("it.unimi.dsi:fastutil:8.5.12")
+            api("org.yaml:snakeyaml:2.6")
+            api("it.unimi.dsi:fastutil:8.5.12")
+            api("com.github.ben-manes.caffeine:caffeine:2.9.3")
+            jarJar("org.yaml:snakeyaml:2.6")
+            jarJar("it.unimi.dsi:fastutil:8.5.12")
+            jarJar("com.github.ben-manes.caffeine:caffeine:2.9.3")
         }
     }
 
@@ -68,6 +70,7 @@ prism {
     // Legacy Forge 1.12.2
     version("1.12.2") {
         legacyForge {
+            coreMod("com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin")
             mcVersion = "1.12.2"
             forgeVersion = "14.23.5.2847"
             mappingChannel = "stable"
@@ -99,14 +102,14 @@ project(":common") {
     }
 }
 
-project(":1.12.2") {
-    tasks.withType<Jar>().configureEach {
-        manifest {
-            attributes(
-                "FMLCorePlugin" to "com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin",
-                "FMLCorePluginContainsFMLMod" to "true",
-                "ForceLoadAsMod" to "true"
-            )
-        }
-    }
-}
+//project(":1.12.2") {
+//    tasks.withType<Jar>().configureEach {
+//        manifest {
+//            attributes(
+//                "FMLCorePlugin" to "com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin",
+//                "FMLCorePluginContainsFMLMod" to "true",
+//                "ForceLoadAsMod" to "true"
+//            )
+//        }
+//    }
+//}

@@ -17,15 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.oredict.OreDictionary;
 
 public final class WeightViews1122 {
-    private static final double EPSILON = 0.000001D;
     private static final int MAX_NESTED_DEPTH = 4;
-    private static NestedWeightProvider nestedWeightProvider = NestedWeightProvider.NOOP;
 
     private WeightViews1122() {
-    }
-
-    public static void setNestedWeightProvider(NestedWeightProvider provider) {
-        nestedWeightProvider = provider == null ? NestedWeightProvider.NOOP : provider;
     }
 
     public static WeightPlayerView player(EntityPlayer player) {
@@ -33,7 +27,7 @@ public final class WeightViews1122 {
     }
 
     public static WeightStackView stack(ItemStack stack) {
-        return new StackView(stack);
+        return new StackView(stack, 0);
     }
 
     public static double totalWeight(EntityPlayer player) {
@@ -54,29 +48,22 @@ public final class WeightViews1122 {
         return effectiveSingleWeight(stack, depth) * stack.getCount();
     }
 
+    public static double configuredWeightOf(ItemStack stack, int depth) {
+        if (stack == null || stack.isEmpty()) {
+            return 0.0D;
+        }
+        return UltimateWeightCommon.bootstrap().resolver().resolveConfigured(new BaseStackView(stack, depth)).singleItemWeightKg();
+    }
+
+    public static int maxNestedDepth() {
+        return MAX_NESTED_DEPTH;
+    }
+
     static double effectiveSingleWeight(ItemStack stack, int depth) {
         if (stack == null || stack.isEmpty()) {
             return 0.0D;
         }
-        Double rawOverride = rawOverride(stack);
-        double baseWeightKg = rawOverride != null
-            ? rawOverride.doubleValue()
-            : UltimateWeightCommon.bootstrap().resolver().resolve(new BaseStackView(stack)).singleItemWeightKg();
-        double nestedWeightKg = depth >= MAX_NESTED_DEPTH ? 0.0D : nestedWeightProvider.additionalWeight(stack, depth);
-        double total = baseWeightKg + nestedWeightKg;
-        return total > EPSILON ? total : 0.0D;
-    }
-
-    private static Double rawOverride(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) {
-            return null;
-        }
-        NBTTagCompound tag = stack.getTagCompound();
-        String key = UltimateWeightCommon.bootstrap().config().componentOverrideKey();
-        if (tag != null && tag.hasKey(key, 99)) {
-            return Double.valueOf(tag.getDouble(key));
-        }
-        return null;
+        return UltimateWeightCommon.bootstrap().resolver().resolve(new StackView(stack, depth)).singleItemWeightKg();
     }
 
     private static final class PlayerView implements WeightPlayerView {
@@ -98,7 +85,7 @@ public final class WeightViews1122 {
             for (int index = 0; index < inventory.getSizeInventory(); index++) {
                 ItemStack stack = inventory.getStackInSlot(index);
                 if (!stack.isEmpty()) {
-                    views.add(new StackView(stack));
+                    views.add(new StackView(stack, 0));
                 }
             }
             return views;
@@ -114,11 +101,13 @@ public final class WeightViews1122 {
         private final ItemStack stack;
         private final ItemView item;
         private final DataView data;
+        private final int depth;
 
-        private StackView(ItemStack stack) {
+        private StackView(ItemStack stack, int depth) {
             this.stack = stack;
             this.item = new ItemView(stack);
             this.data = new DataView(stack);
+            this.depth = depth;
         }
 
         @Override
@@ -129,6 +118,26 @@ public final class WeightViews1122 {
         @Override
         public int count() {
             return stack.getCount();
+        }
+
+        @Override
+        public int metadata() {
+            return stack.getMetadata();
+        }
+
+        @Override
+        public int resolutionDepth() {
+            return depth;
+        }
+
+        @Override
+        public String complexCacheKey() {
+            return complexKey(stack, depth);
+        }
+
+        @Override
+        public Object unwrap() {
+            return stack;
         }
 
         @Override
@@ -186,11 +195,6 @@ public final class WeightViews1122 {
 
         @Override
         public Double getDouble(String key) {
-            if (UltimateWeightCommon.bootstrap().config().componentOverrideKey().equals(key)) {
-                double effectiveWeightKg = effectiveSingleWeight(stack, 0);
-                return effectiveWeightKg > EPSILON ? Double.valueOf(effectiveWeightKg) : null;
-            }
-
             NBTTagCompound tag = stack.getTagCompound();
             if (tag != null && tag.hasKey(key, 99)) {
                 return Double.valueOf(tag.getDouble(key));
@@ -202,10 +206,12 @@ public final class WeightViews1122 {
     private static final class BaseStackView implements WeightStackView {
         private final ItemView item;
         private final ItemStack stack;
+        private final int depth;
 
-        private BaseStackView(ItemStack stack) {
+        private BaseStackView(ItemStack stack, int depth) {
             this.stack = stack;
             this.item = new ItemView(stack);
+            this.depth = depth;
         }
 
         @Override
@@ -219,19 +225,24 @@ public final class WeightViews1122 {
         }
 
         @Override
-        public WeightDataView data() {
-            return WeightDataView.empty();
+        public int metadata() {
+            return stack.getMetadata();
+        }
+
+        @Override
+        public int resolutionDepth() {
+            return depth;
         }
     }
 
-    public interface NestedWeightProvider {
-        NestedWeightProvider NOOP = new NestedWeightProvider() {
-            @Override
-            public double additionalWeight(ItemStack stack, int depth) {
-                return 0.0D;
-            }
-        };
+    private static String complexKey(ItemStack stack, int depth) {
+        NBTTagCompound tag = stack.getTagCompound();
+        return itemId(stack) + "|" + stack.getMetadata() + "|" + depth + "|" + (tag == null ? 0 : tag.hashCode());
+    }
 
-        double additionalWeight(ItemStack stack, int depth);
+    private static String itemId(ItemStack stack) {
+        return stack.getItem().getRegistryName() == null
+            ? "minecraft:air"
+            : stack.getItem().getRegistryName().toString();
     }
 }

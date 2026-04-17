@@ -13,11 +13,11 @@ public final class UltimateWeightLexForge {
     public UltimateWeightLexForge() {
         UltimateWeightServices services = UltimateWeightCommon.bootstrap();
         LOGGER.info(
-            "{} initialized with {} exact rules, {} group rules, {} prefix rules.",
+            "{} initialized with {} exact rules, {} wildcard rules, {} dictionary rules.",
             UltimateWeightCommon.MOD_NAME,
-            Integer.valueOf(services.config().exactWeightsKg().size()),
-            Integer.valueOf(services.config().groupWeightsKg().size()),
-            Integer.valueOf(services.config().prefixWeightsKg().size())
+            Integer.valueOf(services.config().resolverRules().exactCount()),
+            Integer.valueOf(services.config().resolverRules().wildcardCount()),
+            Integer.valueOf(services.config().resolverRules().matchCount())
         );
     }
 }

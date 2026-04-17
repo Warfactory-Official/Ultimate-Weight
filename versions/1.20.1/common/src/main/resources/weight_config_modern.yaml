@@ -10,36 +10,28 @@ limits:
   fullScanIntervalTicks: 600
 
 rules:
-  componentOverrideKey: uWeight
   exact:
     minecraft:water_bucket: 4.5
     minecraft:lava_bucket: 4.8
     minecraft:shield: 5.0
     minecraft:elytra: 6.0
-    minecraft:shulker_box: 8.0
-  groups:
-    cobblestone: 1.4
-    stone: 1.5
-    logWood: 2.4
-    ingotIron: 0.9
-    ingotCopper: 0.85
-    ingotGold: 1.3
-    ingotSilver: 1.1
-    oreIron: 3.8
-    gemEmerald: 0.32
-    gemDiamond: 0.35
-    plankWood: 0.45
-    stickWood: 0.08
-    dustRedstone: 0.05
-    dustGlowstone: 0.07
-    coal: 0.25
-    paper: 0.03
-    string: 0.02
-  prefixes:
-    ingot: 0.9
-    dust: 0.08
-    plate: 1.1
-    gear: 3.6
+  wildcards: {}
+  tags:
+    minecraft:planks: 0.45
+    minecraft:logs: 2.4
+    c:ingots/iron: 0.9
+    forge:ingots/iron: 0.9
+    c:ingots/copper: 0.85
+    forge:ingots/copper: 0.85
+    c:ingots/gold: 1.3
+    forge:ingots/gold: 1.3
+    c:gems/diamond: 0.35
+    forge:gems/diamond: 0.35
+    c:gems/emerald: 0.32
+    forge:gems/emerald: 0.32
+    c:dusts/redstone: 0.05
+    forge:dusts/redstone: 0.05
+    minecraft:coals: 0.25
 
 movement:
   thresholds:
