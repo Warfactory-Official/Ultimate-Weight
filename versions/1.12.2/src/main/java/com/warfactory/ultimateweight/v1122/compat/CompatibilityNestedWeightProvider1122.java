@@ -20,6 +20,10 @@ public final class CompatibilityNestedWeightProvider1122 {
             "com.warfactory.ultimateweight.v1122.compat.GregTechNestedWeightPatch1122"
         ),
         new CompatibilityPatchLoader.PatchSpec(
+            "hbm",
+            "com.warfactory.ultimateweight.v1122.compat.HbmStorageCrateWeightPatch1122"
+        ),
+        new CompatibilityPatchLoader.PatchSpec(
             "storagedrawers",
             "com.warfactory.ultimateweight.v1122.compat.StorageDrawersNestedWeightPatch1122"
         )

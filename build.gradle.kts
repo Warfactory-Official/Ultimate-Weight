@@ -2,6 +2,9 @@ plugins {
     id("dev.prism")
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.bundling.Jar
+
 group = "warfactory.ultimateweight"
 version = "1.0.0"
 
@@ -28,9 +31,10 @@ prism {
             api("org.yaml:snakeyaml:2.6")
             api("it.unimi.dsi:fastutil:8.5.12")
             api("com.github.ben-manes.caffeine:caffeine:2.9.3")
-            jarJar("org.yaml:snakeyaml:2.6")
-            jarJar("it.unimi.dsi:fastutil:8.5.12")
-            jarJar("com.github.ben-manes.caffeine:caffeine:2.9.3")
+            shadowRelocation(true)
+            shadow("org.yaml:snakeyaml:2.6")
+            shadow("it.unimi.dsi:fastutil:8.5.12")
+            shadow("com.github.ben-manes.caffeine:caffeine:2.9.3")
         }
     }
 
@@ -119,3 +123,15 @@ project(":common") {
     }
 }
 
+project(":1.20.1:forge") {
+    val forgeRefmap = layout.buildDirectory.file("mixin/wfweight.refmap.json")
+
+    tasks.withType<Jar>().configureEach {
+        from(forgeRefmap)
+    }
+
+    tasks.withType<ShadowJar>().configureEach {
+        from(forgeRefmap)
+        exclude("META-INF/jandex.idx")
+    }
+}
