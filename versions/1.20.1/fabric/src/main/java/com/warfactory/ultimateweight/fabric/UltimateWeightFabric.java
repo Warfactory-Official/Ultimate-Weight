@@ -1,9 +1,11 @@
 package com.warfactory.ultimateweight.fabric;
 
+import com.hbm.weight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
 import com.warfactory.ultimateweight.v1201.UltimateWeightConfigFile1201;
 import com.warfactory.ultimateweight.v1201.WeightSyncTransport1201;
+import com.warfactory.ultimateweight.v1201.compat.CompatibilityNestedWeightProvider1201;
 import com.warfactory.ultimateweight.v1201.network.ConfigFragmentPacket1201;
 import com.warfactory.ultimateweight.v1201.network.StaminaUpdatePacket1201;
 import com.warfactory.ultimateweight.v1201.network.WeightUpdatePacket1201;
@@ -24,6 +26,11 @@ public final class UltimateWeightFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         UltimateWeightConfigFile1201.configure(FabricLoader.getInstance().getConfigDir());
+        WeightCompatRegistry.registerAll(
+            CompatibilityNestedWeightProvider1201.create(
+                (modId) -> FabricLoader.getInstance().isModLoaded(modId)
+            )
+        );
         UltimateWeight1201.setTransport(new FabricTransport());
 
         ServerTickEvents.END_SERVER_TICK.register(UltimateWeight1201::onServerTick);

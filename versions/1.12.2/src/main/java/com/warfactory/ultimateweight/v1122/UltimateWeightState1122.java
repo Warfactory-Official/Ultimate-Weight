@@ -97,10 +97,10 @@ public final class UltimateWeightState1122 {
 
         ServerPlayerState state = getState(player);
         long currentFingerprint = fingerprint(player.inventory);
-        if (state.lastFullScanFingerprint == currentFingerprint) {
-            state.lastObservedFingerprint = currentFingerprint;
-            return;
-        }
+//        if (state.lastFullScanFingerprint == currentFingerprint) {
+//            state.lastObservedFingerprint = currentFingerprint;
+//            return;
+//        }
 
         double previousStackWeightKg = WeightViews1122.weightOf(event.getOldStack());
         double newStackWeightKg = WeightViews1122.weightOf(event.getNewStack());

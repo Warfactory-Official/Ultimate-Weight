@@ -37,6 +37,20 @@ public final class InventoryHook1201 {
         UltimateWeight1201.onClientInventoryDelta(player, slotIndex, oldStack, newStack);
     }
 
+    public static void onSelectedDrop(Inventory inventory, int slotIndex, ItemStack oldStack, ItemStack newStack) {
+        if (inventory == null || slotIndex < 0 || slotIndex >= inventory.getContainerSize() || sameStack(oldStack, newStack)) {
+            return;
+        }
+
+        Player player = inventory.player;
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return;
+        }
+
+        LOGGER.debug("Server selected-slot drop detected for player {} in slot {}", serverPlayer.getName().getString(), Integer.valueOf(slotIndex));
+        UltimateWeight1201.onServerInventoryDelta(serverPlayer, slotIndex, oldStack, newStack);
+    }
+
     public static List<ItemStack> captureMenuSlots(AbstractContainerMenu menu) {
         ArrayList<ItemStack> slotItems = new ArrayList<ItemStack>(menu.slots.size());
         for (int index = 0; index < menu.slots.size(); index++) {

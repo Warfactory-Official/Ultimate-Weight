@@ -74,6 +74,7 @@ public final class UltimateWeight1201 {
         serverTicks++;
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             syncPlayer(player, false);
+            syncStamina(player, false);
         }
     }
 

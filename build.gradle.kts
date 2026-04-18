@@ -43,6 +43,13 @@ prism {
         forge {
             loaderVersion = "47.4.18"
             loaderVersionRange = "[47,)"
+            dependencies {
+                modRuntimeOnly("curse.maven:jei-238222:7920915")
+                modRuntimeOnly("curse.maven:kubejs-238086:5853326")
+                modRuntimeOnly("curse.maven:storage-drawers-223852:6994481")
+                modRuntimeOnly("curse.maven:rhino-416294:6186971")
+                modRuntimeOnly("curse.maven:architectury-api-419699:5137938")
+            }
         }
     }
 
