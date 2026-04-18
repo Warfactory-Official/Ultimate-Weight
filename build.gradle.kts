@@ -4,6 +4,7 @@ plugins {
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.language.jvm.tasks.ProcessResources
 
 group = "warfactory.ultimateweight"
 version = "1.0.0"
@@ -29,11 +30,11 @@ prism {
     sharedCommon {
         dependencies {
             api("org.yaml:snakeyaml:2.6")
-            api("it.unimi.dsi:fastutil:8.5.12")
+            api("it.unimi.dsi:fastutil:8.5.9")
             api("com.github.ben-manes.caffeine:caffeine:2.9.3")
             shadowRelocation(true)
             shadow("org.yaml:snakeyaml:2.6")
-            shadow("it.unimi.dsi:fastutil:8.5.12")
+            shadow("it.unimi.dsi:fastutil:8.5.9")
             shadow("com.github.ben-manes.caffeine:caffeine:2.9.3")
         }
     }
@@ -53,6 +54,10 @@ prism {
                 modRuntimeOnly("curse.maven:storage-drawers-223852:6994481")
                 modRuntimeOnly("curse.maven:rhino-416294:6186971")
                 modRuntimeOnly("curse.maven:architectury-api-419699:5137938")
+                modRuntimeOnly("curse.maven:sophisticated-backpacks-422301:7916619")
+                modRuntimeOnly("curse.maven:sophisticated-core-618298:7916595")
+                modCompileOnly("curse.maven:travelers-backpack-321117:7816782")
+                modRuntimeOnly("curse.maven:travelers-backpack-321117:7816782")
             }
         }
     }
@@ -92,6 +97,7 @@ prism {
             username = "Developer"
             dependencies {
                 modCompileOnly("curse.maven:baubles-227083:2518667")
+                modCompileOnly("curse.maven:travelers-backpack-321117:3150850")
                 modRuntimeOnly("curse.maven:baubles-227083:2518667")
                 annotationProcessor ("org.ow2.asm:asm-debug-all:5.2")
                 annotationProcessor ("com.google.guava:guava:32.1.2-jre")
@@ -101,8 +107,11 @@ prism {
 //                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
                 modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
                 modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
+                modRuntimeOnly("curse.maven:travelers-backpack-321117:3150850")
+                modCompileOnly("curse.maven:travelers-backpack-321117:3150850")
                 modRuntimeOnly("com.cleanroommc:modularui:3.0.6")
                 modRuntimeOnly("io.github.chaosunity.forgelin:Forgelin-Continuous:2.3.20.0")
+
 
 //                modRuntimeOnly("curse.maven:ctm-267602:2915363")
 //                modRuntimeOnly("curse.maven:hbm-nuclear-tech-mod-community-edition-1312314:7685718")
@@ -125,6 +134,31 @@ project(":common") {
 
 project(":1.20.1:forge") {
     val forgeRefmap = layout.buildDirectory.file("mixin/wfweight.refmap.json")
+    val clientRunProgramArgs = layout.buildDirectory.file("moddev/clientRunProgramArgs.txt")
+
+    val sanitizeClientRunArgs = tasks.register("sanitizeClientRunArgs") {
+        dependsOn("prepareClientRun")
+
+        inputs.file(clientRunProgramArgs)
+        outputs.file(clientRunProgramArgs)
+
+        doLast {
+            val file = clientRunProgramArgs.get().asFile
+            if (!file.exists()) {
+                return@doLast
+            }
+
+            val sanitized = file.readLines().filterNot { line ->
+                line == "--mixin.config" || line == "wfweight.mixins.json"
+            }
+            file.writeText(sanitized.joinToString(System.lineSeparator()) + System.lineSeparator())
+        }
+    }
+
+    tasks.withType<ProcessResources>().configureEach {
+        dependsOn("compileJava")
+        from(forgeRefmap)
+    }
 
     tasks.withType<Jar>().configureEach {
         from(forgeRefmap)
@@ -133,5 +167,9 @@ project(":1.20.1:forge") {
     tasks.withType<ShadowJar>().configureEach {
         from(forgeRefmap)
         exclude("META-INF/jandex.idx")
+    }
+
+    tasks.matching { it.name == "runClient" }.configureEach {
+        dependsOn(sanitizeClientRunArgs)
     }
 }

@@ -2,8 +2,6 @@ package com.warfactory.ultimateweight.v1201.event;
 
 import com.warfactory.ultimateweight.logging.WeightLoggers;
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -11,6 +9,9 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class InventoryHook1201 {
     private static final WeightLoggers.WeightLogger LOGGER = WeightLoggers.component("inventory_hook");

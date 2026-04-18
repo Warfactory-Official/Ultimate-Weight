@@ -1,7 +1,7 @@
 package com.warfactory.ultimateweight.fabric;
 
-import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
 import com.warfactory.ultimateweight.v1201.UltimateWeightConfigFile1201;
 import com.warfactory.ultimateweight.v1201.WeightSyncTransport1201;

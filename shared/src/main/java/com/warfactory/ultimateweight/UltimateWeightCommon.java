@@ -4,6 +4,7 @@ import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.config.IConfigLoader;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 

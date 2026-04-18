@@ -1,6 +1,7 @@
 package com.warfactory.ultimateweight.v1122;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

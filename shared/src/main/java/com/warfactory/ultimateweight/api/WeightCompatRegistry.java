@@ -1,21 +1,17 @@
 package com.warfactory.ultimateweight.api;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public final class WeightCompatRegistry {
     private static final List<IWeightCompatProvider> PROVIDERS = new ArrayList<IWeightCompatProvider>();
-    private static final Comparator<IWeightCompatProvider> PRIORITY_ORDER = new Comparator<IWeightCompatProvider>() {
-        @Override
-        public int compare(IWeightCompatProvider left, IWeightCompatProvider right) {
-            int priority = Integer.compare(right.getPriority(), left.getPriority());
-            if (priority != 0) {
-                return priority;
-            }
-            return left.getClass().getName().compareTo(right.getClass().getName());
+    private static final Comparator<IWeightCompatProvider> PRIORITY_ORDER = (left, right) -> {
+        int priority = Integer.compare(right.getPriority(), left.getPriority());
+        if (priority != 0) {
+            return priority;
         }
+        return left.getClass().getName().compareTo(right.getClass().getName());
     };
 
     private WeightCompatRegistry() {
@@ -26,7 +22,7 @@ public final class WeightCompatRegistry {
             return;
         }
         PROVIDERS.add(provider);
-        Collections.sort(PROVIDERS, PRIORITY_ORDER);
+        PROVIDERS.sort(PRIORITY_ORDER);
     }
 
     public static synchronized void registerAll(Iterable<? extends IWeightCompatProvider> providers) {
@@ -39,7 +35,7 @@ public final class WeightCompatRegistry {
     }
 
     public static synchronized List<IWeightCompatProvider> providers() {
-        return new ArrayList<IWeightCompatProvider>(PROVIDERS);
+        return new ArrayList<>(PROVIDERS);
     }
 
     public static synchronized void clear() {

@@ -2,7 +2,6 @@ package com.warfactory.ultimateweight.mixin;
 
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
 import com.warfactory.ultimateweight.v1201.event.InventoryHook1201;
-import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +16,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(AbstractContainerMenu.class)
 public abstract class AbstractContainerMenuMixin {

@@ -1,6 +1,7 @@
 package com.warfactory.ultimateweight.core;
 
 import com.warfactory.ultimateweight.config.WeightConfig;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;

@@ -2,8 +2,6 @@ package com.warfactory.ultimateweight.mixin;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.WeightManager;
-import java.util.List;
-
 import com.warfactory.ultimateweight.v1122.event.InventoryHook;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -22,6 +20,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.List;
 
 @Mixin(value = Container.class, remap = false)
 public abstract class ContainerMixin {

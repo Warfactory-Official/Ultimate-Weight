@@ -3,9 +3,10 @@ package com.warfactory.ultimateweight;
 import com.warfactory.ultimateweight.network.ConfigFragment;
 import com.warfactory.ultimateweight.network.ConfigFragmenter;
 import com.warfactory.ultimateweight.network.ConfigReassembler;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class ConfigFragmenterTest {
     @Test

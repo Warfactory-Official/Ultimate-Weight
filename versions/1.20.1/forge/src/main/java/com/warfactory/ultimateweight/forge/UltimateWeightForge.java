@@ -1,13 +1,13 @@
 package com.warfactory.ultimateweight.forge;
 
-import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
-import com.warfactory.ultimateweight.v1201.UltimateWeightConfigFile1201;
+import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
+import com.warfactory.ultimateweight.v1201.UltimateWeightConfigFile1201;
 import com.warfactory.ultimateweight.v1201.compat.CompatibilityNestedWeightProvider1201;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLPaths;
-import net.minecraftforge.fml.ModList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

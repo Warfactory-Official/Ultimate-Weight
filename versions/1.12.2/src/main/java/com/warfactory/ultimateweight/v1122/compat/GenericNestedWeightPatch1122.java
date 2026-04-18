@@ -3,12 +3,13 @@ package com.warfactory.ultimateweight.v1122.compat;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
-import java.util.OptionalDouble;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
+
+import java.util.OptionalDouble;
 
 public final class GenericNestedWeightPatch1122 implements IWeightCompatProvider {
     private static final double EPSILON = 0.000001D;

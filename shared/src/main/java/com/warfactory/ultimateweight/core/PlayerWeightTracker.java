@@ -2,6 +2,7 @@ package com.warfactory.ultimateweight.core;
 
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.config.WeightConfig;
+
 import java.util.HashMap;
 import java.util.Map;
 

@@ -2,8 +2,9 @@ package com.warfactory.ultimateweight.v1122.network;
 
 import com.warfactory.ultimateweight.network.ConfigFragment;
 import io.netty.buffer.ByteBuf;
-import java.util.UUID;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+
+import java.util.UUID;
 
 public final class PacketConfigFragment1122 implements IMessage {
     private UUID transferId;

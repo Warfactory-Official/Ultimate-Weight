@@ -1,6 +1,7 @@
 package com.warfactory.ultimateweight.logging;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

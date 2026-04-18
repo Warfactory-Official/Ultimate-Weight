@@ -1,24 +1,16 @@
 package com.warfactory.ultimateweight.v1122;
 
-import com.warfactory.ultimateweight.config.EquipmentBonusRules;
-import com.warfactory.ultimateweight.config.IConfigLoader;
-import com.warfactory.ultimateweight.config.InventoryGroupRules;
-import com.warfactory.ultimateweight.config.WeightConfig;
-import com.warfactory.ultimateweight.config.WeightResolverRules;
+import com.warfactory.ultimateweight.config.*;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
+import java.util.*;
 
 public final class WeightConfigLoader1122 implements IConfigLoader {
     public static final String FILE_NAME = "weight_config_1_12.yaml";

@@ -1,8 +1,9 @@
 package com.warfactory.ultimateweight.v1201.network;
 
 import com.warfactory.ultimateweight.network.ConfigFragment;
-import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
+
+import java.util.UUID;
 
 public final class ConfigFragmentPacket1201 {
     private final UUID transferId;

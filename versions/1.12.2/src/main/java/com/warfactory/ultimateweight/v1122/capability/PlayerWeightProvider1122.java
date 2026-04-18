@@ -1,11 +1,12 @@
 package com.warfactory.ultimateweight.v1122.capability;
 
-import javax.annotation.Nullable;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+
+import javax.annotation.Nullable;
 
 public final class PlayerWeightProvider1122 implements ICapabilitySerializable<NBTTagCompound> {
     private final IPlayerWeightData1122 data = new PlayerWeightData1122();

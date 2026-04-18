@@ -25,11 +25,15 @@ public final class CompatibilityNestedWeightProvider1122 {
             ),
             new CompatibilityPatchLoader.PatchSpec(
                     "retro_sophisticated_backpacks",
-                    "com.warfactory.ultimateweight.v1122.compat.HbmStorageCrateWeightPatch1122"
+                    "com.warfactory.ultimateweight.v1122.compat.RetroSophisticatedBackpackPatch1122"
+            ),
+            new CompatibilityPatchLoader.PatchSpec(
+                    "travelersbackpack",
+                    "com.warfactory.ultimateweight.v1122.compat.TravelersBackpackWeightPatch1122"
             ),
             new CompatibilityPatchLoader.PatchSpec(
                     "storagedrawers",
-                    "com.warfactory.ultimateweight.v1122.compat.RetroSophisticatedBackpackPatch1122"
+                    "com.warfactory.ultimateweight.v1122.compat.StorageDrawersNestedWeightPatch1122"
             )
 
 

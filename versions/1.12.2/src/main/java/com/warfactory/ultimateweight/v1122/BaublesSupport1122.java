@@ -1,12 +1,13 @@
 package com.warfactory.ultimateweight.v1122;
 
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.common.Loader;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.common.Loader;
 
 public final class BaublesSupport1122 {
     private static final String MOD_ID = "baubles";

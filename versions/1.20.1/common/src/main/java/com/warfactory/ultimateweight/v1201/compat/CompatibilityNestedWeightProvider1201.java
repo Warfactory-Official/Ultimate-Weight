@@ -1,10 +1,11 @@
 package com.warfactory.ultimateweight.v1201.compat;
 
-import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.compat.CompatibilityPatchLoader;
 import com.warfactory.ultimateweight.compat.ModPresenceChecker;
 import com.warfactory.ultimateweight.logging.WeightLoggers;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

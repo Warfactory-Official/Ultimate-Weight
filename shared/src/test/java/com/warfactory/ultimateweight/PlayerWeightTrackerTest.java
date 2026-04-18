@@ -11,11 +11,12 @@ import com.warfactory.ultimateweight.core.PlayerWeightTracker;
 import com.warfactory.ultimateweight.core.WeightInventoryCalculator;
 import com.warfactory.ultimateweight.core.WeightResolver;
 import com.warfactory.ultimateweight.core.WeightUpdate;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 class PlayerWeightTrackerTest {
     @Test

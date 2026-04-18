@@ -1,11 +1,7 @@
 package com.warfactory.ultimateweight.runtime;
 
 import com.warfactory.ultimateweight.config.WeightConfig;
-import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
-import com.warfactory.ultimateweight.core.PlayerWeightTracker;
-import com.warfactory.ultimateweight.core.WeightFormatter;
-import com.warfactory.ultimateweight.core.WeightInventoryCalculator;
-import com.warfactory.ultimateweight.core.WeightResolver;
+import com.warfactory.ultimateweight.core.*;
 import com.warfactory.ultimateweight.network.ConfigFragmenter;
 import com.warfactory.ultimateweight.network.ConfigReassembler;
 

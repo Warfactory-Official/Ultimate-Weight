@@ -5,16 +5,16 @@ import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraftforge.oredict.OreDictionary;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public final class WeightViews1122 {
     private static final int MAX_NESTED_DEPTH = 4;
@@ -82,13 +82,29 @@ public final class WeightViews1122 {
         public Iterable<? extends WeightStackView> inventory() {
             InventoryPlayer inventory = player.inventory;
             ArrayList<WeightStackView> views = new ArrayList<WeightStackView>(inventory.getSizeInventory());
+            ItemStack travelersBackpack = TravelersBackpackSupport1122.equippedBackpack(player);
+            boolean skippedWornBackpack = false;
             for (int index = 0; index < inventory.getSizeInventory(); index++) {
                 ItemStack stack = inventory.getStackInSlot(index);
                 if (!stack.isEmpty()) {
+                    if (!travelersBackpack.isEmpty()
+                        && !skippedWornBackpack
+                        && sameBackpackStack(stack, travelersBackpack)) {
+                        skippedWornBackpack = true;
+                        continue;
+                    }
                     views.add(new StackView(stack, 0));
                 }
             }
             for (ItemStack stack : BaublesSupport1122.equipped(player)) {
+                if (!stack.isEmpty()) {
+                    views.add(new StackView(stack, 0));
+                }
+            }
+            if (!travelersBackpack.isEmpty()) {
+                views.add(new BaseStackView(travelersBackpack, 0));
+            }
+            for (ItemStack stack : TravelersBackpackSupport1122.contents(player)) {
                 if (!stack.isEmpty()) {
                     views.add(new StackView(stack, 0));
                 }
@@ -108,6 +124,10 @@ public final class WeightViews1122 {
                 if (!stack.isEmpty()) {
                     equipped.add(new StackView(stack, 0));
                 }
+            }
+            ItemStack travelersBackpack = TravelersBackpackSupport1122.equippedBackpack(player);
+            if (!travelersBackpack.isEmpty()) {
+                equipped.add(new BaseStackView(travelersBackpack, 0));
             }
             return equipped;
         }
@@ -265,5 +285,15 @@ public final class WeightViews1122 {
         return stack.getItem().getRegistryName() == null
             ? "minecraft:air"
             : stack.getItem().getRegistryName().toString();
+    }
+
+    private static boolean sameBackpackStack(ItemStack left, ItemStack right) {
+        if (left == right) {
+            return true;
+        }
+        if (left == null || right == null || left.isEmpty() || right.isEmpty()) {
+            return false;
+        }
+        return ItemStack.areItemsEqual(left, right) && ItemStack.areItemStackTagsEqual(left, right);
     }
 }

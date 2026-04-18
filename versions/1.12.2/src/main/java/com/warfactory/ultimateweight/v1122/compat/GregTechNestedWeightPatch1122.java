@@ -3,11 +3,12 @@ package com.warfactory.ultimateweight.v1122.compat;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
-import java.util.OptionalDouble;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ResourceLocation;
+
+import java.util.OptionalDouble;
 
 @SuppressWarnings("unused")
 public final class GregTechNestedWeightPatch1122 implements IWeightCompatProvider {

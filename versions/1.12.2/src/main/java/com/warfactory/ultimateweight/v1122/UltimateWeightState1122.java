@@ -2,11 +2,7 @@ package com.warfactory.ultimateweight.v1122;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.config.WeightConfig;
-import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
-import com.warfactory.ultimateweight.core.StaminaMath;
-import com.warfactory.ultimateweight.core.ThresholdEffect;
-import com.warfactory.ultimateweight.core.WeightSnapshot;
-import com.warfactory.ultimateweight.core.WeightUpdate;
+import com.warfactory.ultimateweight.core.*;
 import com.warfactory.ultimateweight.network.ConfigFragment;
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
 import com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122;
@@ -16,10 +12,6 @@ import com.warfactory.ultimateweight.v1122.network.PacketConfigFragment1122;
 import com.warfactory.ultimateweight.v1122.network.PacketStaminaUpdate1122;
 import com.warfactory.ultimateweight.v1122.network.PacketWeightUpdate1122;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
-
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
@@ -33,6 +25,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.util.text.TextComponentTranslation;
+
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 
 public final class UltimateWeightState1122 {
     private static final UUID SPEED_MODIFIER_ID = UUID.fromString("8f13a597-e735-4a4f-90b3-6eea0430e255");
@@ -83,6 +79,17 @@ public final class UltimateWeightState1122 {
 
     public static void markDirty(EntityPlayer player) {
         UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
+    }
+
+    public static void onTravelersBackpackStateChange(EntityPlayer player) {
+        if (!(player instanceof EntityPlayerMP)) {
+            return;
+        }
+
+        EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
+        markDirty(serverPlayer);
+        synchronize(serverPlayer, true);
+        syncStamina(serverPlayer, true);
     }
 
     public static void onServerPlayerTick(EntityPlayerMP player) {

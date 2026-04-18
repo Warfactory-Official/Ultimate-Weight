@@ -1,22 +1,19 @@
 package com.warfactory.ultimateweight;
 
-import com.warfactory.ultimateweight.api.IWeightCompatProvider;
-import com.warfactory.ultimateweight.api.WeightCompatRegistry;
-import com.warfactory.ultimateweight.api.WeightDataView;
-import com.warfactory.ultimateweight.api.WeightItemView;
-import com.warfactory.ultimateweight.api.WeightStackView;
+import com.warfactory.ultimateweight.api.*;
 import com.warfactory.ultimateweight.config.EquipmentBonusRules;
 import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.config.WeightResolverRules;
 import com.warfactory.ultimateweight.core.ResolvedWeight;
 import com.warfactory.ultimateweight.core.WeightResolver;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.OptionalDouble;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 class WeightResolverTest {
     @Test

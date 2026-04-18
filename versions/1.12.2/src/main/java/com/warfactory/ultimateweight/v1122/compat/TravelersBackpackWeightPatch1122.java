@@ -4,24 +4,16 @@ import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.OptionalDouble;
-import java.util.Set;
 
 @SuppressWarnings("unused")
-public final class HbmStorageCrateWeightPatch1122 implements IWeightCompatProvider {
-    private static final String PERSISTENT = "persistent";
+public final class TravelersBackpackWeightPatch1122 implements IWeightCompatProvider {
+    private static final String ITEM_ID = "travelersbackpack:travelers_backpack";
+    private static final String ITEMS = "Items";
     private static final double EPSILON = 0.000001D;
-    private static final Set<String> CRATE_IDS = new HashSet<String>(Arrays.asList(
-        "hbm:crete_iron",
-        "hbm:crate_steel",
-        "hbm:crate_desh",
-        "hbm:crate_tungsten"
-    ));
 
     @Override
     public OptionalDouble getUnitWeight(Object rawStack) {
@@ -30,7 +22,7 @@ public final class HbmStorageCrateWeightPatch1122 implements IWeightCompatProvid
         }
 
         ItemStack stack = (ItemStack) rawStack;
-        if (stack.isEmpty()) {
+        if (stack.isEmpty() || stack.getItem().getRegistryName() == null || !ITEM_ID.equals(stack.getItem().getRegistryName().toString())) {
             return OptionalDouble.empty();
         }
 
@@ -39,24 +31,15 @@ public final class HbmStorageCrateWeightPatch1122 implements IWeightCompatProvid
             return OptionalDouble.empty();
         }
 
-        if (stack.getItem().getRegistryName() == null || !CRATE_IDS.contains(stack.getItem().getRegistryName().toString())) {
-            return OptionalDouble.empty();
-        }
-
         NBTTagCompound tag = stack.getTagCompound();
-        if (tag == null || !tag.hasKey(PERSISTENT, 10)) {
+        if (tag == null || !tag.hasKey(ITEMS, 9)) {
             return OptionalDouble.empty();
         }
 
-        NBTTagCompound persistent = tag.getCompoundTag(PERSISTENT);
         double total = 0.0D;
-        for (String key : persistent.getKeySet()) {
-            NBTBase rawEntry = persistent.getTag(key);
-            if (!(rawEntry instanceof NBTTagCompound)) {
-                continue;
-            }
-
-            ItemStack nested = new ItemStack((NBTTagCompound) rawEntry);
+        NBTTagList items = tag.getTagList(ITEMS, 10);
+        for (int index = 0; index < items.tagCount(); index++) {
+            ItemStack nested = new ItemStack(items.getCompoundTagAt(index));
             if (!nested.isEmpty()) {
                 total += WeightViews1122.stackWeight(nested, depth + 1);
             }
@@ -69,6 +52,6 @@ public final class HbmStorageCrateWeightPatch1122 implements IWeightCompatProvid
 
     @Override
     public int getPriority() {
-        return 275;
+        return 200;
     }
 }

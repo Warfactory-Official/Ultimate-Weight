@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.warfactory.ultimateweight.mixin.travelersbackpack",
+  "refmap": "wfweight.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "minVersion": "0.8",
+  "mixins": [
+    "ServerActionsMixin1122"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

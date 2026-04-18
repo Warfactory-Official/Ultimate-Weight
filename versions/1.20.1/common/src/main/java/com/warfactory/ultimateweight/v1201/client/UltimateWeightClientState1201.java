@@ -2,8 +2,8 @@ package com.warfactory.ultimateweight.v1201.client;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.core.StaminaMath;
-import com.warfactory.ultimateweight.v1201.network.WeightUpdatePacket1201;
 import com.warfactory.ultimateweight.v1201.network.StaminaUpdatePacket1201;
+import com.warfactory.ultimateweight.v1201.network.WeightUpdatePacket1201;
 
 public final class UltimateWeightClientState1201 {
     private static volatile WeightUpdatePacket1201 latest = WeightUpdatePacket1201.empty();

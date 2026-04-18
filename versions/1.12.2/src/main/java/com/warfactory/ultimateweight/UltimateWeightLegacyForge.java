@@ -2,15 +2,20 @@ package com.warfactory.ultimateweight;
 
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
 import com.warfactory.ultimateweight.v1122.UltimateWeightCommonProxy1122;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import zone.rong.mixinbooter.ILateMixinLoader;
+
+import java.util.Collections;
+import java.util.List;
 
 @Mod(modid = UltimateWeightCommon.MOD_ID, name = UltimateWeightCommon.MOD_NAME, version = "0.1.0")
-public class UltimateWeightLegacyForge {
+public class UltimateWeightLegacyForge implements ILateMixinLoader {
     private static final Logger LOGGER = LogManager.getLogger(UltimateWeightCommon.MOD_ID);
 
     @SidedProxy(
@@ -35,5 +40,17 @@ public class UltimateWeightLegacyForge {
             Integer.valueOf(services.config().resolverRules().wildcardCount()),
             Integer.valueOf(services.config().resolverRules().matchCount())
         );
+    }
+
+
+    @Override
+    public List<String> getMixinConfigs() {
+        return Collections.singletonList("wfweight.travelersbackpack.mixins.json");
+    }
+
+    @Override
+    public boolean shouldMixinConfigQueue(String mixinConfig) {
+        return "wfweight.travelersbackpack.mixins.json".equals(mixinConfig)
+                && Loader.isModLoaded("travelersbackpack");
     }
 }

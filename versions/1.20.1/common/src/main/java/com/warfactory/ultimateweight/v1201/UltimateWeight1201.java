@@ -4,22 +4,13 @@ import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.config.EquipmentBonusRules;
 import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
-import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
-import com.warfactory.ultimateweight.core.StaminaMath;
-import com.warfactory.ultimateweight.core.ThresholdEffect;
-import com.warfactory.ultimateweight.core.WeightSnapshot;
-import com.warfactory.ultimateweight.core.WeightUpdate;
+import com.warfactory.ultimateweight.core.*;
 import com.warfactory.ultimateweight.network.ConfigFragment;
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
 import com.warfactory.ultimateweight.v1201.client.UltimateWeightClientState1201;
 import com.warfactory.ultimateweight.v1201.network.ConfigFragmentPacket1201;
 import com.warfactory.ultimateweight.v1201.network.StaminaUpdatePacket1201;
 import com.warfactory.ultimateweight.v1201.network.WeightUpdatePacket1201;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -29,12 +20,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+
+import java.util.*;
 
 public final class UltimateWeight1201 {
     private static final UUID SPEED_MODIFIER_ID = UUID.fromString("6f1f8b1f-37ae-45d1-8ab6-6d9da3d4a51c");

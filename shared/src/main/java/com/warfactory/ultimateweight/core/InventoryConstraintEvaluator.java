@@ -5,11 +5,8 @@ import com.warfactory.ultimateweight.api.WeightStackView;
 import com.warfactory.ultimateweight.config.EquipmentBonusRules;
 import com.warfactory.ultimateweight.config.InventoryGroupRules;
 import com.warfactory.ultimateweight.config.WeightConfig;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 public final class InventoryConstraintEvaluator {
     private final WeightConfig config;
