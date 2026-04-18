@@ -51,6 +51,6 @@ public class UltimateWeightLegacyForge implements ILateMixinLoader {
     @Override
     public boolean shouldMixinConfigQueue(String mixinConfig) {
         return "wfweight.travelersbackpack.mixins.json".equals(mixinConfig)
-                && Loader.isModLoaded("travelersbackpack");
+                && (Loader.isModLoaded("travelersbackpack") || Loader.isModLoaded("retro_sophisticated_backpacks"));
     }
 }

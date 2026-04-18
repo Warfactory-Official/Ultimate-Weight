@@ -98,6 +98,7 @@ prism {
             dependencies {
                 modCompileOnly("curse.maven:baubles-227083:2518667")
                 modCompileOnly("curse.maven:travelers-backpack-321117:3150850")
+                modCompileOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
                 modRuntimeOnly("curse.maven:baubles-227083:2518667")
                 annotationProcessor ("org.ow2.asm:asm-debug-all:5.2")
                 annotationProcessor ("com.google.guava:guava:32.1.2-jre")
@@ -106,6 +107,7 @@ prism {
                 modImplementation("curse.maven:mixin-booter-419286:7049694");
 //                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
                 modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
+                modCompileOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
                 modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
                 modRuntimeOnly("curse.maven:travelers-backpack-321117:3150850")
                 modCompileOnly("curse.maven:travelers-backpack-321117:3150850")

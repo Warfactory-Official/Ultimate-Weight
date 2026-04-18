@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "minVersion": "0.8",
   "mixins": [
+    "RetroSophisticatedBackpackHelperMixin1122",
+    "RetroSophisticatedBackpackInventoryMixin1122",
     "ServerActionsMixin1122"
   ],
   "injectors": {

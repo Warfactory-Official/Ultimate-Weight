@@ -1,6 +1,8 @@
 package com.warfactory.ultimateweight.v1122;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+import com.warfactory.ultimateweight.api.WeightItemView;
+import com.warfactory.ultimateweight.api.WeightStackView;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.core.*;
 import com.warfactory.ultimateweight.network.ConfigFragment;
@@ -25,6 +27,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -44,7 +47,7 @@ public final class UltimateWeightState1122 {
 
     public static void onPlayerJoin(EntityPlayerMP player) {
         ServerPlayerState state = getState(player);
-        long currentFingerprint = fingerprint(player.inventory);
+        long currentFingerprint = fingerprint(player);
         state.lastObservedFingerprint = currentFingerprint;
         state.lastFullScanFingerprint = currentFingerprint;
         state.acceptedSnapshot = InventorySnapshot.capture(player);
@@ -92,6 +95,17 @@ public final class UltimateWeightState1122 {
         syncStamina(serverPlayer, true);
     }
 
+    public static void onNestedBackpackContentsChanged() {
+        net.minecraft.server.MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        if (server == null || server.getPlayerList() == null) {
+            return;
+        }
+
+        for (EntityPlayerMP player : server.getPlayerList().getPlayers()) {
+            markDirty(player);
+        }
+    }
+
     public static void onServerPlayerTick(EntityPlayerMP player) {
         synchronize(player, false);
         syncStamina(player, false);
@@ -103,7 +117,7 @@ public final class UltimateWeightState1122 {
         }
 
         ServerPlayerState state = getState(player);
-        long currentFingerprint = fingerprint(player.inventory);
+        long currentFingerprint = fingerprint(player);
 //        if (state.lastFullScanFingerprint == currentFingerprint) {
 //            state.lastObservedFingerprint = currentFingerprint;
 //            return;
@@ -397,7 +411,7 @@ public final class UltimateWeightState1122 {
 
     private static void synchronize(EntityPlayerMP player, boolean forceSend) {
         ServerPlayerState state = getState(player);
-        long fingerprint = fingerprint(player.inventory);
+        long fingerprint = fingerprint(player);
         boolean inventoryChanged = fingerprint != state.lastObservedFingerprint;
         if (inventoryChanged) {
             state.lastObservedFingerprint = fingerprint;
@@ -439,7 +453,7 @@ public final class UltimateWeightState1122 {
             state.acceptedSnapshot.restore(player);
             player.sendStatusMessage(new TextComponentTranslation("message.wfweight.transfer_blocked"), true);
             player.inventory.markDirty();
-            state.lastObservedFingerprint = fingerprint(player.inventory);
+            state.lastObservedFingerprint = fingerprint(player);
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
             WeightUpdate reverted = UltimateWeightCommon.bootstrap().playerWeightTracker().refresh(
                 WeightViews1122.player(player),
@@ -690,18 +704,41 @@ public final class UltimateWeightState1122 {
         player.connection.sendPacket(new SPacketSetSlot(-1, -1, player.inventory.getItemStack()));
     }
 
-    private static long fingerprint(InventoryPlayer inventory) {
+    private static long fingerprint(EntityPlayer player) {
         long hash = 1125899906842597L;
-        for (int index = 0; index < inventory.getSizeInventory(); index++) {
-            hash = 31L * hash + stackFingerprint(inventory.getStackInSlot(index));
+        for (WeightStackView stack : WeightViews1122.player(player).inventory()) {
+            hash = 31L * hash + stackFingerprint(stack);
         }
+        InventoryPlayer inventory = player.inventory;
         hash = 31L * hash + inventory.currentItem;
         hash = 31L * hash + stackFingerprint(inventory.getItemStack());
         return hash;
     }
 
+    private static int stackFingerprint(WeightStackView stack) {
+        if (stack == null || stack.count() <= 0) {
+            return 0;
+        }
+
+        WeightItemView item = stack.item();
+        int hash = item == null || item.itemId() == null ? 0 : item.itemId().hashCode();
+        hash = 31 * hash + stack.metadata();
+        hash = 31 * hash + stack.count();
+
+        Object raw = stack.unwrap();
+        if (raw instanceof ItemStack) {
+            NBTTagCompound tag = ((ItemStack) raw).getTagCompound();
+            hash = 31 * hash + (tag == null ? 0 : tag.hashCode());
+            return hash;
+        }
+
+        String complexKey = stack.complexCacheKey();
+        hash = 31 * hash + (complexKey == null ? 0 : complexKey.hashCode());
+        return hash;
+    }
+
     private static int stackFingerprint(ItemStack stack) {
-        if (stack.isEmpty()) {
+        if (stack == null || stack.isEmpty()) {
             return 0;
         }
 
