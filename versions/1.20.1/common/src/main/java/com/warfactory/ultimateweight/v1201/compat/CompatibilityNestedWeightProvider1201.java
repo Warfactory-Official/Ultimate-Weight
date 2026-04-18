@@ -1,6 +1,6 @@
 package com.warfactory.ultimateweight.v1201.compat;
 
-import com.hbm.weight.api.IWeightCompatProvider;
+import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.compat.CompatibilityPatchLoader;
 import com.warfactory.ultimateweight.compat.ModPresenceChecker;
@@ -21,6 +21,7 @@ public final class CompatibilityNestedWeightProvider1201 {
             "storagedrawers",
             "com.warfactory.ultimateweight.v1201.compat.StorageDrawersNestedWeightPatch1201"
         )
+
     );
 
     private CompatibilityNestedWeightProvider1201() {

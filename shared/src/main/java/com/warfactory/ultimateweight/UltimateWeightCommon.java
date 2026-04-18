@@ -1,6 +1,6 @@
 package com.warfactory.ultimateweight;
 
-import com.hbm.weight.api.WeightCompatRegistry;
+import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.config.IConfigLoader;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;

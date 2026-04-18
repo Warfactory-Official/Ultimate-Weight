@@ -1,6 +1,6 @@
 package com.warfactory.ultimateweight.v1122;
 
-import com.hbm.weight.api.WeightCompatRegistry;
+import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.v1122.capability.UltimateWeightCapabilities1122;
 import com.warfactory.ultimateweight.v1122.compat.CompatibilityNestedWeightProvider1122;
 import net.minecraftforge.common.MinecraftForge;

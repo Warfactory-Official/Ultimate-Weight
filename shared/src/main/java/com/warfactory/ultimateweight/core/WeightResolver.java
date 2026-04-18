@@ -2,8 +2,8 @@ package com.warfactory.ultimateweight.core;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.hbm.weight.api.IWeightCompatProvider;
-import com.hbm.weight.api.WeightCompatRegistry;
+import com.warfactory.ultimateweight.api.IWeightCompatProvider;
+import com.warfactory.ultimateweight.api.WeightCompatRegistry;
 import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightStackView;

@@ -1,4 +1,4 @@
-package com.hbm.weight.api;
+package com.warfactory.ultimateweight.api;
 
 import java.util.OptionalDouble;
 

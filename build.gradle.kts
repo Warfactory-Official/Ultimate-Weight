@@ -99,17 +99,17 @@ prism {
                 annotationProcessor ("zone.rong:mixinbooter:10.7")
                 modImplementation("curse.maven:mixin-booter-419286:7049694");
 //                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
-//                modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
-//                modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
-//                modRuntimeOnly("com.cleanroommc:modularui:3.0.6")
+                modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
+                modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
+                modRuntimeOnly("com.cleanroommc:modularui:3.0.6")
                 modRuntimeOnly("io.github.chaosunity.forgelin:Forgelin-Continuous:2.3.20.0")
 
 //                modRuntimeOnly("curse.maven:ctm-267602:2915363")
 //                modRuntimeOnly("curse.maven:hbm-nuclear-tech-mod-community-edition-1312314:7685718")
                 modRuntimeOnly("curse.maven:storage-drawers-223852:5981297")
                 modRuntimeOnly("curse.maven:chameleon-230497:2450900")
-                modRuntimeOnly("codechicken:codechickenlib:3.2.3.358")
-                modRuntimeOnly("gregtech:gregtech:2.8.10-beta")
+//                modRuntimeOnly("codechicken:codechickenlib:3.2.3.358")
+//                modRuntimeOnly("gregtech:gregtech:2.8.10-beta")
             }
         }
     }

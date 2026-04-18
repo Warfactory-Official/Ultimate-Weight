@@ -1,6 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
-import com.hbm.weight.api.IWeightCompatProvider;
+import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import java.util.OptionalDouble;

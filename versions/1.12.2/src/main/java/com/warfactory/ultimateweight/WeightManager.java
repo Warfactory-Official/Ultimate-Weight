@@ -4,7 +4,6 @@ import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
@@ -17,10 +16,6 @@ public final class WeightManager {
     private WeightManager() {
     }
 
-    public static void markInventoryDirty(EntityPlayerMP player) {
-        UltimateWeightState1122.markDirty(player);
-    }
-
     public static boolean isTransferAllowedClient(EntityPlayer player, int slotId, ClickType clickType, int dragType) {
         if (player == null || slotId < 0 || player.openContainer == null) {
             return true;
@@ -31,10 +26,6 @@ public final class WeightManager {
 
         Slot slot = player.openContainer.inventorySlots.get(slotId);
         return isTransferAllowed(player, slot, clickType, dragType);
-    }
-
-    public static boolean isTransferAllowed(EntityPlayer player, Slot slot, ClickType clickType) {
-        return isTransferAllowed(player, slot, clickType, -1);
     }
 
     public static boolean isTransferAllowed(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
