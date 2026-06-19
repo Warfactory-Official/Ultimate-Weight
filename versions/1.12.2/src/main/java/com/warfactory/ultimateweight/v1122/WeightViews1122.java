@@ -82,17 +82,14 @@ public final class WeightViews1122 {
         public Iterable<? extends WeightStackView> inventory() {
             InventoryPlayer inventory = player.inventory;
             ArrayList<WeightStackView> views = new ArrayList<WeightStackView>(inventory.getSizeInventory());
+            // The worn Traveler's Backpack is stored in a capability, never in the player's main
+            // inventory, so every loose inventory stack is counted normally. A loose backpack item
+            // resolves its own contents through TravelersBackpackWeightPatch1122; the worn one is
+            // added separately below as a base item plus its live contents.
             ItemStack travelersBackpack = TravelersBackpackSupport1122.equippedBackpack(player);
-            boolean skippedWornBackpack = false;
             for (int index = 0; index < inventory.getSizeInventory(); index++) {
                 ItemStack stack = inventory.getStackInSlot(index);
                 if (!stack.isEmpty()) {
-                    if (!travelersBackpack.isEmpty()
-                        && !skippedWornBackpack
-                        && sameBackpackStack(stack, travelersBackpack)) {
-                        skippedWornBackpack = true;
-                        continue;
-                    }
                     views.add(new StackView(stack, 0));
                 }
             }
@@ -285,15 +282,5 @@ public final class WeightViews1122 {
         return stack.getItem().getRegistryName() == null
             ? "minecraft:air"
             : stack.getItem().getRegistryName().toString();
-    }
-
-    private static boolean sameBackpackStack(ItemStack left, ItemStack right) {
-        if (left == right) {
-            return true;
-        }
-        if (left == null || right == null || left.isEmpty() || right.isEmpty()) {
-            return false;
-        }
-        return ItemStack.areItemsEqual(left, right) && ItemStack.areItemStackTagsEqual(left, right);
     }
 }

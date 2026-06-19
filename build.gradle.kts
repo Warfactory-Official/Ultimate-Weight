@@ -3,11 +3,17 @@ plugins {
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.language.jvm.tasks.ProcessResources
+import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.jvm.toolchain.JavaToolchainService
 
 group = "warfactory.ultimateweight"
-version = "1.0.0"
+version = providers.gradleProperty("modVersion").orElse("1.0.0").get()
 
 prism {
         curseMaven()
@@ -128,6 +134,19 @@ prism {
 
 //Dont know why it kept pulling those
 project(":common") {
+    plugins.withType<JavaPlugin> {
+        extensions.configure<JavaPluginExtension> {
+            toolchain.languageVersion.set(JavaLanguageVersion.of(25))
+        }
+
+        val toolchains = extensions.getByType<JavaToolchainService>()
+        tasks.withType<JavaCompile>().configureEach {
+            javaCompiler.set(toolchains.compilerFor {
+                languageVersion.set(JavaLanguageVersion.of(25))
+            })
+        }
+    }
+
     configurations.configureEach {
         exclude(group = "com.mojang", module = "logging")
         exclude(group = "org.slf4j", module = "slf4j-api")
@@ -159,14 +178,19 @@ project(":1.20.1:forge") {
 
     tasks.withType<ProcessResources>().configureEach {
         dependsOn("compileJava")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(forgeRefmap)
     }
 
-    tasks.withType<Jar>().configureEach {
+    tasks.withType<Jar>().matching { it.name == "jar" }.configureEach {
+        dependsOn("compileJava")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(forgeRefmap)
     }
 
     tasks.withType<ShadowJar>().configureEach {
+        dependsOn("compileJava")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(forgeRefmap)
         exclude("META-INF/jandex.idx")
     }

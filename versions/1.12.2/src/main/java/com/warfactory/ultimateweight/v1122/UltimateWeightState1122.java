@@ -49,6 +49,7 @@ public final class UltimateWeightState1122 {
         ServerPlayerState state = getState(player);
         long currentFingerprint = fingerprint(player);
         state.lastObservedFingerprint = currentFingerprint;
+        state.lastPlayerInventoryFingerprint = playerInventoryFingerprint(player);
         state.lastFullScanFingerprint = currentFingerprint;
         state.acceptedSnapshot = InventorySnapshot.capture(player);
         state.acceptedWeightKg = WeightViews1122.totalWeight(player);
@@ -133,6 +134,7 @@ public final class UltimateWeightState1122 {
         );
 
         state.lastObservedFingerprint = currentFingerprint;
+        state.lastPlayerInventoryFingerprint = playerInventoryFingerprint(player);
         if (!update.updated()) {
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
             return;
@@ -411,11 +413,22 @@ public final class UltimateWeightState1122 {
 
     private static void synchronize(EntityPlayerMP player, boolean forceSend) {
         ServerPlayerState state = getState(player);
+        // Full fingerprint covers everything that contributes to weight, including the
+        // Traveler's Backpack worn capability and its contents. It drives weight recomputation.
         long fingerprint = fingerprint(player);
-        boolean inventoryChanged = fingerprint != state.lastObservedFingerprint;
-        if (inventoryChanged) {
+        // Player-inventory fingerprint covers only the state the transfer-block snapshot can
+        // actually capture and restore. Capability-backed backpack changes must NOT be treated
+        // as a player-inventory transfer, otherwise the revert path fires every tick without
+        // being able to undo the backpack change (message spam + slot resync ghosting).
+        long playerFingerprint = playerInventoryFingerprint(player);
+        boolean weightInputChanged = fingerprint != state.lastObservedFingerprint;
+        boolean playerInventoryChanged = playerFingerprint != state.lastPlayerInventoryFingerprint;
+        if (weightInputChanged) {
             state.lastObservedFingerprint = fingerprint;
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
+        }
+        if (playerInventoryChanged) {
+            state.lastPlayerInventoryFingerprint = playerFingerprint;
         }
 
         WeightUpdate update = UltimateWeightCommon.bootstrap().playerWeightTracker().refresh(
@@ -425,14 +438,14 @@ public final class UltimateWeightState1122 {
         if (update.updated()) {
             state.lastFullScanFingerprint = fingerprint;
         }
-        applyWeightUpdate(player, state, update, inventoryChanged, forceSend);
+        applyWeightUpdate(player, state, update, playerInventoryChanged, forceSend);
     }
 
     private static void applyWeightUpdate(
         EntityPlayerMP player,
         ServerPlayerState state,
         WeightUpdate update,
-        boolean inventoryChanged,
+        boolean playerInventoryChanged,
         boolean forceSend
     ) {
         boolean immune = isEffectImmune(player);
@@ -445,8 +458,12 @@ public final class UltimateWeightState1122 {
         WeightSnapshot snapshot = immune ? suppressEffects(update.snapshot()) : update.snapshot();
         double currentWeightKg = snapshot.totalWeightKg();
         double hardLockKg = UltimateWeightCommon.bootstrap().config().hardLockWeightKg();
+        // Only revert when the player's own inventory (the snapshot-restorable state) is what
+        // pushed us across the hard lock. A worn Traveler's Backpack lives in a capability we
+        // cannot snapshot, so reverting on a backpack-driven crossing would loop forever and
+        // corrupt/ghost the player inventory instead of undoing the backpack change.
         if (!immune
-            && inventoryChanged
+            && playerInventoryChanged
             && state.acceptedSnapshot != null
             && state.acceptedWeightKg < hardLockKg - EPSILON
             && currentWeightKg >= hardLockKg - EPSILON) {
@@ -454,6 +471,7 @@ public final class UltimateWeightState1122 {
             player.sendStatusMessage(new TextComponentTranslation("message.wfweight.transfer_blocked"), true);
             player.inventory.markDirty();
             state.lastObservedFingerprint = fingerprint(player);
+            state.lastPlayerInventoryFingerprint = playerInventoryFingerprint(player);
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
             WeightUpdate reverted = UltimateWeightCommon.bootstrap().playerWeightTracker().refresh(
                 WeightViews1122.player(player),
@@ -476,10 +494,15 @@ public final class UltimateWeightState1122 {
             return;
         }
 
+        // Refresh the accepted baseline whenever we are not actively blocking a player-driven
+        // transfer. If we reached here while over the hard lock, the crossing came from something
+        // we cannot revert (worn backpack capability, ability tick, capacity change), so accept it
+        // as the new baseline instead of holding a stale snapshot that would trap the player.
         if (state.acceptedSnapshot == null
             || immune
             || currentWeightKg < hardLockKg - EPSILON
-            || state.acceptedWeightKg >= hardLockKg - EPSILON) {
+            || state.acceptedWeightKg >= hardLockKg - EPSILON
+            || !playerInventoryChanged) {
             state.acceptedSnapshot = InventorySnapshot.capture(player);
             state.acceptedWeightKg = currentWeightKg;
         }
@@ -715,6 +738,23 @@ public final class UltimateWeightState1122 {
         return hash;
     }
 
+    /**
+     * Fingerprint of only the player's own inventory (main, armor, offhand, carried stack and
+     * selected slot) - i.e. exactly the state {@link InventorySnapshot} can capture and restore.
+     * Deliberately excludes the worn Traveler's Backpack capability so that backpack-internal
+     * changes do not masquerade as player-driven transfers in the hard-lock revert logic.
+     */
+    private static long playerInventoryFingerprint(EntityPlayer player) {
+        InventoryPlayer inventory = player.inventory;
+        long hash = 1125899906842597L;
+        for (int index = 0; index < inventory.getSizeInventory(); index++) {
+            hash = 31L * hash + stackFingerprint(inventory.getStackInSlot(index));
+        }
+        hash = 31L * hash + inventory.currentItem;
+        hash = 31L * hash + stackFingerprint(inventory.getItemStack());
+        return hash;
+    }
+
     private static int stackFingerprint(WeightStackView stack) {
         if (stack == null || stack.count() <= 0) {
             return 0;
@@ -765,6 +805,7 @@ public final class UltimateWeightState1122 {
 
     private static final class ServerPlayerState {
         private long lastObservedFingerprint;
+        private long lastPlayerInventoryFingerprint;
         private long lastFullScanFingerprint = Long.MIN_VALUE;
         private InventorySnapshot acceptedSnapshot;
         private double acceptedWeightKg;
