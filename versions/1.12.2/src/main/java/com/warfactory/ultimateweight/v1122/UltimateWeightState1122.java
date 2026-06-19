@@ -124,6 +124,18 @@ public final class UltimateWeightState1122 {
 //            return;
 //        }
 
+        // A nested container (e.g. a Traveler's Backpack) can move between the player's inventory
+        // and an invisible worn capability slot. The slot delta then only sees half of that move,
+        // so a numeric delta would double-count or deduct the backpack's contents. Fall back to a
+        // full rescan, which is authoritative, for any delta touching such a stack.
+        if (WeightViews1122.isNestedContainer(event.getOldStack())
+            || WeightViews1122.isNestedContainer(event.getNewStack())) {
+            state.lastObservedFingerprint = currentFingerprint;
+            state.lastPlayerInventoryFingerprint = playerInventoryFingerprint(player);
+            UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
+            return;
+        }
+
         double previousStackWeightKg = WeightViews1122.weightOf(event.getOldStack());
         double newStackWeightKg = WeightViews1122.weightOf(event.getNewStack());
         WeightUpdate update = UltimateWeightCommon.bootstrap().playerWeightTracker().applyDelta(

@@ -11,6 +11,7 @@ import java.util.List;
 
 public final class TravelersBackpackSupport1122 {
     private static final String MOD_ID = "travelersbackpack";
+    private static final String BACKPACK_ITEM_ID = "travelersbackpack:travelers_backpack";
     private static volatile boolean initialized;
     private static volatile boolean available;
     private static Method getWearingBackpackMethod;
@@ -19,6 +20,19 @@ public final class TravelersBackpackSupport1122 {
     private static Method getCraftingGridInventoryMethod;
 
     private TravelersBackpackSupport1122() {
+    }
+
+    /**
+     * Whether the stack is a Traveler's Backpack item. Pure registry-name check, so it is safe to
+     * call even when the mod is absent. Used to force a full weight rescan instead of an unreliable
+     * delta whenever a backpack moves between the player's inventory and the worn capability.
+     */
+    public static boolean isBackpackStack(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        net.minecraft.util.ResourceLocation id = stack.getItem().getRegistryName();
+        return id != null && BACKPACK_ITEM_ID.equals(id.toString());
     }
 
     public static ItemStack equippedBackpack(EntityPlayer player) {

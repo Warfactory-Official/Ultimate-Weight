@@ -5,6 +5,7 @@ import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
+import com.warfactory.ultimateweight.core.ResolvedWeight;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.item.ItemStack;
@@ -39,6 +40,25 @@ public final class WeightViews1122 {
             return 0.0D;
         }
         return stackWeight(stack, 0);
+    }
+
+    /**
+     * Whether the stack's weight is dynamic / capability-backed and therefore unsafe to track with a
+     * single-slot delta. This covers worn Traveler's Backpacks (which move through an invisible
+     * capability slot) and any stack whose weight is supplied by a nested-container compat provider.
+     * Such changes must trigger a full rescan instead of a numeric delta, otherwise the backpack's
+     * contents get double-counted or deducted when it is equipped/unequipped.
+     */
+    public static boolean isNestedContainer(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        if (TravelersBackpackSupport1122.isBackpackStack(stack)
+            || RetroSophisticatedBackpackSupport1122.isBackpackStack(stack)) {
+            return true;
+        }
+        return UltimateWeightCommon.bootstrap().resolver().resolve(new StackView(stack, 0)).source()
+            == ResolvedWeight.Source.COMPAT_API;
     }
 
     public static double stackWeight(ItemStack stack, int depth) {
@@ -170,6 +190,13 @@ public final class WeightViews1122 {
 
         @Override
         public String complexCacheKey() {
+            // A Retro Sophisticated Backpack keeps its contents in a capability, not in the regular
+            // item tag, so the tag-hash cache key would never change when the contents do and the
+            // cached weight would freeze. Returning null bypasses the cache so the live capability
+            // is re-read on every resolve.
+            if (RetroSophisticatedBackpackSupport1122.isBackpackStack(stack)) {
+                return null;
+            }
             return complexKey(stack, depth);
         }
 
