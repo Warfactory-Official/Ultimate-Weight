@@ -92,6 +92,21 @@ public final class UltimateWeight1201 {
         stateListener.onClone(original, clone);
     }
 
+    /**
+     * Event hook invoked by backpack-mod compat mixins when a backpack's stored contents change
+     * outside of a normal inventory-slot edit (e.g. an upgrade auto-inserting while the GUI is
+     * closed). Marks tracked players dirty so the next server tick performs one authoritative
+     * rescan - it never polls. No-ops on the client, where the runtime map is empty.
+     */
+    public static synchronized void onBackpackContentsChanged() {
+        if (PLAYER_RUNTIMES.isEmpty()) {
+            return;
+        }
+        for (UUID playerId : PLAYER_RUNTIMES.keySet()) {
+            UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(playerId.toString());
+        }
+    }
+
     public static synchronized Component pickupBlockMessage(ServerPlayer player, ItemStack stack) {
         if (isEffectImmune(player)) {
             return null;
@@ -133,6 +148,15 @@ public final class UltimateWeight1201 {
 
     public static boolean isTransferAllowed(Player player, Slot slot, ClickType clickType, int dragType) {
         if (player == null || player.getAbilities().instabuild || slot == null) {
+            return true;
+        }
+
+        // Sophisticated Backpacks "click to stash" routes an item INTO the backpack via
+        // overrideStackedOnOther/overrideOtherStackedOnMe instead of a normal slot move, so the
+        // predictive swap model below cannot describe it (and would wrongly block or mis-price it).
+        // Allow the click and let the authoritative post-click rescan account for the new weight.
+        if (WeightViews1201.isDynamicContainer(slot.getItem())
+            || WeightViews1201.isDynamicContainer(carriedStack(player))) {
             return true;
         }
 
@@ -179,6 +203,13 @@ public final class UltimateWeight1201 {
             return;
         }
 
+        // A backpack moving in/out of the inventory only shows half of the move here (its worn
+        // counterpart lives in a capability/Curios slot), and its weight is dynamic - so do not
+        // predict client-side; let the authoritative server weight update drive it.
+        if (WeightViews1201.isDynamicContainer(oldStack) || WeightViews1201.isDynamicContainer(newStack)) {
+            return;
+        }
+
         WeightUpdatePacket1201 latest = UltimateWeightClientState1201.latest();
         if (latest.carryCapacityKg() <= EPSILON) {
             return;
@@ -213,6 +244,15 @@ public final class UltimateWeight1201 {
         PlayerRuntime runtime = runtime(player);
         runtime.lastInventoryChanges = player.getInventory().getTimesChanged();
         runtime.lastMenuStateId = player.containerMenu.getStateId();
+
+        // A backpack's weight is dynamic and only half of an equip/unequip move is visible as an
+        // inventory-slot delta (the worn half lives in a capability/Curios slot). A numeric delta
+        // would double-count or deduct its contents, so fall back to an authoritative full rescan,
+        // triggered only by this change event.
+        if (WeightViews1201.isDynamicContainer(oldStack) || WeightViews1201.isDynamicContainer(newStack)) {
+            UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getStringUUID());
+            return;
+        }
 
         WeightUpdate update = UltimateWeightCommon.bootstrap().playerWeightTracker().applyDelta(
             WeightViews1201.player(player),
@@ -285,6 +325,16 @@ public final class UltimateWeight1201 {
         boolean overweight = afterWeightKg + EPSILON >= config.hardLockWeightKg()
             && afterWeightKg > snapshot.beforeWeightKg() + EPSILON;
         if (!overweight && violation == null) {
+            return;
+        }
+
+        // If the click stashed into / pulled from a backpack, the changed contents live in a
+        // capability/SavedData, not in a restorable menu slot - rolling back the slots would dupe or
+        // lose the stashed item. Accept the change and let the weight reflect reality, matching how
+        // the mod treats other backpack-internal changes; the hard lock still blocks world pickups.
+        if (involvesDynamicContainer(menu, snapshot)) {
+            UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(serverPlayer.getStringUUID());
+            syncPlayer(serverPlayer, true);
             return;
         }
 
@@ -778,8 +828,28 @@ public final class UltimateWeight1201 {
         stateListener.onStamina(player, runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled, runtime.exhausted);
         transport.sendStaminaUpdate(
             player,
-            new StaminaUpdatePacket1201(runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled)
+            new StaminaUpdatePacket1201(runtime.currentStamina, runtime.maxStamina, runtime.staminaEnabled, runtime.exhausted)
         );
+    }
+
+    /**
+     * Whether sprinting must be blocked for this player because stamina is exhausted. Mirrors the
+     * 1.12.2 behaviour: the client uses the authoritative exhausted flag synced from the server, and
+     * the server enforces its own runtime state (so a stray START_SPRINTING packet cannot re-enable
+     * sprinting while exhausted).
+     */
+    public static boolean isSprintBlocked(Player player) {
+        if (player == null) {
+            return false;
+        }
+        if (player.level().isClientSide()) {
+            return player.isLocalPlayer() && UltimateWeightClientState1201.isExhausted();
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            PlayerRuntime runtime = PLAYER_RUNTIMES.get(serverPlayer.getUUID());
+            return runtime != null && runtime.exhausted;
+        }
+        return false;
     }
 
     private static double drainStaminaValue(PlayerRuntime runtime, double baseLoss) {
@@ -899,6 +969,22 @@ public final class UltimateWeight1201 {
         player.connection.send(
             new ClientboundContainerSetSlotPacket(-1, menu.incrementStateId(), -1, menu.getCarried())
         );
+    }
+
+    private static boolean involvesDynamicContainer(AbstractContainerMenu menu, MenuClickSnapshot snapshot) {
+        if (WeightViews1201.isDynamicContainer(menu.getCarried())
+            || WeightViews1201.isDynamicContainer(snapshot.carried())) {
+            return true;
+        }
+        int clickedSlot = snapshot.clickedSlot();
+        if (clickedSlot >= 0
+            && clickedSlot < menu.slots.size()
+            && WeightViews1201.isDynamicContainer(menu.getSlot(clickedSlot).getItem())) {
+            return true;
+        }
+        return clickedSlot >= 0
+            && clickedSlot < snapshot.slotItems().size()
+            && WeightViews1201.isDynamicContainer(snapshot.slotItems().get(clickedSlot));
     }
 
     private static PlayerRuntime runtime(ServerPlayer player) {

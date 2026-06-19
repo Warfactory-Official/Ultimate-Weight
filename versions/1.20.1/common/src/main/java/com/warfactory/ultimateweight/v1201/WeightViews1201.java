@@ -14,11 +14,58 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 
 public final class WeightViews1201 {
     private static final int MAX_NESTED_DEPTH = 4;
 
+    /**
+     * Extra worn-item sources contributed by the loader layer (e.g. Curios slots and a Traveler's
+     * Backpack worn in its own capability) - things that are not part of the vanilla
+     * items/armor/offhand inventory but still need their weight counted. Registered once at startup.
+     */
+    private static final List<InventorySource> INVENTORY_SOURCES = new CopyOnWriteArrayList<>();
+
+    /**
+     * Identifies stacks whose contents are dynamic / capability- or savedata-backed (backpacks), so
+     * their weight cannot be cached by the item tag hash and a single-slot delta cannot be trusted.
+     * Set once by the loader layer; defaults to "never".
+     */
+    private static volatile Predicate<ItemStack> dynamicContainer = stack -> false;
+
     private WeightViews1201() {
+    }
+
+    public static void registerInventorySource(InventorySource source) {
+        if (source != null) {
+            INVENTORY_SOURCES.add(source);
+        }
+    }
+
+    public static void setDynamicContainerPredicate(Predicate<ItemStack> predicate) {
+        dynamicContainer = predicate == null ? stack -> false : predicate;
+    }
+
+    public static boolean isDynamicContainer(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && dynamicContainer.test(stack);
+    }
+
+    @FunctionalInterface
+    public interface InventorySource {
+        void collect(Player player, List<ItemStack> out);
+    }
+
+    private static void collectExtraWorn(Player player, List<ItemStack> out) {
+        if (INVENTORY_SOURCES.isEmpty()) {
+            return;
+        }
+        for (InventorySource source : INVENTORY_SOURCES) {
+            try {
+                source.collect(player, out);
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
     public static WeightPlayerView player(Player player) {
@@ -65,51 +112,57 @@ public final class WeightViews1201 {
         return UltimateWeightCommon.bootstrap().resolver().resolve(new StackView(stack, depth)).singleItemWeightKg();
     }
 
-    private static final class PlayerView implements WeightPlayerView {
-        private final Player player;
-
-        private PlayerView(Player player) {
-            this.player = player;
-        }
+    private record PlayerView(Player player) implements WeightPlayerView {
 
         @Override
-        public String playerId() {
-            return player.getStringUUID();
-        }
+            public String playerId() {
+                return player.getStringUUID();
+            }
 
-        @Override
-        public Iterable<? extends WeightStackView> inventory() {
-            Inventory inventory = player.getInventory();
-            ArrayList<WeightStackView> views = new ArrayList<WeightStackView>(
-                inventory.items.size() + inventory.armor.size() + inventory.offhand.size()
-            );
-            addStacks(views, inventory.items);
-            addStacks(views, inventory.armor);
-            addStacks(views, inventory.offhand);
-            return views;
-        }
+            @Override
+            public Iterable<? extends WeightStackView> inventory() {
+                Inventory inventory = player.getInventory();
+                ArrayList<WeightStackView> views = new ArrayList<>(
+                        inventory.items.size() + inventory.armor.size() + inventory.offhand.size()
+                );
+                addStacks(views, inventory.items);
+                addStacks(views, inventory.armor);
+                addStacks(views, inventory.offhand);
+                addExtraWorn(views);
+                return views;
+            }
 
-        @Override
-        public Iterable<? extends WeightStackView> equipped() {
-            Inventory inventory = player.getInventory();
-            ArrayList<WeightStackView> equipped = new ArrayList<WeightStackView>(inventory.armor.size());
-            addStacks(equipped, inventory.armor);
-            return equipped;
-        }
+            @Override
+            public Iterable<? extends WeightStackView> equipped() {
+                Inventory inventory = player.getInventory();
+                ArrayList<WeightStackView> equipped = new ArrayList<>(inventory.armor.size());
+                addStacks(equipped, inventory.armor);
+                addExtraWorn(equipped);
+                return equipped;
+            }
 
-        @Override
-        public double carryCapacityKg() {
-            return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
-        }
+            private void addExtraWorn(List<WeightStackView> target) {
+                if (INVENTORY_SOURCES.isEmpty()) {
+                    return;
+                }
+                ArrayList<ItemStack> extras = new ArrayList<>();
+                collectExtraWorn(player, extras);
+                addStacks(target, extras);
+            }
 
-        private static void addStacks(List<WeightStackView> target, List<ItemStack> source) {
-            for (ItemStack stack : source) {
-                if (!stack.isEmpty()) {
-                    target.add(new StackView(stack, 0));
+            @Override
+            public double carryCapacityKg() {
+                return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
+            }
+
+            private static void addStacks(List<WeightStackView> target, List<ItemStack> source) {
+                for (ItemStack stack : source) {
+                    if (!stack.isEmpty()) {
+                        target.add(new StackView(stack, 0));
+                    }
                 }
             }
         }
-    }
 
     private static final class StackView implements WeightStackView {
         private final ItemStack stack;
@@ -141,6 +194,12 @@ public final class WeightViews1201 {
 
         @Override
         public String complexCacheKey() {
+            // Backpack contents live in a capability / world SavedData, not in the item tag, so the
+            // tag-hash cache key would never change when the contents do and the cached weight would
+            // freeze. Returning null bypasses the cache so the live contents are re-read each resolve.
+            if (isDynamicContainer(stack)) {
+                return null;
+            }
             return complexKey(stack, depth);
         }
 
@@ -175,28 +234,23 @@ public final class WeightViews1201 {
         }
 
         private static Collection<String> buildMatchKeys(ItemStack stack) {
-            Set<String> keys = new LinkedHashSet<String>();
+            Set<String> keys = new LinkedHashSet<>();
             stack.getTags().map(TagKey::location).forEach((location) -> keys.add(location.toString()));
             return keys;
         }
     }
 
-    private static final class DataView implements WeightDataView {
-        private final ItemStack stack;
-
-        private DataView(ItemStack stack) {
-            this.stack = stack;
-        }
+    private record DataView(ItemStack stack) implements WeightDataView {
 
         @Override
-        public Double getDouble(String key) {
-            CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains(key, Tag.TAG_ANY_NUMERIC)) {
-                return Double.valueOf(tag.getDouble(key));
+            public Double getDouble(String key) {
+                CompoundTag tag = stack.getTag();
+                if (tag != null && tag.contains(key, Tag.TAG_ANY_NUMERIC)) {
+                    return Double.valueOf(tag.getDouble(key));
+                }
+                return null;
             }
-            return null;
         }
-    }
 
     private static final class BaseStackView implements WeightStackView {
         private final ItemView item;
@@ -225,6 +279,6 @@ public final class WeightViews1201 {
 
     private static String complexKey(ItemStack stack, int depth) {
         CompoundTag tag = stack.getTag();
-        return BuiltInRegistries.ITEM.getKey(stack.getItem()).toString() + "|" + depth + "|" + (tag == null ? 0 : tag.hashCode());
+        return BuiltInRegistries.ITEM.getKey(stack.getItem()) + "|" + depth + "|" + (tag == null ? 0 : tag.hashCode());
     }
 }

@@ -54,7 +54,7 @@ public final class WeightConfig {
 
         return new WeightConfig(
             Precision.defaults(),
-            true,
+            false,
             600L,
             120.0D,
             220.0D,

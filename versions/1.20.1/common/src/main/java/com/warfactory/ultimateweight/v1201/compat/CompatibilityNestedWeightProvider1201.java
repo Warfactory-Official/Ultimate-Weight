@@ -21,6 +21,10 @@ public final class CompatibilityNestedWeightProvider1201 {
         new CompatibilityPatchLoader.PatchSpec(
             "storagedrawers",
             "com.warfactory.ultimateweight.v1201.compat.StorageDrawersNestedWeightPatch1201"
+        ),
+        new CompatibilityPatchLoader.PatchSpec(
+            "superbwarfare",
+            "com.warfactory.ultimateweight.v1201.compat.SuperbWarfareAmmoBoxPatch1201"
         )
 
     );

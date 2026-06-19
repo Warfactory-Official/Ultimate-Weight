@@ -6,7 +6,7 @@ precision:
 limits:
   defaultCarryCapacityKg: 120.0
   hardLockWeightKg: 220.0
-  enableFailsafeFullScan: true
+  enableFailsafeFullScan: false
   fullScanIntervalTicks: 600
 
 rules:

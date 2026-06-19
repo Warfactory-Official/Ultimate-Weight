@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
@@ -17,5 +18,19 @@ public abstract class LivingEntityMixin {
         }
 
         callbackInfo.setReturnValue((float) (callbackInfo.getReturnValueF() * UltimateWeight1201.jumpMultiplier(player)));
+    }
+
+    // LivingEntity.setSprinting is the single funnel that both sets the sprint flag AND adds the
+    // +30% sprint speed modifier. Cancelling at this chokepoint (rather than Entity.setSprinting)
+    // prevents BOTH while exhausted - otherwise the speed boost was still applied even though the
+    // flag was cleared, letting the player keep sprint speed. Works on client and server, so a
+    // stray START_SPRINTING packet cannot re-enable sprinting server-side either.
+    @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true)
+    private void ultimateweight$preventExhaustedSprint(boolean sprinting, CallbackInfo callbackInfo) {
+        if (sprinting
+            && (Object) this instanceof Player player
+            && UltimateWeight1201.isSprintBlocked(player)) {
+            callbackInfo.cancel();
+        }
     }
 }

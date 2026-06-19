@@ -92,7 +92,7 @@ Controls global carry limits and full-scan safety.
 limits:
   defaultCarryCapacityKg: 120.0
   hardLockWeightKg: 220.0
-  enableFailsafeFullScan: true
+  enableFailsafeFullScan: false
   fullScanIntervalTicks: 600
 ```
 
@@ -736,7 +736,7 @@ precision:
 limits:
   defaultCarryCapacityKg: 120.0
   hardLockWeightKg: 220.0
-  enableFailsafeFullScan: true
+  enableFailsafeFullScan: false
   fullScanIntervalTicks: 600
 
 rules:
