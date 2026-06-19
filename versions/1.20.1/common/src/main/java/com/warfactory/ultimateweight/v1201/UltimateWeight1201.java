@@ -766,7 +766,8 @@ public final class UltimateWeight1201 {
         WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
         StaminaState persisted = stateListener.loadStamina(player);
         runtime.maxStamina = UltimateWeightCommon.bootstrap().constraintEvaluator().resolveMaxStamina(WeightViews1201.player(player));
-        runtime.staminaEnabled = StaminaMath.isEnabled(stamina, runtime.maxStamina);
+        // Creative (effect-immune) players never drain stamina: keep the system inactive for them.
+        runtime.staminaEnabled = StaminaMath.isEnabled(stamina, runtime.maxStamina) && !isEffectImmune(player);
         runtime.currentStamina = persisted != null && persisted.maxStamina() > EPSILON
             ? StaminaMath.clamp(persisted.currentStamina(), runtime.maxStamina)
             : runtime.maxStamina;
@@ -783,7 +784,8 @@ public final class UltimateWeight1201 {
         PlayerRuntime runtime = runtime(player);
         WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
         runtime.maxStamina = UltimateWeightCommon.bootstrap().constraintEvaluator().resolveMaxStamina(WeightViews1201.player(player));
-        runtime.staminaEnabled = StaminaMath.isEnabled(stamina, runtime.maxStamina);
+        // Creative (effect-immune) players never drain stamina: keep it full and the system inactive.
+        runtime.staminaEnabled = StaminaMath.isEnabled(stamina, runtime.maxStamina) && !isEffectImmune(player);
 
         if (!runtime.staminaEnabled) {
             runtime.currentStamina = runtime.maxStamina;

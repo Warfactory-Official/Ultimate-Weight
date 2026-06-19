@@ -65,6 +65,7 @@ fallDamage:
   maxDamageMultiplier: 3.5
 
 stamina:
+  enabled: true
   totalStamina: 100.0
   sprintStaminaLossRate: 0.1
   jumpStaminaLoss: 2.0

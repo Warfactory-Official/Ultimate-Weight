@@ -557,7 +557,8 @@ public final class UltimateWeightState1122 {
             data.setCurrentStamina(StaminaMath.clamp(data.getCurrentStamina(), maxStamina));
         }
         data.setMaxStamina(maxStamina);
-        data.setStaminaEnabled(StaminaMath.isEnabled(stamina, maxStamina));
+        // Creative (effect-immune) players never drain stamina: keep the system inactive for them.
+        data.setStaminaEnabled(StaminaMath.isEnabled(stamina, maxStamina) && !isEffectImmune(player));
         data.setExhausted(
             resolveExhaustedState(
                 data.getCurrentStamina(),
@@ -576,7 +577,8 @@ public final class UltimateWeightState1122 {
 
         WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
         double maxStamina = UltimateWeightCommon.bootstrap().constraintEvaluator().resolveMaxStamina(WeightViews1122.player(player));
-        boolean enabled = StaminaMath.isEnabled(stamina, maxStamina);
+        // Creative (effect-immune) players never drain stamina: keep it full and the system inactive.
+        boolean enabled = StaminaMath.isEnabled(stamina, maxStamina) && !isEffectImmune(player);
         double currentStamina = data.getCurrentStamina();
         boolean exhausted = data.isExhausted();
         boolean changed = false;

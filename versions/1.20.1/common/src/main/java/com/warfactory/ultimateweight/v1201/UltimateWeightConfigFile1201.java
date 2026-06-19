@@ -29,7 +29,7 @@ public final class UltimateWeightConfigFile1201 {
 
         ensureExists();
         try {
-            UltimateWeightCommon.applySyncedConfig(Files.readString(configFile, StandardCharsets.UTF_8));
+            UltimateWeightCommon.applyLocalConfig(Files.readString(configFile, StandardCharsets.UTF_8));
         } catch (IOException exception) {
             throw new IllegalStateException("Failed to load config file " + configFile, exception);
         }

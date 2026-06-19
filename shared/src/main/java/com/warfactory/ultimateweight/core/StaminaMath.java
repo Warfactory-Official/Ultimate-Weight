@@ -10,12 +10,14 @@ public final class StaminaMath {
 
     public static boolean isEnabled(WeightConfig.Stamina stamina) {
         return stamina != null
+            && stamina.enabled()
             && stamina.totalStamina() > EPSILON
             && (stamina.drainWhileRunning() || stamina.drainOnJump());
     }
 
     public static boolean isEnabled(WeightConfig.Stamina stamina, double maxStamina) {
         return stamina != null
+            && stamina.enabled()
             && maxStamina > EPSILON
             && (stamina.drainWhileRunning() || stamina.drainOnJump());
     }

@@ -231,6 +231,7 @@ public final class WeightConfig {
     }
 
     public static final class Stamina {
+        private final boolean enabled;
         private final double totalStamina;
         private final double sprintStaminaLossRate;
         private final double jumpStaminaLoss;
@@ -242,6 +243,7 @@ public final class WeightConfig {
         private final List<UsagePenaltyRule> penalties;
 
         public Stamina(
+            boolean enabled,
             double totalStamina,
             double sprintStaminaLossRate,
             double jumpStaminaLoss,
@@ -252,6 +254,7 @@ public final class WeightConfig {
             boolean drainOnJump,
             Collection<UsagePenaltyRule> penalties
         ) {
+            this.enabled = enabled;
             this.totalStamina = totalStamina;
             this.sprintStaminaLossRate = sprintStaminaLossRate;
             this.jumpStaminaLoss = jumpStaminaLoss;
@@ -269,7 +272,16 @@ public final class WeightConfig {
             penalties.add(new UsagePenaltyRule(0.75D, 1.35D));
             penalties.add(new UsagePenaltyRule(1.00D, 1.7D));
             penalties.add(new UsagePenaltyRule(1.20D, 2.2D));
-            return new Stamina(100.0D, 0.1D, 2.0D, 0.08D, 1.0D, 0.3D, true, true, penalties);
+            return new Stamina(true, 100.0D, 0.1D, 2.0D, 0.08D, 1.0D, 0.3D, true, true, penalties);
+        }
+
+        /**
+         * Master switch for the whole stamina system. When false the mod keeps every player's
+         * stamina full and never drains it - the HUD bar hides and sprint is never blocked. Exposed
+         * to config ({@code stamina.enabled}) and to scripting (GroovyScript / KubeJS).
+         */
+        public boolean enabled() {
+            return enabled;
         }
 
         public double totalStamina() {

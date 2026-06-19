@@ -120,6 +120,7 @@ public final class WeightConfigLoader1122 implements IConfigLoader {
                 doubleValue(fallDamage, "maxDamageMultiplier", defaults.fallDamage().maxDamageMultiplier())
             ),
             new WeightConfig.Stamina(
+                booleanValue(stamina, "enabled", defaults.stamina().enabled()),
                 doubleValue(stamina, "totalStamina", defaults.stamina().totalStamina()),
                 doubleValue(stamina, "sprintStaminaLossRate", defaults.stamina().sprintStaminaLossRate()),
                 doubleValue(stamina, "jumpStaminaLoss", defaults.stamina().jumpStaminaLoss()),
@@ -453,6 +454,7 @@ public final class WeightConfigLoader1122 implements IConfigLoader {
             penalties.add(row);
         }
         LinkedHashMap<String, Object> stamina = new LinkedHashMap<String, Object>();
+        stamina.put("enabled", Boolean.valueOf(config.stamina().enabled()));
         stamina.put("totalStamina", Double.valueOf(config.stamina().totalStamina()));
         stamina.put("sprintStaminaLossRate", Double.valueOf(config.stamina().sprintStaminaLossRate()));
         stamina.put("jumpStaminaLoss", Double.valueOf(config.stamina().jumpStaminaLoss()));

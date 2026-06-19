@@ -3,6 +3,7 @@ plugins {
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
@@ -53,12 +54,14 @@ prism {
         }
         forge {
             loaderVersion = "47.4.18"
-            loaderVersionRange = "[47,)"
             dependencies {
                 modRuntimeOnly("curse.maven:jei-238222:7920915")
+                modCompileOnly("curse.maven:kubejs-238086:5853326")
                 modRuntimeOnly("curse.maven:kubejs-238086:5853326")
                 modRuntimeOnly("curse.maven:storage-drawers-223852:6994481")
+                modCompileOnly("curse.maven:rhino-416294:6186971")
                 modRuntimeOnly("curse.maven:rhino-416294:6186971")
+                modCompileOnly("curse.maven:architectury-api-419699:5137938")
                 modRuntimeOnly("curse.maven:architectury-api-419699:5137938")
                 modRuntimeOnly("curse.maven:sophisticated-backpacks-422301:7916619")
                 modRuntimeOnly("curse.maven:sophisticated-core-618298:7916595")
@@ -72,11 +75,9 @@ prism {
     version("1.21.1") {
         neoforge {
             loaderVersion = "21.1.222"
-            loaderVersionRange = "[4,)"
         }
         lexForge {
             loaderVersion = "52.1.9"
-            loaderVersionRange = "[52,)"
         }
         fabric {
            loaderVersion = "0.16.14"
@@ -112,6 +113,7 @@ prism {
                 annotationProcessor ("zone.rong:mixinbooter:10.7")
                 modImplementation("curse.maven:mixin-booter-419286:7049694");
 //                modRuntimeOnly("curse.maven:had-enough-items-557549:7899997")
+                modCompileOnly("curse.maven:groovyscript-687577:7925117")
                 modRuntimeOnly("curse.maven:groovyscript-687577:7925117")
                 modCompileOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
                 modRuntimeOnly("curse.maven:retro-sophisticated-backpacks-1197465:7589941")
@@ -197,5 +199,18 @@ project(":1.20.1:forge") {
 
     tasks.matching { it.name == "runClient" }.configureEach {
         dependsOn(sanitizeClientRunArgs)
+    }
+}
+
+// Prism wires shadow relocation into the reobf step only for moddev-based loaders. The 1.12.2 build
+// uses RetroFuturaGradle, whose `reobfJar` reobfuscates the thin `jar` task and never sees the
+// `shadowJar` - so the relocated snakeyaml/fastutil/caffeine never reached the published jar (it was
+// just the mod classes, which would NoClassDefFoundError at runtime). Reobfuscate the already
+// relocated `shadowJar` output instead, so the runtime jar bundles the shaded libraries.
+project(":1.12.2") {
+    plugins.withId("com.gtnewhorizons.retrofuturagradle") {
+        tasks.named<ReobfuscatedJar>("reobfJar") {
+            inputJar.set(tasks.named<Jar>("shadowJar").flatMap { it.archiveFile })
+        }
     }
 }
