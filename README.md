@@ -46,6 +46,36 @@ That branch includes:
 
 It already has the shared runtime, HUD, syncing, stamina systems, and the current inventory hook refactor, but it should still be treated as an active port rather than the stable reference implementation.
 
+## Supported Mods
+
+Ultimate Weight reads the contents of modded storage items so an item's weight scales with what it holds, and counts items worn in extra equipment slots (Baubles / Curios). **Any item that exposes a standard item-handler capability is supported automatically**; the mods below additionally get dedicated handling for their custom storage. Compatibility patches load only when the target mod is present and are safe when it is absent.
+
+### 1.12.2 (Legacy Forge)
+
+| Mod | Supported |
+|---|---|
+| Baubles | Worn bauble items counted toward weight |
+| Traveler's Backpack | Worn + carried backpack contents |
+| Retro Sophisticated Backpacks | Backpack contents and installed upgrades |
+| GregTech (CE Unofficial) | Machine / item inventories |
+| HBM's Nuclear Tech | Storage crate contents |
+| Storage Drawers | Drawer contents |
+| *Any item with an `IItemHandler`* | Nested contents counted generically |
+
+### 1.20.1 (Forge)
+
+| Mod | Supported |
+|---|---|
+| Curios | Worn curio items counted toward weight |
+| Sophisticated Backpacks | Worn (Curios/chest) + carried contents, click-to-stash |
+| Traveler's Backpack | Worn + carried backpack contents |
+| GregTechCEu Modern | Machine inventories, including crates |
+| Superb Warfare | Ammo box (per-type ammo counts) |
+| Storage Drawers | Drawer contents |
+| *Any item with an `IItemHandler`* | Nested contents counted generically |
+
+The same registry the patches use is exposed as a public API, so other mods can register their own weight providers. On the 1.20.1 **Fabric** build, vanilla nested containers are counted, but the mod-specific handlers and the generic item-handler reader above are Forge-only.
+
 ## Configuration
 
 Configuration is version-specific:
