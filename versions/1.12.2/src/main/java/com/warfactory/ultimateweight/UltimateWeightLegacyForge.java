@@ -2,9 +2,12 @@ package com.warfactory.ultimateweight;
 
 import com.warfactory.ultimateweight.runtime.UltimateWeightServices;
 import com.warfactory.ultimateweight.v1122.UltimateWeightCommonProxy1122;
+import com.warfactory.ultimateweight.v1122.groovy.UltimateWeightGroovyPlugin;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
@@ -14,9 +17,16 @@ import zone.rong.mixinbooter.ILateMixinLoader;
 import java.util.Collections;
 import java.util.List;
 
-@Mod(modid = UltimateWeightCommon.MOD_ID, name = UltimateWeightCommon.MOD_NAME, version = "0.1.0")
+@Mod(modid = UltimateWeightCommon.MOD_ID, name = UltimateWeightCommon.MOD_NAME, version = "0.1.0", dependencies = "after:groovyscript")
 public class UltimateWeightLegacyForge implements ILateMixinLoader {
-    private static final Logger LOGGER = LogManager.getLogger(UltimateWeightCommon.MOD_ID);
+
+    public static final Logger LOGGER = LogManager.getLogger(UltimateWeightCommon.MOD_ID);
+
+    @Mod.EventHandler
+    public void onConstruction(FMLConstructionEvent event) {
+        if(Loader.isModLoaded("groovyscript"))
+            MinecraftForge.EVENT_BUS.register(UltimateWeightGroovyPlugin.class);
+    }
 
     @SidedProxy(
         clientSide = "com.warfactory.ultimateweight.v1122.client.UltimateWeightClientProxy1122",

@@ -116,6 +116,13 @@ public final class UltimateWeightCommon {
     private static UltimateWeightServices rebuildActiveServices() {
         WeightConfig base = BASE_CONFIG.get();
         if (base == null) {
+            if (CONFIG_LOADER.get() == null) {
+                // The config system isn't ready yet - e.g. a scripting load event (GroovyScript's
+                // PRE_INIT pass) fired before this mod installed its config loader. The configurator
+                // is already stored, so just leave it: bootstrap()/applyLocalConfig() will apply it
+                // once the loader is installed and the base config is loaded.
+                return SERVICES.get();
+            }
             base = loadBundledConfig();
             BASE_CONFIG.set(base);
         }

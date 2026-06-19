@@ -7,9 +7,15 @@ import com.cleanroommc.groovyscript.event.GroovyReloadEvent;
 import com.cleanroommc.groovyscript.event.ScriptRunEvent;
 import com.cleanroommc.groovyscript.sandbox.LoadStage;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
+import com.warfactory.ultimateweight.UltimateWeightLegacyForge;
 import com.warfactory.ultimateweight.config.ScriptConfigBridge;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Optional;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * GroovyScript compatibility plugin. GroovyScript discovers any class implementing
@@ -21,10 +27,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
  * of a load - the first-load {@code PRE_INIT} pass and the reload event - then let edits accumulate
  * across stages and apply eagerly.</p>
  */
+
+@Optional.Interface(modid = "groovyscript",
+        iface = "com.cleanroommc.groovyscript.api.GroovyPlugin",
+        striprefs = true)
 public final class UltimateWeightGroovyPlugin implements GroovyPlugin {
 
     private final UltimateWeightGroovyContainer container = new UltimateWeightGroovyContainer();
-    private boolean listenerRegistered;
 
     @Override
     public String getModId() {
@@ -43,14 +52,22 @@ public final class UltimateWeightGroovyPlugin implements GroovyPlugin {
 
     @Override
     public void onCompatLoaded(GroovyContainer<?> owner) {
-        if (!listenerRegistered) {
-            MinecraftForge.EVENT_BUS.register(this);
-            listenerRegistered = true;
-        }
+        UltimateWeightLegacyForge.LOGGER.info("Groovy compat loaded!");
+    }
+
+    @Override
+    public Collection<String> getAliases() {
+        Collection<String> info = new ArrayList<>();
+        info.add(UltimateWeightCommon.MOD_NAME);
+        info.add("wfw");
+        info.add("wfweight");
+        info.add("UltimateWeight");
+        return info;
     }
 
     @SubscribeEvent
-    public void onScriptRunPre(ScriptRunEvent.Pre event) {
+    @Optional.Method(modid = "groovyscript")
+    public static void onScriptRunPre(ScriptRunEvent.Pre event) {
         // First load begins with the PRE_INIT stage; reset there so postInit edits accumulate on top.
         if (event.getLoadStage() == LoadStage.PRE_INIT) {
             ScriptConfigBridge.begin();
@@ -58,7 +75,8 @@ public final class UltimateWeightGroovyPlugin implements GroovyPlugin {
     }
 
     @SubscribeEvent
-    public void onGroovyReload(GroovyReloadEvent event) {
+    @Optional.Method(modid = "groovyscript")
+    public static void onGroovyReload(GroovyReloadEvent event) {
         // Fired once per /reload, right before the reloadable scripts run again.
         ScriptConfigBridge.begin();
     }
