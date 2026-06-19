@@ -6,11 +6,11 @@ It is designed around performance-first inventory tracking rather than the brute
 
 It is built around a shared core with version-specific runtime hooks. The mod currently targets:
 
-| Minecraft | Loaders |
-|---|---|
-| `1.12.2` | Legacy Forge |
-| `1.20.1` | Fabric, Forge |
-| `1.21.1` | NeoForge, LexForge |
+| Minecraft          | Loaders          |
+|--------------------|------------------|
+| `1.12.2`           | Legacy Forge     |
+| `1.20.1`           | Fabric, Forge    |
+| `1.21.1 (planned)` | NeoForge, LexForge |
 
 [//]: # (| `26.1` | Fabric |)
 
@@ -28,23 +28,6 @@ It is built around a shared core with version-specific runtime hooks. The mod cu
 - Optional stamina drain from sprinting and jumping
 - Nested inventory weight support
 - Mod compatibility patches and API for mod developers
-
-## Current Focus
-
-`1.12.2` is the frontier version.
-
-That branch includes:
-
-- player capability storage
-- server/client sync for weight and stamina
-- event-driven inventory delta updates
-- nested item/container handling
-- client-side transfer blocking to reduce ghosting
-- compatibility patch loading without accidental optional-class crashes
-
-`1.20.1` is still a work in progress.
-
-It already has the shared runtime, HUD, syncing, stamina systems, and the current inventory hook refactor, but it should still be treated as an active port rather than the stable reference implementation.
 
 ## Supported Mods
 
