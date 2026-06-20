@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "package": "com.warfactory.ultimateweight.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractContainerMenuMixin",
+    "ItemEntityMixin",
+    "LivingEntityMixin",
+    "SophisticatedBackpackContentsMixin"
+  ],
+  "client": [
+    "InventoryMixin",
+    "LocalPlayerMixin",
+    "MultiPlayerGameModeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

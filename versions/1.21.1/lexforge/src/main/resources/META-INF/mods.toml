@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "${lexforge_loader_version_range}"
+loaderVersion = "[52,)"
 license = "${license}"
 
 [[mods]]
@@ -12,7 +12,7 @@ authors = "${mod_author}"
 [[dependencies.${mod_id}]]
 modId = "forge"
 mandatory = true
-versionRange = "${lexforge_loader_version_range}"
+versionRange = "[52,)"
 ordering = "NONE"
 side = "BOTH"
 

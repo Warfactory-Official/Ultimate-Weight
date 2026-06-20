@@ -75,6 +75,23 @@ prism {
     version("1.21.1") {
         neoforge {
             loaderVersion = "21.1.222"
+            dependencies {
+
+                modCompileOnly("curse.maven:travelers-backpack-321117:8120689")
+                modRuntimeOnly("curse.maven:travelers-backpack-321117:8120689")
+
+                modCompileOnly("curse.maven:sophisticated-backpacks-422301:8272377")
+                modRuntimeOnly("curse.maven:sophisticated-backpacks-422301:8272377")
+
+                modCompileOnly("curse.maven:storage-drawers-223852:6995432")
+                modRuntimeOnly("curse.maven:storage-drawers-223852:6995432")
+
+
+                modCompileOnly("curse.maven:kubejs-238086:8083208")
+                modRuntimeOnly("curse.maven:kubejs-238086:8083208")
+
+            }
+
         }
         lexForge {
             loaderVersion = "52.1.9"
@@ -204,7 +221,7 @@ project(":1.20.1:forge") {
 
 // Wire the @CompatPlugin annotation processor into every module that hosts plugin classes, so each
 // jar carries its own META-INF/wfweight/compat-plugins.txt index that WeightCompatBootstrap reads.
-listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric").forEach { path ->
+listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:common", ":1.21.1:neoforge", ":1.21.1:lexforge").forEach { path ->
     project(path) {
         plugins.withType<JavaPlugin> {
             dependencies {
@@ -223,6 +240,19 @@ project(":1.12.2") {
     plugins.withId("com.gtnewhorizons.retrofuturagradle") {
         tasks.named<ReobfuscatedJar>("reobfJar") {
             inputJar.set(tasks.named<Jar>("shadowJar").flatMap { it.archiveFile })
+        }
+    }
+}
+
+// Prism auto-adds the SpongePowered Mixin annotation processor to the LexForge module, where it runs
+// in reobfuscation mode and fails ("Unable to locate obfuscation mapping for @Inject target ...")
+// because Forge 1.21.1 - like NeoForge - runs on official Mojang names, so no refmap is needed. The
+// shared 1.21.x mixins compile and resolve by official names exactly as they do on NeoForge (which
+// carries no refmap either), so drop the AP here to let the common mixins compile.
+project(":1.21.1:lexforge") {
+    plugins.withType<JavaPlugin> {
+        configurations.matching { it.name == "annotationProcessor" }.configureEach {
+            exclude(group = "org.spongepowered", module = "mixin")
         }
     }
 }
