@@ -112,6 +112,11 @@ jobs:
           :1.12.2:build
           :1.20.1:fabric:build
           :1.20.1:forge:build
+          :1.21.1:fabric:build
+          :1.21.1:neoforge:build
+          :1.21.1:neoforge:shadowJar
+          :1.21.1:lexforge:build
+          :1.21.1:lexforge:shadowJar
 
       - name: Stage release jars
         env:
@@ -123,6 +128,9 @@ jobs:
             "versions/1.12.2/build/libs/wfweight-1.12.2-Forge-${RELEASE_VERSION}.jar"
             "versions/1.20.1/fabric/build/libs/wfweight-1.20.1-Fabric-${RELEASE_VERSION}.jar"
             "versions/1.20.1/forge/build/libs/wfweight-1.20.1-Forge-${RELEASE_VERSION}.jar"
+            "versions/1.21.1/fabric/build/libs/wfweight-1.21.1-Fabric-${RELEASE_VERSION}.jar"
+            "versions/1.21.1/neoforge/build/libs/wfweight-1.21.1-NeoForge-${RELEASE_VERSION}.jar"
+            "versions/1.21.1/lexforge/build/libs/wfweight-1.21.1-LexForge-${RELEASE_VERSION}.jar"
           )
 
           for artifact in "${artifacts[@]}"; do
@@ -234,6 +242,63 @@ jobs:
           loaders: forge
           game-versions: 1.20.1
           java: 17
+          retry-attempts: 3
+          retry-delay: 10000
+
+      - name: Publish 1.21.1 NeoForge
+        uses: Kira-NT/mc-publish@v3.3.0
+        with:
+          curseforge-id: ${{ env.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          modrinth-id: ${{ env.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: dist/wfweight-1.21.1-NeoForge-${{ env.RELEASE_VERSION }}.jar
+          name: Warfactory Ultimate Weight ${{ env.RELEASE_VERSION }} for Minecraft 1.21.1 NeoForge
+          curseforge-version: ${{ env.RELEASE_VERSION }}
+          modrinth-version: ${{ env.RELEASE_VERSION }}+mc1.21.1-neoforge
+          version-type: ${{ env.RELEASE_TYPE }}
+          changelog-file: dist/release-notes.md
+          loaders: neoforge
+          game-versions: 1.21.1
+          java: 21
+          retry-attempts: 3
+          retry-delay: 10000
+
+      - name: Publish 1.21.1 Forge (LexForge)
+        uses: Kira-NT/mc-publish@v3.3.0
+        with:
+          curseforge-id: ${{ env.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          modrinth-id: ${{ env.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: dist/wfweight-1.21.1-LexForge-${{ env.RELEASE_VERSION }}.jar
+          name: Warfactory Ultimate Weight ${{ env.RELEASE_VERSION }} for Minecraft 1.21.1 Forge
+          curseforge-version: ${{ env.RELEASE_VERSION }}
+          modrinth-version: ${{ env.RELEASE_VERSION }}+mc1.21.1-forge
+          version-type: ${{ env.RELEASE_TYPE }}
+          changelog-file: dist/release-notes.md
+          loaders: forge
+          game-versions: 1.21.1
+          java: 21
+          retry-attempts: 3
+          retry-delay: 10000
+
+      - name: Publish 1.21.1 Fabric
+        uses: Kira-NT/mc-publish@v3.3.0
+        with:
+          curseforge-id: ${{ env.CURSEFORGE_PROJECT_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          modrinth-id: ${{ env.MODRINTH_PROJECT_ID }}
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: dist/wfweight-1.21.1-Fabric-${{ env.RELEASE_VERSION }}.jar
+          name: Warfactory Ultimate Weight ${{ env.RELEASE_VERSION }} for Minecraft 1.21.1 Fabric
+          curseforge-version: ${{ env.RELEASE_VERSION }}
+          modrinth-version: ${{ env.RELEASE_VERSION }}+mc1.21.1-fabric
+          version-type: ${{ env.RELEASE_TYPE }}
+          changelog-file: dist/release-notes.md
+          loaders: fabric
+          game-versions: 1.21.1
+          java: 21
           retry-attempts: 3
           retry-delay: 10000
 

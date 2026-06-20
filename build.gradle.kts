@@ -221,7 +221,7 @@ project(":1.20.1:forge") {
 
 // Wire the @CompatPlugin annotation processor into every module that hosts plugin classes, so each
 // jar carries its own META-INF/wfweight/compat-plugins.txt index that WeightCompatBootstrap reads.
-listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:common", ":1.21.1:neoforge", ":1.21.1:lexforge").forEach { path ->
+listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:common", ":1.21.1:neoforge", ":1.21.1:lexforge", ":1.21.1:fabric").forEach { path ->
     project(path) {
         plugins.withType<JavaPlugin> {
             dependencies {

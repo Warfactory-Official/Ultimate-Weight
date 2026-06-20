@@ -36,6 +36,11 @@ jobs:
           :1.12.2:build
           :1.20.1:fabric:build
           :1.20.1:forge:build
+          :1.21.1:fabric:build
+          :1.21.1:neoforge:build
+          :1.21.1:neoforge:shadowJar
+          :1.21.1:lexforge:build
+          :1.21.1:lexforge:shadowJar
 
       - name: Upload jars
         uses: actions/upload-artifact@v4
@@ -46,6 +51,9 @@ jobs:
             versions/1.12.2/build/libs/*.jar
             versions/1.20.1/fabric/build/libs/*.jar
             versions/1.20.1/forge/build/libs/*.jar
+            versions/1.21.1/fabric/build/libs/*.jar
+            versions/1.21.1/neoforge/build/libs/*.jar
+            versions/1.21.1/lexforge/build/libs/*.jar
             !versions/**/build/libs/*-dev.jar
             !versions/**/build/libs/*-sources.jar
             !versions/**/build/libs/*-javadoc.jar
@@ -84,5 +92,5 @@ jobs:
           gh release create "$SNAPSHOT_TAG" "${jars[@]}" \
             --target "$GITHUB_SHA" \
             --title "Snapshots" \
-            --notes "Rolling snapshot build for Minecraft 1.12.2 and 1.20.1 from commit $GITHUB_SHA." \
+            --notes "Rolling snapshot build for Minecraft 1.12.2, 1.20.1 and 1.21.1 from commit $GITHUB_SHA." \
             --prerelease

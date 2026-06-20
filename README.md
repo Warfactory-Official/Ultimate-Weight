@@ -6,11 +6,11 @@ It is designed around performance-first inventory tracking rather than the brute
 
 It is built around a shared core with version-specific runtime hooks. The mod currently targets:
 
-| Minecraft          | Loaders          |
-|--------------------|------------------|
-| `1.12.2`           | Legacy Forge     |
-| `1.20.1`           | Fabric, Forge    |
-| `1.21.1 (planned)` | NeoForge, LexForge |
+| Minecraft | Loaders                    |
+|-----------|----------------------------|
+| `1.12.2`  | Legacy Forge               |
+| `1.20.1`  | Fabric, Forge              |
+| `1.21.1`  | NeoForge, LexForge, Fabric |
 
 [//]: # (| `26.1` | Fabric |)
 
@@ -61,6 +61,19 @@ Ultimate Weight reads the contents of modded storage items so an item's weight s
 
 Every integration above is a `@CompatPlugin` discovered at load time, and the same hooks are exposed as a public API so other mods (or you) can add support without forking — see [`COMPATIBILITY.md`](./COMPATIBILITY.md). On the 1.20.1 **Fabric** build, vanilla nested containers are counted, but the mod-specific handlers and the generic item-handler reader above are Forge-only.
 
+### 1.21.1 (NeoForge, LexForge, Fabric)
+
+| Mod | Supported |
+|---|---|
+| Curios | Worn curio items counted toward weight |
+| Sophisticated Backpacks | Worn (Curios) + carried backpack contents |
+| Traveler's Backpack | Worn + carried backpack contents |
+| Storage Drawers | Drawer contents |
+| KubeJS | Define item / inventory weights from scripts (NeoForge) |
+| *Any item with an `IItemHandler`* | Nested contents counted generically (NeoForge, LexForge) |
+
+Stored contents are read through the standard item-handler capability and the modern `minecraft:container` data component, so most modded containers and vanilla shulker boxes are counted automatically. On the 1.21.1 **Fabric** build there are no backpack-mod integrations bundled and the Forge item-handler reader is absent, but vanilla nested containers are still counted via the `minecraft:container` component; stamina persists across death, dimension change and relog through Fabric data attachments.
+
 ## Configuration
 
 Configuration is version-specific:
@@ -68,6 +81,8 @@ Configuration is version-specific:
 - `1.12.2`
   `config/wfweight/weight_config_1_12.yaml`
 - `1.20.1`
+  `config/wfweight/weight_config_modern.yaml`
+- `1.21.1`
   `config/wfweight/weight_config_modern.yaml`
 
 Full reference:
@@ -86,10 +101,10 @@ versions/
     fabric/
     forge/
   1.21.1/
+    common/                     shared 1.21.1 runtime (DataComponents bridge)
     neoforge/
     lexforge/
-  26.1/
-    src/
+    fabric/
 ```
 
 ## Building
@@ -100,6 +115,10 @@ versions/
 ./gradlew :1.20.1:common:build
 ./gradlew :1.20.1:fabric:build
 ./gradlew :1.20.1:forge:build
+./gradlew :1.21.1:common:build
+./gradlew :1.21.1:neoforge:build
+./gradlew :1.21.1:lexforge:build
+./gradlew :1.21.1:fabric:build
 ```
 
 For targeted compile checks during development:
@@ -109,6 +128,10 @@ For targeted compile checks during development:
 ./gradlew :1.20.1:common:compileJava
 ./gradlew :1.20.1:fabric:compileJava
 ./gradlew :1.20.1:forge:compileJava
+./gradlew :1.21.1:common:compileJava
+./gradlew :1.21.1:neoforge:compileJava
+./gradlew :1.21.1:lexforge:compileJava
+./gradlew :1.21.1:fabric:compileJava
 ```
 
 
