@@ -1,11 +1,12 @@
 package com.warfactory.ultimateweight.fabric;
 
 import com.warfactory.ultimateweight.UltimateWeightCommon;
-import com.warfactory.ultimateweight.api.WeightCompatRegistry;
+import com.warfactory.ultimateweight.compat.ModPresenceChecker;
+import com.warfactory.ultimateweight.compat.WeightCompatBootstrap;
 import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
 import com.warfactory.ultimateweight.v1201.UltimateWeightConfigFile1201;
 import com.warfactory.ultimateweight.v1201.WeightSyncTransport1201;
-import com.warfactory.ultimateweight.v1201.compat.CompatibilityNestedWeightProvider1201;
+import com.warfactory.ultimateweight.v1201.compat.CompatContext1201;
 import com.warfactory.ultimateweight.v1201.network.ConfigFragmentPacket1201;
 import com.warfactory.ultimateweight.v1201.network.StaminaUpdatePacket1201;
 import com.warfactory.ultimateweight.v1201.network.WeightUpdatePacket1201;
@@ -26,11 +27,11 @@ public final class UltimateWeightFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         UltimateWeightConfigFile1201.configure(FabricLoader.getInstance().getConfigDir());
-        WeightCompatRegistry.registerAll(
-            CompatibilityNestedWeightProvider1201.create(
-                (modId) -> FabricLoader.getInstance().isModLoaded(modId)
-            )
-        );
+        // Auto-discover @CompatPlugin classes (the shared common providers). Fabric previously had
+        // to register these by hand; the bootstrap now does it, so new common plugins light up here
+        // for free. Curios/Traveler's worn-slot plugins are Forge-only and simply absent here.
+        ModPresenceChecker mods = modId -> FabricLoader.getInstance().isModLoaded(modId);
+        WeightCompatBootstrap.run(getClass().getClassLoader(), mods, new CompatContext1201(mods));
         UltimateWeight1201.setTransport(new FabricTransport());
 
         ServerTickEvents.END_SERVER_TICK.register(UltimateWeight1201::onServerTick);

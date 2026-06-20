@@ -16,6 +16,10 @@ plugins {
 
 rootProject.name = "warfactory-ultimate-weight"
 
+// Standalone compile-time annotation processor that indexes @CompatPlugin classes. Plain Java
+// subproject (not a Minecraft module), so it is included directly rather than through prism.
+include("compat-processor")
+
 prism {
     sharedCommon("shared")
     version("1.20.1") {

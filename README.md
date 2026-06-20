@@ -33,6 +33,8 @@ It is built around a shared core with version-specific runtime hooks. The mod cu
 
 Ultimate Weight reads the contents of modded storage items so an item's weight scales with what it holds, and counts items worn in extra equipment slots (Baubles / Curios). **Any item that exposes a standard item-handler capability is supported automatically**; the mods below additionally get dedicated handling for their custom storage. Compatibility patches load only when the target mod is present and are safe when it is absent.
 
+> Support is modular: each integration is a single annotated `@CompatPlugin` class that the build auto-discovers. Adding a new mod — a nested container, an extra equip slot, or a capability-backed backpack — is one drop-in class. See **[`COMPATIBILITY.md`](./COMPATIBILITY.md)**.
+
 ### 1.12.2 (Legacy Forge)
 
 | Mod | Supported |
@@ -57,7 +59,7 @@ Ultimate Weight reads the contents of modded storage items so an item's weight s
 | Storage Drawers | Drawer contents |
 | *Any item with an `IItemHandler`* | Nested contents counted generically |
 
-The same registry the patches use is exposed as a public API, so other mods can register their own weight providers. On the 1.20.1 **Fabric** build, vanilla nested containers are counted, but the mod-specific handlers and the generic item-handler reader above are Forge-only.
+Every integration above is a `@CompatPlugin` discovered at load time, and the same hooks are exposed as a public API so other mods (or you) can add support without forking — see [`COMPATIBILITY.md`](./COMPATIBILITY.md). On the 1.20.1 **Fabric** build, vanilla nested containers are counted, but the mod-specific handlers and the generic item-handler reader above are Forge-only.
 
 ## Configuration
 
@@ -75,7 +77,8 @@ Full reference:
 ## Project Layout
 
 ```text
-shared/                         shared non-Minecraft logic
+shared/                         shared non-Minecraft logic (incl. compat plugin framework)
+compat-processor/               build-time @CompatPlugin index generator
 versions/
   1.12.2/                       Legacy Forge implementation
   1.20.1/

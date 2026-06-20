@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
@@ -13,6 +14,7 @@ import java.util.OptionalDouble;
 import java.util.Set;
 
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "hbm")
 public final class HbmStorageCrateWeightPatch1122 implements IWeightCompatProvider {
     private static final String PERSISTENT = "persistent";
     private static final double EPSILON = 0.000001D;

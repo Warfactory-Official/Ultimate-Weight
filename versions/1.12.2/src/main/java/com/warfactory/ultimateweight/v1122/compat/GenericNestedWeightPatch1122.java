@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
@@ -11,6 +12,8 @@ import net.minecraftforge.items.IItemHandler;
 
 import java.util.OptionalDouble;
 
+@CompatPlugin
+@SuppressWarnings("unused")
 public final class GenericNestedWeightPatch1122 implements IWeightCompatProvider {
     private static final double EPSILON = 0.000001D;
 

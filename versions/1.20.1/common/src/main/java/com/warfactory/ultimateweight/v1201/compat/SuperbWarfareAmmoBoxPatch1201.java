@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1201.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1201.WeightViews1201;
@@ -24,6 +25,7 @@ import java.util.OptionalDouble;
  * changes (no cache bypass needed).
  */
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "superbwarfare")
 public final class SuperbWarfareAmmoBoxPatch1201 implements IWeightCompatProvider {
     private static final String AMMO_BOX_ID = "superbwarfare:ammo_box";
     private static final double EPSILON = 0.000001D;

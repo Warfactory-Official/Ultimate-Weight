@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
@@ -10,6 +11,7 @@ import net.minecraft.nbt.NBTTagList;
 import java.util.OptionalDouble;
 
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "travelersbackpack")
 public final class TravelersBackpackWeightPatch1122 implements IWeightCompatProvider {
     private static final String ITEM_ID = "travelersbackpack:travelers_backpack";
     private static final String ITEMS = "Items";

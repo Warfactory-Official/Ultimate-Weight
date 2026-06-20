@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1201.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1201.WeightViews1201;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.OptionalDouble;
 
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "gtceu")
 public final class GregTechNestedWeightPatch1201 implements IWeightCompatProvider {
     private static final String MOD_ID = "gtceu";
     private static final String INVENTORY = "inventory";

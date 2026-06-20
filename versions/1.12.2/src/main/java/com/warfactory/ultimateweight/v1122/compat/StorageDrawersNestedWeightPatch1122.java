@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
@@ -11,6 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import java.util.OptionalDouble;
 
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "storagedrawers")
 public final class StorageDrawersNestedWeightPatch1122 implements IWeightCompatProvider {
     private static final String MOD_ID = "storagedrawers";
     private static final String TILE = "tile";

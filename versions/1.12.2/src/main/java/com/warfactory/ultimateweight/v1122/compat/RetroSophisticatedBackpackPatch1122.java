@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122.compat;
 
+import com.warfactory.ultimateweight.api.CompatPlugin;
 import com.warfactory.ultimateweight.api.IWeightCompatProvider;
 import com.warfactory.ultimateweight.core.WeightResolutionContext;
 import com.warfactory.ultimateweight.v1122.RetroSophisticatedBackpackSupport1122;
@@ -27,6 +28,7 @@ import java.util.OptionalDouble;
  * when capability contents change, so the live read above must run on every resolve.
  */
 @SuppressWarnings("unused")
+@CompatPlugin(requiredMods = "retro_sophisticated_backpacks")
 public class RetroSophisticatedBackpackPatch1122 implements IWeightCompatProvider {
     private static final double EPSILON = 0.000001D;
 

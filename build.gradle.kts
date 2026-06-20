@@ -202,6 +202,18 @@ project(":1.20.1:forge") {
     }
 }
 
+// Wire the @CompatPlugin annotation processor into every module that hosts plugin classes, so each
+// jar carries its own META-INF/wfweight/compat-plugins.txt index that WeightCompatBootstrap reads.
+listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric").forEach { path ->
+    project(path) {
+        plugins.withType<JavaPlugin> {
+            dependencies {
+                add("annotationProcessor", project(":compat-processor"))
+            }
+        }
+    }
+}
+
 // Prism wires shadow relocation into the reobf step only for moddev-based loaders. The 1.12.2 build
 // uses RetroFuturaGradle, whose `reobfJar` reobfuscates the thin `jar` task and never sees the
 // `shadowJar` - so the relocated snakeyaml/fastutil/caffeine never reached the published jar (it was

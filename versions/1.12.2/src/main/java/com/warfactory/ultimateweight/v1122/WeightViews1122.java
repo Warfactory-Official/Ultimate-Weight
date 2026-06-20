@@ -15,12 +15,73 @@ import net.minecraftforge.oredict.OreDictionary;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Predicate;
 
 public final class WeightViews1122 {
     private static final int MAX_NESTED_DEPTH = 4;
 
+    /**
+     * Extra worn-item sources contributed by compat plugins (Baubles slots, a Traveler's Backpack
+     * worn in its own capability and its cargo) - items outside the vanilla main/armor inventory
+     * that still need their weight counted. Registered once at startup.
+     */
+    private static final List<InventorySource> INVENTORY_SOURCES = new CopyOnWriteArrayList<InventorySource>();
+
+    /**
+     * Identifies stacks whose contents are dynamic / capability-backed (backpacks), so their weight
+     * cannot be trusted to a single-slot delta and (for those whose contents live outside the item
+     * tag) must not be frozen by the tag-hash cache. Set by compat plugins; defaults to "never".
+     */
+    private static volatile Predicate<ItemStack> dynamicContainer = stack -> false;
+
     private WeightViews1122() {
+    }
+
+    public static void registerInventorySource(InventorySource source) {
+        if (source != null) {
+            INVENTORY_SOURCES.add(source);
+        }
+    }
+
+    public static void setDynamicContainerPredicate(Predicate<ItemStack> predicate) {
+        dynamicContainer = predicate == null ? stack -> false : predicate;
+    }
+
+    public static boolean isDynamicContainer(ItemStack stack) {
+        return stack != null && !stack.isEmpty() && dynamicContainer.test(stack);
+    }
+
+    /**
+     * Worn-item source contributed by a compat plugin. Lets a plugin add items outside the vanilla
+     * main/armor inventory without WeightViews having to know about any specific mod.
+     */
+    @FunctionalInterface
+    public interface InventorySource {
+        void collect(EntityPlayer player, InventorySink sink);
+    }
+
+    /** Where an {@link InventorySource} deposits the items it finds. */
+    public interface InventorySink {
+        /** A worn item resolved normally; counts toward both total weight and equipment bonuses. */
+        void addWorn(ItemStack stack);
+
+        /** A worn item counted at its base configured weight only (no nested-content resolution). */
+        void addWornBase(ItemStack stack);
+
+        /** Cargo stored inside a worn container; counts toward total weight only, not equipment. */
+        void addCargo(ItemStack stack);
+    }
+
+    private static void collectWornInto(EntityPlayer player, InventorySink sink) {
+        for (InventorySource source : INVENTORY_SOURCES) {
+            try {
+                source.collect(player, sink);
+            } catch (Throwable ignored) {
+            }
+        }
     }
 
     public static WeightPlayerView player(EntityPlayer player) {
@@ -53,8 +114,7 @@ public final class WeightViews1122 {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
-        if (TravelersBackpackSupport1122.isBackpackStack(stack)
-            || RetroSophisticatedBackpackSupport1122.isBackpackStack(stack)) {
+        if (isDynamicContainer(stack)) {
             return true;
         }
         return UltimateWeightCommon.bootstrap().resolver().resolve(new StackView(stack, 0)).source()
@@ -101,51 +161,70 @@ public final class WeightViews1122 {
         @Override
         public Iterable<? extends WeightStackView> inventory() {
             InventoryPlayer inventory = player.inventory;
-            ArrayList<WeightStackView> views = new ArrayList<WeightStackView>(inventory.getSizeInventory());
-            // The worn Traveler's Backpack is stored in a capability, never in the player's main
-            // inventory, so every loose inventory stack is counted normally. A loose backpack item
-            // resolves its own contents through TravelersBackpackWeightPatch1122; the worn one is
-            // added separately below as a base item plus its live contents.
-            ItemStack travelersBackpack = TravelersBackpackSupport1122.equippedBackpack(player);
+            final ArrayList<WeightStackView> views = new ArrayList<WeightStackView>(inventory.getSizeInventory());
+            // Vanilla main inventory. A loose backpack item here resolves its own contents through its
+            // weight provider; worn items (Baubles, a Traveler's Backpack worn in its capability and
+            // that backpack's cargo) are contributed by the registered inventory sources below.
             for (int index = 0; index < inventory.getSizeInventory(); index++) {
                 ItemStack stack = inventory.getStackInSlot(index);
                 if (!stack.isEmpty()) {
                     views.add(new StackView(stack, 0));
                 }
             }
-            for (ItemStack stack : BaublesSupport1122.equipped(player)) {
-                if (!stack.isEmpty()) {
-                    views.add(new StackView(stack, 0));
+            collectWornInto(player, new InventorySink() {
+                @Override
+                public void addWorn(ItemStack stack) {
+                    if (!stack.isEmpty()) {
+                        views.add(new StackView(stack, 0));
+                    }
                 }
-            }
-            if (!travelersBackpack.isEmpty()) {
-                views.add(new BaseStackView(travelersBackpack, 0));
-            }
-            for (ItemStack stack : TravelersBackpackSupport1122.contents(player)) {
-                if (!stack.isEmpty()) {
-                    views.add(new StackView(stack, 0));
+
+                @Override
+                public void addWornBase(ItemStack stack) {
+                    if (!stack.isEmpty()) {
+                        views.add(new BaseStackView(stack, 0));
+                    }
                 }
-            }
+
+                @Override
+                public void addCargo(ItemStack stack) {
+                    if (!stack.isEmpty()) {
+                        views.add(new StackView(stack, 0));
+                    }
+                }
+            });
             return views;
         }
 
         @Override
         public Iterable<? extends WeightStackView> equipped() {
-            ArrayList<WeightStackView> equipped = new ArrayList<WeightStackView>();
+            final ArrayList<WeightStackView> equipped = new ArrayList<WeightStackView>();
             for (ItemStack stack : player.inventory.armorInventory) {
                 if (!stack.isEmpty()) {
                     equipped.add(new StackView(stack, 0));
                 }
             }
-            for (ItemStack stack : BaublesSupport1122.equipped(player)) {
-                if (!stack.isEmpty()) {
-                    equipped.add(new StackView(stack, 0));
+            collectWornInto(player, new InventorySink() {
+                @Override
+                public void addWorn(ItemStack stack) {
+                    if (!stack.isEmpty()) {
+                        equipped.add(new StackView(stack, 0));
+                    }
                 }
-            }
-            ItemStack travelersBackpack = TravelersBackpackSupport1122.equippedBackpack(player);
-            if (!travelersBackpack.isEmpty()) {
-                equipped.add(new BaseStackView(travelersBackpack, 0));
-            }
+
+                @Override
+                public void addWornBase(ItemStack stack) {
+                    if (!stack.isEmpty()) {
+                        equipped.add(new BaseStackView(stack, 0));
+                    }
+                }
+
+                @Override
+                public void addCargo(ItemStack stack) {
+                    // Cargo stored in a worn container is not equipment; it is counted in the total
+                    // weight via inventory(), not here.
+                }
+            });
             return equipped;
         }
 
@@ -190,11 +269,11 @@ public final class WeightViews1122 {
 
         @Override
         public String complexCacheKey() {
-            // A Retro Sophisticated Backpack keeps its contents in a capability, not in the regular
-            // item tag, so the tag-hash cache key would never change when the contents do and the
-            // cached weight would freeze. Returning null bypasses the cache so the live capability
-            // is re-read on every resolve.
-            if (RetroSophisticatedBackpackSupport1122.isBackpackStack(stack)) {
+            // Dynamic containers (e.g. a Retro Sophisticated Backpack) keep their contents in a
+            // capability, not in the regular item tag, so the tag-hash cache key would never change
+            // when the contents do and the cached weight would freeze. Returning null bypasses the
+            // cache so the live contents are re-read on every resolve.
+            if (isDynamicContainer(stack)) {
                 return null;
             }
             return complexKey(stack, depth);
