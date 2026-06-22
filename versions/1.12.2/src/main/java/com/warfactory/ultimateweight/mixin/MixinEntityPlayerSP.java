@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = EntityPlayerSP.class, remap = false)
+@Mixin(EntityPlayerSP.class)
 public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
-    @Shadow(remap = false)
+    @Shadow
     public MovementInput movementInput;
 
     private static final double EPSILON = 0.000001D;
@@ -23,7 +23,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
         super(worldIn, playerProfile);
     }
 
-    @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true)
     private void ultimateweight$preventExhaustedSprint(boolean sprinting, CallbackInfo ci) {
         com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122 data =
             UltimateWeightState1122.resolveWeightData((EntityPlayerSP) (Object) this);
@@ -33,7 +33,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
         }
     }
 
-    @Inject(method = "onLivingUpdate()V", at = @At("TAIL"), remap = false)
+    @Inject(method = "onLivingUpdate()V", at = @At("TAIL"))
     private void ultimateweight$stopSprintWhileExhausted(CallbackInfo ci) {
         com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122 data =
             UltimateWeightState1122.resolveWeightData((EntityPlayerSP) (Object) this);

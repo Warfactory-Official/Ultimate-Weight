@@ -4,11 +4,16 @@ import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextComponentTranslation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public final class WeightManager {
     private static final double EPSILON = 0.000001D;
@@ -64,6 +69,105 @@ public final class WeightManager {
             player.sendStatusMessage(new TextComponentTranslation("message.wfweight.transfer_blocked"), true);
         }
         return allowed;
+    }
+
+    /**
+     * Captures the full menu state before a click that the predictive {@link #isTransferAllowed} gate
+     * permitted, so {@link #finishMenuClick} can authoritatively roll back any heavy or group-limit
+     * over-fill the predictive model cannot foresee (drag-distribute, multi-slot shift-click, ...).
+     * Returns {@code null} off the server, where no authoritative rollback is needed.
+     */
+    public static MenuClickSnapshot snapshotMenuClick(Container menu, EntityPlayer player, int clickedSlot) {
+        if (!(player instanceof EntityPlayerMP)) {
+            return null;
+        }
+
+        List<ItemStack> slotItems = new ArrayList<ItemStack>(menu.inventorySlots.size());
+        for (int index = 0; index < menu.inventorySlots.size(); index++) {
+            slotItems.add(menu.getSlot(index).getStack().copy());
+        }
+        return new MenuClickSnapshot(
+            slotItems,
+            player.inventory.getItemStack().copy(),
+            WeightViews1122.totalWeight(player),
+            clickedSlot,
+            UltimateWeightCommon.bootstrap().constraintEvaluator().resolveGroupLimitState(WeightViews1122.player(player))
+        );
+    }
+
+    /**
+     * Authoritative post-click check mirroring the 1.20.1/1.21.1 rollback. If the executed click pushed
+     * the player across the weight hard lock or worsened a group limit, the whole menu is restored to
+     * {@code snapshot} and the client is resynced - except when a dynamic (capability-backed) container
+     * was involved, whose contents live outside a restorable slot, so the change is accepted and the
+     * weight rescanned instead (rolling back slots there would dupe or lose the stashed item).
+     */
+    public static void finishMenuClick(Container menu, EntityPlayer player, MenuClickSnapshot snapshot) {
+        if (snapshot == null || !(player instanceof EntityPlayerMP)) {
+            return;
+        }
+        EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
+        if (serverPlayer.capabilities.isCreativeMode) {
+            return;
+        }
+
+        double afterWeightKg = WeightViews1122.totalWeight(serverPlayer);
+        InventoryConstraintEvaluator.GroupLimitState afterGroups =
+            UltimateWeightCommon.bootstrap().constraintEvaluator().resolveGroupLimitState(WeightViews1122.player(serverPlayer));
+        InventoryConstraintEvaluator.GroupLimitViolation violation =
+            UltimateWeightCommon.bootstrap().constraintEvaluator().findWorsenedViolation(snapshot.beforeGroups(), afterGroups);
+        boolean overweight = afterWeightKg + EPSILON >= UltimateWeightCommon.bootstrap().config().hardLockWeightKg()
+            && afterWeightKg > snapshot.beforeWeightKg() + EPSILON;
+        if (!overweight && violation == null) {
+            return;
+        }
+
+        if (involvesDynamicContainer(menu, serverPlayer, snapshot)) {
+            UltimateWeightState1122.markDirty(serverPlayer);
+            return;
+        }
+
+        restoreMenu(serverPlayer, menu, snapshot);
+        if (violation != null) {
+            serverPlayer.sendStatusMessage(
+                new TextComponentTranslation(
+                    "message.wfweight.group_limit_transfer_blocked",
+                    violation.label(),
+                    Integer.valueOf(violation.limit())
+                ),
+                true
+            );
+        } else {
+            serverPlayer.sendStatusMessage(new TextComponentTranslation("message.wfweight.transfer_blocked"), true);
+        }
+        UltimateWeightState1122.markDirty(serverPlayer);
+    }
+
+    private static void restoreMenu(EntityPlayerMP player, Container menu, MenuClickSnapshot snapshot) {
+        int slotCount = Math.min(snapshot.slotItems().size(), menu.inventorySlots.size());
+        for (int index = 0; index < slotCount; index++) {
+            menu.getSlot(index).putStack(snapshot.slotItems().get(index).copy());
+        }
+        player.inventory.setItemStack(snapshot.carried().copy());
+        // sendAllContents pushes a full SPacketWindowItems plus the cursor (SPacketSetSlot -1/-1), so
+        // the client's optimistic view of the rejected click is fully overwritten.
+        player.sendAllContents(menu, menu.getInventory());
+    }
+
+    private static boolean involvesDynamicContainer(Container menu, EntityPlayer player, MenuClickSnapshot snapshot) {
+        if (WeightViews1122.isDynamicContainer(player.inventory.getItemStack())
+            || WeightViews1122.isDynamicContainer(snapshot.carried())) {
+            return true;
+        }
+        int clickedSlot = snapshot.clickedSlot();
+        if (clickedSlot >= 0
+            && clickedSlot < menu.inventorySlots.size()
+            && WeightViews1122.isDynamicContainer(menu.getSlot(clickedSlot).getStack())) {
+            return true;
+        }
+        return clickedSlot >= 0
+            && clickedSlot < snapshot.slotItems().size()
+            && WeightViews1122.isDynamicContainer(snapshot.slotItems().get(clickedSlot));
     }
 
     private static ItemStack addedStack(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
@@ -255,5 +359,48 @@ public final class WeightManager {
 
     private static double positiveDelta(double delta) {
         return delta > EPSILON ? delta : 0.0D;
+    }
+
+    /** Pre-click menu state captured for the authoritative post-click rollback in {@link #finishMenuClick}. */
+    public static final class MenuClickSnapshot {
+        private final List<ItemStack> slotItems;
+        private final ItemStack carried;
+        private final double beforeWeightKg;
+        private final int clickedSlot;
+        private final InventoryConstraintEvaluator.GroupLimitState beforeGroups;
+
+        private MenuClickSnapshot(
+            List<ItemStack> slotItems,
+            ItemStack carried,
+            double beforeWeightKg,
+            int clickedSlot,
+            InventoryConstraintEvaluator.GroupLimitState beforeGroups
+        ) {
+            this.slotItems = slotItems;
+            this.carried = carried;
+            this.beforeWeightKg = beforeWeightKg;
+            this.clickedSlot = clickedSlot;
+            this.beforeGroups = beforeGroups;
+        }
+
+        private List<ItemStack> slotItems() {
+            return slotItems;
+        }
+
+        private ItemStack carried() {
+            return carried;
+        }
+
+        private double beforeWeightKg() {
+            return beforeWeightKg;
+        }
+
+        private int clickedSlot() {
+            return clickedSlot;
+        }
+
+        private InventoryConstraintEvaluator.GroupLimitState beforeGroups() {
+            return beforeGroups;
+        }
     }
 }

@@ -8,13 +8,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = InventoryPlayer.class, remap = false)
+@Mixin(InventoryPlayer.class)
 public abstract class InventoryPlayerMixin {
 
     @Inject(
             method = "setInventorySlotContents",
-            at = @At("HEAD"),
-            remap = false
+            at = @At("HEAD")
     )
     private void onSetInventorySlotContents(int index, ItemStack stack, CallbackInfo ci) {
         // (Object) this cast is required to satisfy the compiler when casting a Mixin to its target class

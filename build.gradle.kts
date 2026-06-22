@@ -3,6 +3,7 @@ plugins {
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.gtnewhorizons.retrofuturagradle.mcp.GenSrgMappingsTask
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.JavaPlugin
@@ -238,8 +239,57 @@ listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:
 // relocated `shadowJar` output instead, so the runtime jar bundles the shaded libraries.
 project(":1.12.2") {
     plugins.withId("com.gtnewhorizons.retrofuturagradle") {
+        // RetroFuturaGradle - unlike the moddev loaders - never runs the SpongePowered mixin
+        // annotation processor with SRG mappings, so no refmap/obf-SRG was ever produced. Without
+        // them, @Shadow/@Inject against vanilla members can only resolve by their literal dev (MCP)
+        // names. That works in the deobfuscated `runClient`, but in a production launcher the members
+        // carry SRG names (e.g. EntityPlayerSP.movementInput -> field_71158_b), so the mixin failed to
+        // apply ("@Shadow field movementInput was not located ... No refMap loaded"). Feed RFG's
+        // MCP->SRG mapping to the AP, which emits two artifacts:
+        //   - wfweight.refmap.json : remaps @Inject/@Redirect/@At string targets at runtime (bundled
+        //                            into the jar, read by Mixin in the searge environment).
+        //   - wfweight.mixins.srg  : renames the @Shadow field/method *declarations* in the mixin
+        //                            classes to their SRG names; fed to reobf so the shadowed members
+        //                            line up with the obfuscated target at runtime.
+        val refmapFile = layout.buildDirectory.file("mixin/wfweight.refmap.json")
+        val mixinSrgFile = layout.buildDirectory.file("mixin/wfweight.mixins.srg")
+        val genSrg = tasks.named<GenSrgMappingsTask>("generateForgeSrgMappings")
+        val mcpToSrg = genSrg.flatMap { it.mcpToSrg }
+
         tasks.named<ReobfuscatedJar>("reobfJar") {
             inputJar.set(tasks.named<Jar>("shadowJar").flatMap { it.archiveFile })
+            dependsOn("compileJava")
+            extraSrgFiles.from(mixinSrgFile)
+        }
+
+        // Only the main compile hosts the mixin sources; never touch RFG's Minecraft compiles.
+        tasks.withType<JavaCompile>().matching { it.name == "compileJava" }.configureEach {
+            dependsOn(genSrg)
+            inputs.file(mcpToSrg).withPropertyName("mixinReobfSrg")
+            outputs.file(refmapFile).withPropertyName("mixinRefmap")
+            outputs.file(mixinSrgFile).withPropertyName("mixinObfSrg")
+            doFirst {
+                val refmap = refmapFile.get().asFile
+                refmap.parentFile.mkdirs()
+                options.compilerArgs.addAll(
+                    listOf(
+                        "-AreobfSrgFile=${mcpToSrg.get().asFile.absolutePath}",
+                        "-AoutRefMapFile=${refmap.absolutePath}",
+                        "-AoutSrgFile=${mixinSrgFile.get().asFile.absolutePath}",
+                        "-AdefaultObfuscationEnv=searge"
+                    )
+                )
+            }
+        }
+
+        // The shadow plugin is applied after RFG, so defer these lookups via configureEach.
+        tasks.withType<Jar>().matching { it.name == "jar" }.configureEach {
+            dependsOn("compileJava")
+            from(refmapFile)
+        }
+        tasks.withType<ShadowJar>().configureEach {
+            dependsOn("compileJava")
+            from(refmapFile)
         }
     }
 }

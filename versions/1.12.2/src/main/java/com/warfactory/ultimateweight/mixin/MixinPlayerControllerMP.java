@@ -10,14 +10,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = PlayerControllerMP.class, remap = false)
+@Mixin(PlayerControllerMP.class)
 public abstract class MixinPlayerControllerMP {
 
     @Inject(
-        method = "windowClick(IIILnet/minecraft/inventory/ClickType;Lnet/minecraft/entity/player/EntityPlayer;)Lnet/minecraft/item/ItemStack;",
+        method = "windowClick",
         at = @At("HEAD"),
-        cancellable = true,
-        remap = false
+        cancellable = true
     )
     private void onWindowClick(
         int windowId,

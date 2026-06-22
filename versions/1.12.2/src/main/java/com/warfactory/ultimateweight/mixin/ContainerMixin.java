@@ -23,19 +23,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-@Mixin(value = Container.class, remap = false)
+@Mixin(Container.class)
 public abstract class ContainerMixin {
     @Unique
     private static final Logger ultimateweight$logger = LogManager.getLogger(UltimateWeightCommon.MOD_ID);
 
-    @Shadow(remap = false)
+    @Shadow
     public List<Slot> inventorySlots;
 
-    @Shadow(remap = false)
+    @Shadow
     public List<IContainerListener> listeners;
 
-    @Shadow(remap = false)
+    @Shadow
     public abstract NonNullList<ItemStack> getInventory();
+
+    @Unique
+    private WeightManager.MenuClickSnapshot ultimateweight$clickSnapshot;
 
     @Redirect(
             method = "detectAndSendChanges",
@@ -54,7 +57,7 @@ public abstract class ContainerMixin {
     }
 
 
-    @Inject(method = "slotClick", at = @At("HEAD"), cancellable = true, remap = false)
+    @Inject(method = "slotClick", at = @At("HEAD"), cancellable = true)
     private void ultimateweight$refuseOverweightTransfer(
         int slotId,
         int dragType,
@@ -62,12 +65,19 @@ public abstract class ContainerMixin {
         EntityPlayer player,
         CallbackInfoReturnable<ItemStack> callbackInfo
     ) {
+        this.ultimateweight$clickSnapshot = null;
         if (slotId < 0 || slotId >= this.inventorySlots.size()) {
             return;
         }
 
         Slot slot = this.inventorySlots.get(slotId);
-        if (slot == null || WeightManager.isTransferAllowed(player, slot, clickType, dragType)) {
+        if (slot == null) {
+            return;
+        }
+        if (WeightManager.isTransferAllowed(player, slot, clickType, dragType)) {
+            // Predictive gate allowed the click; snapshot the menu so the RETURN hook can authoritatively
+            // roll back any heavy/over-limit transfer it could not foresee (drag-distribute, etc.).
+            this.ultimateweight$clickSnapshot = WeightManager.snapshotMenuClick((Container) (Object) this, player, slotId);
             return;
         }
 
@@ -88,6 +98,21 @@ public abstract class ContainerMixin {
             ((EntityPlayerMP) player).sendAllContents((Container) (Object) this, this.getInventory());
         }
         callbackInfo.setReturnValue(ItemStack.EMPTY);
+    }
+
+    @Inject(method = "slotClick", at = @At("RETURN"))
+    private void ultimateweight$rollbackHeavyTransfer(
+        int slotId,
+        int dragType,
+        ClickType clickType,
+        EntityPlayer player,
+        CallbackInfoReturnable<ItemStack> callbackInfo
+    ) {
+        WeightManager.MenuClickSnapshot snapshot = this.ultimateweight$clickSnapshot;
+        this.ultimateweight$clickSnapshot = null;
+        if (snapshot != null) {
+            WeightManager.finishMenuClick((Container) (Object) this, player, snapshot);
+        }
     }
 
     @Unique

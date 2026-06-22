@@ -1,0 +1,270 @@
+[19:31:27] [main/INFO]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLTweaker
+[19:31:27] [main/INFO]: Using primary tweak class name net.minecraftforge.fml.common.launcher.FMLTweaker
+[19:31:27] [main/INFO]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLTweaker
+[19:31:27] [main/INFO]: Forge Mod Loader version 14.23.5.2859 for Minecraft 1.12.2 loading
+[19:31:27] [main/INFO]: Java is Java HotSpot(TM) 64-Bit Server VM, version 1.8.0_51, running on Windows 10:amd64:10.0, installed at C:\Users\igori\AppData\Roaming\.minecraft\runtime\jre-legacy\windows\jre-legacy
+[19:31:28] [main/INFO]: Searching C:\Users\igori\AppData\Roaming\.minecraft\versions\test2\mods for mods
+[19:31:28] [main/INFO]: Loading tweaker org.spongepowered.asm.launch.MixinTweaker from !mixinbooter-10.7.jar
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in CTM-MC1.12.2-1.0.2.31.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: The coremod team.chisel.ctm.client.asm.CTMCorePlugin does not have a MCVersion annotation, it may cause issues with this version of Minecraft
+[19:31:28] [main/WARN]: The coremod CTMCorePlugin (team.chisel.ctm.client.asm.CTMCorePlugin) is not signed!
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in ntm-ce-2.5.0.2.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: The coremod HbmCorePlugin (com.hbm.core.HbmCorePlugin) is not signed!
+[19:31:28] [main/INFO]: Loading tweaker optifine.OptiFineForgeTweaker from OptiFine-1.12.2_HD_U_G5.jar
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in tlskincape1.12.2-1.4.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in wfweight-1.12.2-Forge-1.0.0.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: The coremod wfweight (com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin) is not signed!
+[19:31:28] [main/INFO]: wfweight debug enabled. Initialized 1.12.2 mixin bootstrap.
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in xaerolib-forge-1.12.2-1.1.0.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: The coremod CorePlugin (xaero.lib.core.CorePlugin) is not signed!
+[19:31:28] [main/WARN]: Found FMLCorePluginContainsFMLMod marker in xaerominimap-forge-1.12.2-25.3.13.jar. This is not recommended, @Mods should be in a separate jar from the coremod.
+[19:31:28] [main/WARN]: The coremod XaeroMinimapPlugin (xaero.common.core.XaeroMinimapPlugin) is not signed!
+[19:31:28] [main/INFO]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[19:31:28] [main/INFO]: Loading tweak class name org.spongepowered.asm.launch.MixinTweaker
+[19:31:28] [main/INFO]: SpongePowered MIXIN Subsystem Version=0.8.7 Source=file:/C:/Users/igori/AppData/Roaming/.minecraft/versions/test2/mods/!mixinbooter-10.7.jar Service=LaunchWrapper Env=CLIENT
+[19:31:28] [main/DEBUG]: Instantiating coremod class MixinBooterPlugin
+[19:31:28] [main/TRACE]: coremod named MixinBooter is loading
+[19:31:28] [main/WARN]: The coremod zone.rong.mixinbooter.MixinBooterPlugin does not have a MCVersion annotation, it may cause issues with this version of Minecraft
+[19:31:28] [main/WARN]: The coremod MixinBooter (zone.rong.mixinbooter.MixinBooterPlugin) is not signed!
+[19:31:28] [main/INFO]: Initializing Mixins...
+[19:31:28] [main/INFO]: Compatibility level set to JAVA_8
+[19:31:28] [main/INFO]: Initializing MixinExtras...
+[19:31:28] [main/INFO]: Gathering present mods...
+[19:31:28] [main/INFO]: Finished gathering 8 coremods...
+[19:31:28] [main/DEBUG]: Enqueued coremod MixinBooter
+[19:31:28] [main/INFO]: Loading tweak class name optifine.OptiFineForgeTweaker
+[19:31:28] [main/INFO]: Loading tweak class name net.minecraftforge.fml.common.launcher.FMLDeobfTweaker
+[19:31:28] [main/INFO]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[19:31:28] [main/INFO]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLInjectionAndSortingTweaker
+[19:31:28] [main/INFO]: Calling tweak class optifine.OptiFineForgeTweaker
+[19:31:28] [main/INFO]: [optifine.OptiFineForgeTweaker:dbg:56]: OptiFineForgeTweaker: acceptOptions
+[19:31:28] [main/INFO]: [optifine.OptiFineForgeTweaker:dbg:56]: OptiFineForgeTweaker: injectIntoClassLoader
+[19:31:28] [main/INFO]: [optifine.OptiFineClassTransformer:dbg:242]: OptiFine ClassTransformer
+[19:31:28] [main/INFO]: [optifine.OptiFineClassTransformer:dbg:242]: OptiFine ZIP file: C:\Users\igori\AppData\Roaming\.minecraft\versions\test2\mods\OptiFine-1.12.2_HD_U_G5.jar
+[19:31:28] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:28] [main/DEBUG]: Injecting coremod FMLCorePlugin \{net.minecraftforge.fml.relauncher.FMLCorePlugin\} class transformers
+[19:31:28] [main/TRACE]: Registering transformer net.minecraftforge.fml.common.asm.transformers.SideTransformer
+[19:31:28] [main/TRACE]: Registering transformer net.minecraftforge.fml.common.asm.transformers.EventSubscriptionTransformer
+[19:31:28] [main/TRACE]: Registering transformer net.minecraftforge.fml.common.asm.transformers.EventSubscriberTransformer
+[19:31:28] [main/TRACE]: Registering transformer net.minecraftforge.fml.common.asm.transformers.SoundEngineFixTransformer
+[19:31:28] [main/DEBUG]: Injection complete
+[19:31:28] [main/DEBUG]: Running coremod plugin for FMLCorePlugin \{net.minecraftforge.fml.relauncher.FMLCorePlugin\}
+[19:31:28] [main/DEBUG]: Running coremod plugin FMLCorePlugin
+[19:31:29] [main/INFO]: Found valid fingerprint for Minecraft Forge. Certificate fingerprint e3c3d50c7c986df74c645c0ac54639741c90a557
+[19:31:30] [main/INFO]: Found valid fingerprint for Minecraft. Certificate fingerprint cd99959656f753dc28d863b46769f7f8fbaefcfc
+[19:31:30] [main/DEBUG]: Coremod plugin class FMLCorePlugin run successfully
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/DEBUG]: Injecting coremod FMLForgePlugin \{net.minecraftforge.classloading.FMLForgePlugin\} class transformers
+[19:31:30] [main/DEBUG]: Injection complete
+[19:31:30] [main/DEBUG]: Running coremod plugin for FMLForgePlugin \{net.minecraftforge.classloading.FMLForgePlugin\}
+[19:31:30] [main/DEBUG]: Running coremod plugin FMLForgePlugin
+[19:31:30] [main/DEBUG]: Coremod plugin class FMLForgePlugin run successfully
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/DEBUG]: Injecting coremod TLSkinCapeHookLoader \{org.tlauncher.skin.cape.asm.TLSkinCapeHookLoader\} class transformers
+[19:31:30] [main/TRACE]: Registering transformer gloomyfolken.hooklib.minecraft.PrimaryClassTransformer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Parsing hooks container gloomyfolken.hooklib.minecraft.SecondaryTransformerHook
+[19:31:30] [main/INFO]: [HOOKLIB]  Obfuscated: true
+[19:31:30] [main/DEBUG]: Injection complete
+[19:31:30] [main/DEBUG]: Running coremod plugin for TLSkinCapeHookLoader \{org.tlauncher.skin.cape.asm.TLSkinCapeHookLoader\}
+[19:31:30] [main/DEBUG]: Running coremod plugin TLSkinCapeHookLoader
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Parsing hooks container org.tlauncher.skin.cape.asm.TLSkinCapeHooks
+[19:31:30] [main/DEBUG]: Coremod plugin class TLSkinCapeHookLoader run successfully
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/DEBUG]: Injecting coremod CorePlugin \{xaero.lib.core.CorePlugin\} class transformers
+[19:31:30] [main/TRACE]: Registering transformer xaero.lib.core.transformer.PlayerListTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.lib.core.transformer.EntityPlayerMPTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.lib.core.transformer.NetHandlerPlayClientTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.lib.core.transformer.WorldClientTransformer
+[19:31:30] [main/DEBUG]: Injection complete
+[19:31:30] [main/DEBUG]: Running coremod plugin for CorePlugin \{xaero.lib.core.CorePlugin\}
+[19:31:30] [main/DEBUG]: Running coremod plugin CorePlugin
+[19:31:30] [main/DEBUG]: Coremod plugin class CorePlugin run successfully
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/DEBUG]: Injecting coremod XaeroMinimapPlugin \{xaero.common.core.XaeroMinimapPlugin\} class transformers
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.ChunkTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.NetHandlerPlayClientTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.EntityPlayerTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.AbstractClientPlayerTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.WorldClientTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.EntityPlayerMPTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.EntityPlayerSPTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.PlayerListTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.SaveFormatTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.GuiIngameForgeTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.KeyBindingTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.MinecraftServerTransformer
+[19:31:30] [main/TRACE]: Registering transformer xaero.common.core.transformer.ModelRendererTransformer
+[19:31:30] [main/DEBUG]: Injection complete
+[19:31:30] [main/DEBUG]: Running coremod plugin for XaeroMinimapPlugin \{xaero.common.core.XaeroMinimapPlugin\}
+[19:31:30] [main/DEBUG]: Running coremod plugin XaeroMinimapPlugin
+[19:31:30] [main/DEBUG]: Coremod plugin class XaeroMinimapPlugin run successfully
+[19:31:30] [main/INFO]: Calling tweak class org.spongepowered.asm.launch.MixinTweaker
+[19:31:30] [main/INFO]: Initialised Mixin FML Remapper Adapter with net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper@a0db585
+[19:31:30] [main/DEBUG]: Injecting coremod MixinBooter \{zone.rong.mixinbooter.MixinBooterPlugin\} class transformers
+[19:31:30] [main/DEBUG]: Injection complete
+[19:31:30] [main/DEBUG]: Running coremod plugin for MixinBooter \{zone.rong.mixinbooter.MixinBooterPlugin\}
+[19:31:30] [main/DEBUG]: Running coremod plugin MixinBooter
+[19:31:30] [main/INFO]: Loading early loader com.hbm.core.HbmCorePlugin for its mixins.
+[19:31:30] [main/INFO]: Adding [hbm.common.mixin.json] mixin configuration.
+[19:31:30] [main/INFO]: Adding [hbm.mod.mixin.json] mixin configuration.
+[19:31:30] [main/INFO]: Adding [hbm.vanilla.mixin.json] mixin configuration.
+[19:31:30] [main/INFO]: Loading early loader com.warfactory.ultimateweight.mixin.UltimateWeightLoadingPlugin for its mixins.
+[19:31:30] [main/INFO]: Adding [wfweight.mixins.json] mixin configuration.
+[19:31:30] [main/DEBUG]: Coremod plugin class MixinBooterPlugin run successfully
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.common.launcher.FMLDeobfTweaker
+[19:31:30] [main/DEBUG]: Validating minecraft
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Injecting hooks into class net.minecraftforge.fml.common.Loader
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Patching method net.minecraftforge.fml.common.Loader#injectData([Ljava/lang/Object;)
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Methods dictionary loaded in 3 ms
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.relauncher.CoreModManager$FMLPluginWrapper
+[19:31:30] [main/INFO]: Loading tweak class name net.minecraftforge.fml.common.launcher.TerminalTweaker
+[19:31:30] [main/INFO]: Loading tweak class name org.spongepowered.asm.mixin.EnvironmentStateTweaker
+[19:31:30] [main/INFO]: Calling tweak class net.minecraftforge.fml.common.launcher.TerminalTweaker
+[19:31:30] [main/INFO]: Calling tweak class org.spongepowered.asm.mixin.EnvironmentStateTweaker
+[19:31:30] [main/INFO]: [optifine.OptiFineForgeTweaker:dbg:56]: OptiFineForgeTweaker: getLaunchArguments
+[19:31:30] [main/WARN]: Reference map 'wfweight.refmap.json' for wfweight.mixins.json could not be read. If this is a development environment you can ignore this message
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinFMLProxyPacket from owner hbm, name: com.hbm.mixin.MixinFMLProxyPacket
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinNetworkDispatcher from owner hbm, name: com.hbm.mixin.MixinNetworkDispatcher
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinCompiledChunk from owner hbm, name: com.hbm.mixin.MixinCompiledChunk
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinSetVisibility from owner hbm, name: com.hbm.mixin.MixinSetVisibility
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinRenderChunk from owner hbm, name: com.hbm.mixin.MixinRenderChunk
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinRenderGlobal from owner hbm, name: com.hbm.mixin.MixinRenderGlobal
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinTileEntity from owner hbm, name: com.hbm.mixin.MixinTileEntity
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.common.mixin.json:MixinRenderPlayerManly from owner hbm, name: com.hbm.mixin.MixinRenderPlayerManly
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:base.MixinBufferBuilder from owner hbm, name: com.hbm.mixin.vanilla.base.MixinBufferBuilder
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:MixinRenderGlobal from owner hbm, name: com.hbm.mixin.vanilla.MixinRenderGlobal
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:celeritas.MixinRenderGlobal from owner hbm, name: com.hbm.mixin.vanilla.celeritas.MixinRenderGlobal
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:neonium.MixinBufferBuilder from owner hbm, name: com.hbm.mixin.vanilla.neonium.MixinBufferBuilder
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:neonium.MixinChunkRenderManager from owner hbm, name: com.hbm.mixin.vanilla.neonium.MixinChunkRenderManager
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:neonium.MixinRenderGlobal from owner hbm, name: com.hbm.mixin.vanilla.neonium.MixinRenderGlobal
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:neonium.MixinSodiumWorldRenderer from owner hbm, name: com.hbm.mixin.vanilla.neonium.MixinSodiumWorldRenderer
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:nothirium.MixinBufferBuilder from owner hbm, name: com.hbm.mixin.vanilla.nothirium.MixinBufferBuilder
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:nothirium.MixinBufferBuilderOptifine from owner hbm, name: com.hbm.mixin.vanilla.nothirium.MixinBufferBuilderOptifine
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:nothirium.MixinAbstractChunkRenderer from owner hbm, name: com.hbm.mixin.vanilla.nothirium.MixinAbstractChunkRenderer
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:nothirium.MixinRenderGlobal from owner hbm, name: com.hbm.mixin.vanilla.nothirium.MixinRenderGlobal
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:optifine.MixinBufferBuilder from owner hbm, name: com.hbm.mixin.vanilla.optifine.MixinBufferBuilder
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.vanilla.mixin.json:optifine.MixinRenderGlobal from owner hbm, name: com.hbm.mixin.vanilla.optifine.MixinRenderGlobal
+[19:31:30] [main/INFO]: Patching class net.minecraft.inventory.Container / afr
+[19:31:30] [main/INFO]: Patching method: detectAndSendChanges / func_75142_b
+[19:31:30] [main/INFO]: Injected hook at NonNullList#set site
+[19:31:30] [main/INFO]: A re-entrant transformer '$wrapper.com.hbm.core.HbmCoreTransformer' was detected and will no longer process meta class data
+[19:31:30] [main/INFO]: [xaero.common.core.transformer.ClassNodeTransformer:transform:29]: Transforming class bud net.minecraft.client.entity.EntityPlayerSP
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinBuiltRenderSectionData from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinBuiltRenderSectionData
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinCameraTransform from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinCameraTransform
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinCeleritasWorldRenderer from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinCeleritasWorldRenderer
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinChunkBuilderMeshingTask from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinChunkBuilderMeshingTask
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinDefaultChunkRenderer from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinDefaultChunkRenderer
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinOcclusionCuller from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinOcclusionCuller
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinRenderSectionManager from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinRenderSectionManager
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:celeritas.MixinViewport from owner hbm, name: com.hbm.mixin.mod.celeritas.MixinViewport
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:neonium.MixinChunkGraphNode from owner hbm, name: com.hbm.mixin.mod.neonium.MixinChunkGraphNode
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:neonium.MixinChunkRenderRebuildTask from owner hbm, name: com.hbm.mixin.mod.neonium.MixinChunkRenderRebuildTask
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:nothirium.MixinAbstractRenderChunk from owner hbm, name: com.hbm.mixin.mod.nothirium.MixinAbstractRenderChunk
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:nothirium.MixinRenderChunkTaskCompile from owner hbm, name: com.hbm.mixin.mod.nothirium.MixinRenderChunkTaskCompile
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:nothirium.MixinVisibilitySet from owner hbm, name: com.hbm.mixin.mod.nothirium.MixinVisibilitySet
+[19:31:30] [main/ERROR]: Classloader restrictions [PACKAGE_TRANSFORMER_EXCLUSION] encountered loading hbm.mod.mixin.json:optifine.MixinRenderItem from owner hbm, name: com.hbm.mixin.mod.optifine.MixinRenderItem
+[19:31:30] [main/INFO]: [xaero.common.core.transformer.ClassNodeTransformer:transform:29]: Transforming class bua net.minecraft.client.entity.AbstractClientPlayer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Injecting hooks into class net.minecraft.client.entity.AbstractClientPlayer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Patching method net.minecraft.client.entity.AbstractClientPlayer#getLocationSkin()Lnet/minecraft/util/ResourceLocation;
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Patching method net.minecraft.client.entity.AbstractClientPlayer#getLocationCape()Lnet/minecraft/util/ResourceLocation;
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Patching method net.minecraft.client.entity.AbstractClientPlayer#getSkinType()
+[19:31:30] [main/INFO]: Launching wrapped minecraft {net.minecraft.client.main.Main}
+[19:31:30] [main/INFO]: [xaero.common.core.transformer.ClassNodeTransformer:transform:29]: Transforming class aed net.minecraft.entity.player.EntityPlayer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Injecting hooks into class net.minecraft.entity.player.EntityPlayer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Patching method net.minecraft.entity.player.EntityPlayer#isWearing(Lnet/minecraft/entity/player/EnumPlayerModelParts;)
+[19:31:30] [main/INFO]: [xaero.common.core.transformer.ClassNodeTransformer:transform:29]: Transforming class bud net.minecraft.client.entity.EntityPlayerSP
+[19:31:30] [main/INFO]: Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.0).
+[19:31:30] [main/INFO]: [xaero.common.core.transformer.ClassNodeTransformer:transform:29]: Transforming class aed net.minecraft.entity.player.EntityPlayer
+[19:31:30] [main/INFO]: [gloomyfolken.hooklib.asm.HookLogger$SystemOutLogger:debug:20]: [DEBUG] Injecting hooks into class net.minecraft.entity.player.EntityPlayer
+[19:31:30] [main/FATAL]: Mixin apply for mod wfweight failed wfweight.mixins.json:MixinEntityPlayerSP from owner wfweight -> net.minecraft.client.entity.EntityPlayerSP: org.spongepowered.asm.mixin.transformer.throwables.InvalidMixinException @Shadow field movementInput was not located in the target class net.minecraft.client.entity.EntityPlayerSP. No refMap loaded.
+org.spongepowered.asm.mixin.transformer.throwables.InvalidMixinException: @Shadow field movementInput was not located in the target class net.minecraft.client.entity.EntityPlayerSP. No refMap loaded.
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.attachFields(MixinPreProcessorStandard.java:624) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.attach(MixinPreProcessorStandard.java:302) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.createContextFor(MixinPreProcessorStandard.java:277) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinInfo.createContextFor(MixinInfo.java:1286) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinApplicatorStandard.apply(MixinApplicatorStandard.java:203) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.TargetClassContext.apply(TargetClassContext.java:437) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.TargetClassContext.applyMixins(TargetClassContext.java:418) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.applyMixins(MixinProcessor.java:377) [!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClass(MixinTransformer.java:240) [!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClassBytes(MixinTransformer.java:208) [!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.Proxy.transform(Proxy.java:71) [!mixinbooter-10.7.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.runTransformers(LaunchClassLoader.java:279) [launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.findClass(LaunchClassLoader.java:176) [launchwrapper-1.12.jar:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) [?:1.8.0_51]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) [?:1.8.0_51]
+	at net.minecraft.client.main.Main.main(SourceFile:38) [Main.class:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_51]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_51]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_51]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[?:1.8.0_51]
+	at net.minecraft.launchwrapper.Launch.launch(Launch.java:135) [launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.Launch.main(Launch.java:28) [launchwrapper-1.12.jar:?]
+[19:31:30] [main/ERROR]: Unable to launch
+java.lang.reflect.InvocationTargetException: null
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_51]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62) ~[?:1.8.0_51]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[?:1.8.0_51]
+	at java.lang.reflect.Method.invoke(Method.java:497) ~[?:1.8.0_51]
+	at net.minecraft.launchwrapper.Launch.launch(Launch.java:135) [launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.Launch.main(Launch.java:28) [launchwrapper-1.12.jar:?]
+Caused by: java.lang.NoClassDefFoundError: net/minecraft/client/entity/EntityPlayerSP
+	at net.minecraft.client.main.Main.main(SourceFile:38) ~[Main.class:?]
+	... 6 more
+Caused by: java.lang.ClassNotFoundException: net.minecraft.client.entity.EntityPlayerSP
+	at net.minecraft.launchwrapper.LaunchClassLoader.findClass(LaunchClassLoader.java:191) ~[launchwrapper-1.12.jar:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[?:1.8.0_51]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[?:1.8.0_51]
+	at net.minecraft.client.main.Main.main(SourceFile:38) ~[Main.class:?]
+	... 6 more
+Caused by: org.spongepowered.asm.mixin.transformer.throwables.MixinTransformerError: An unexpected critical error was encountered
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.applyMixins(MixinProcessor.java:406) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClass(MixinTransformer.java:240) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClassBytes(MixinTransformer.java:208) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.Proxy.transform(Proxy.java:71) ~[!mixinbooter-10.7.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.runTransformers(LaunchClassLoader.java:279) ~[launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.findClass(LaunchClassLoader.java:176) ~[launchwrapper-1.12.jar:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[?:1.8.0_51]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[?:1.8.0_51]
+	at net.minecraft.client.main.Main.main(SourceFile:38) ~[Main.class:?]
+	... 6 more
+Caused by: org.spongepowered.asm.mixin.throwables.MixinApplyError: Mixin [wfweight.mixins.json:MixinEntityPlayerSP from owner wfweight] from phase [DEFAULT] in config [wfweight.mixins.json] FAILED during APPLY
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.handleMixinError(MixinProcessor.java:665) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.handleMixinApplyError(MixinProcessor.java:615) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.applyMixins(MixinProcessor.java:393) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClass(MixinTransformer.java:240) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClassBytes(MixinTransformer.java:208) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.Proxy.transform(Proxy.java:71) ~[!mixinbooter-10.7.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.runTransformers(LaunchClassLoader.java:279) ~[launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.findClass(LaunchClassLoader.java:176) ~[launchwrapper-1.12.jar:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[?:1.8.0_51]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[?:1.8.0_51]
+	at net.minecraft.client.main.Main.main(SourceFile:38) ~[Main.class:?]
+	... 6 more
+Caused by: org.spongepowered.asm.mixin.transformer.throwables.InvalidMixinException: @Shadow field movementInput was not located in the target class net.minecraft.client.entity.EntityPlayerSP. No refMap loaded.
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.attachFields(MixinPreProcessorStandard.java:624) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.attach(MixinPreProcessorStandard.java:302) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinPreProcessorStandard.createContextFor(MixinPreProcessorStandard.java:277) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinInfo.createContextFor(MixinInfo.java:1286) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinApplicatorStandard.apply(MixinApplicatorStandard.java:203) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.TargetClassContext.apply(TargetClassContext.java:437) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.TargetClassContext.applyMixins(TargetClassContext.java:418) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinProcessor.applyMixins(MixinProcessor.java:377) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClass(MixinTransformer.java:240) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.MixinTransformer.transformClassBytes(MixinTransformer.java:208) ~[!mixinbooter-10.7.jar:?]
+	at org.spongepowered.asm.mixin.transformer.Proxy.transform(Proxy.java:71) ~[!mixinbooter-10.7.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.runTransformers(LaunchClassLoader.java:279) ~[launchwrapper-1.12.jar:?]
+	at net.minecraft.launchwrapper.LaunchClassLoader.findClass(LaunchClassLoader.java:176) ~[launchwrapper-1.12.jar:?]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424) ~[?:1.8.0_51]
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357) ~[?:1.8.0_51]
+	at net.minecraft.client.main.Main.main(SourceFile:38) ~[Main.class:?]
+	... 6 more
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: net.minecraftforge.fml.relauncher.FMLSecurityManager$ExitTrappedException
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at net.minecraftforge.fml.relauncher.FMLSecurityManager.checkPermission(FMLSecurityManager.java:49)
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at java.lang.SecurityManager.checkExit(SecurityManager.java:761)
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at java.lang.Runtime.exit(Runtime.java:107)
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at java.lang.System.exit(System.java:971)
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at net.minecraft.launchwrapper.Launch.launch(Launch.java:138)
+[19:31:30] [main/INFO]: [java.lang.ThreadGroup:uncaughtException:1052]: 	at net.minecraft.launchwrapper.Launch.main(Launch.java:28)
