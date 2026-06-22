@@ -33,7 +33,13 @@ prism {
         lexForge()
         fabric()
     }
+    // MC 26.1 (NeoForge + Fabric) port is scaffolded under versions/26.1 but not yet wired into the
+    // build: NeoForge is blocked by prism 0.5.15 (injects shared shadow libs via MDG's removed
+    // `additionalRuntimeClasspath`), and Fabric still needs the 26.1 API migration (ClickType removal,
+    // GuiGraphics -> render-state extraction). Re-enable once those are resolved.
 //    version("26.1") {
+//        common()
+//        neoforge()
 //        fabric()
 //    }
     version("1.12.2") {

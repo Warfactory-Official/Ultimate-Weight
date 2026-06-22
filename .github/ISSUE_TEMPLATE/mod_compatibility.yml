@@ -1,0 +1,98 @@
+name: 🧩 Mod compatibility
+description: Another mod's storage/backpack/equip-slot isn't counted, or weight is wrong for its contents.
+title: "[Compat]: "
+labels: ["compatibility", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this when weight is **wrong or missing for items stored inside (or worn via) another mod**, e.g. a backpack's
+        contents aren't counted, a custom equip slot is ignored, or a machine inventory is double-counted.
+
+        Good to know first:
+        - **Anything exposing a standard item-handler capability is counted automatically** on Forge/NeoForge/LexForge builds.
+          If a generic container isn't counted, that itself is the bug — say so below.
+        - Adding dedicated support for a mod is **one `@CompatPlugin` class**. PRs welcome — see
+          [`COMPATIBILITY.md`](https://github.com/Warfactory-Official/Ultimate-Weight/blob/master/COMPATIBILITY.md).
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I searched existing issues for this mod.
+          required: true
+        - label: I checked the supported-mods list in the README for my MC version & loader.
+          required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Minecraft version & loader
+      options:
+        - "1.12.2 — Forge (Legacy)"
+        - "1.20.1 — Forge"
+        - "1.20.1 — Fabric"
+        - "1.21.1 — NeoForge"
+        - "1.21.1 — LexForge"
+        - "1.21.1 — Fabric"
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Ultimate Weight version
+      placeholder: "1.0.3"
+    validations:
+      required: true
+
+  - type: input
+    id: target-mod
+    attributes:
+      label: Which mod needs support?
+      description: Name, version, and a link (CurseForge/Modrinth) so we can test against the exact build.
+      placeholder: "Iron Backpacks 3.x.y — https://www.curseforge.com/minecraft/mc-mods/..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of compatibility?
+      options:
+        - "Container contents not counted (backpack / drawer / crate / machine)"
+        - "Worn equip-slot item not counted (Baubles / Curios / custom slot)"
+        - "Weight is wrong (double-counted / under-counted / lags behind changes)"
+        - "Nested container (container inside a container) not counted"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What's happening vs. what you expect
+      description: Describe the item/slot and how weight currently behaves vs. how it should.
+      placeholder: |
+        The "Adventurer's Pouch" from Mod X holds items but the HUD weight never changes when I fill it.
+        I expect its contents to add to my total weight like a vanilla shulker box does.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs (optional but helpful)
+      description: A `latest.log` from a session where you reproduced it helps us see how the storage is exposed. Link a gist/mclo.gs for long logs.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to open a PR adding a `@CompatPlugin` for this (we can guide you).
+          required: false

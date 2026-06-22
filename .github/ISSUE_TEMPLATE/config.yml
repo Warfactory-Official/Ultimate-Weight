@@ -1,0 +1,13 @@
+# Issue template chooser configuration
+# https://docs.github.com/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Question / usage help
+    url: https://github.com/Warfactory-Official/Ultimate-Weight/discussions
+    about: Not a bug? Ask in Discussions — questions, "is this supported", setup help, etc.
+  - name: ⚙️ Configuration reference
+    url: https://github.com/Warfactory-Official/Ultimate-Weight/blob/master/CONFIGURATION.md
+    about: Every config option explained. Read this before filing a "config doesn't work" bug.
+  - name: 🧩 Compatibility & developer API
+    url: https://github.com/Warfactory-Official/Ultimate-Weight/blob/master/COMPATIBILITY.md
+    about: How weight is read from modded storage, and how to add support yourself via @CompatPlugin.

@@ -1,0 +1,135 @@
+name: 🐞 Bug report
+description: Something is broken, crashing, or behaving incorrectly.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report! A clear bug report gets fixed *far* faster.
+
+        Before you start, please:
+        - **Search [existing issues](https://github.com/Warfactory-Official/Ultimate-Weight/issues?q=is%3Aissue)** — yours may already be reported.
+        - **Update to the latest version** and confirm the bug still happens.
+        - If weight looks *wrong* for a specific modded container, prefer the **Mod compatibility** template instead.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checklist
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I reproduced this on the latest version of the mod.
+          required: true
+        - label: I have read the relevant section of CONFIGURATION.md / COMPATIBILITY.md.
+          required: false
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Minecraft version & loader
+      description: Pick the exact build you are running. Each one is a different artifact.
+      options:
+        - "1.12.2 — Forge (Legacy)"
+        - "1.20.1 — Forge"
+        - "1.20.1 — Fabric"
+        - "1.21.1 — NeoForge"
+        - "1.21.1 — LexForge"
+        - "1.21.1 — Fabric"
+    validations:
+      required: true
+
+  - type: input
+    id: mod-version
+    attributes:
+      label: Ultimate Weight version
+      description: The exact jar version, e.g. `1.0.3` or a snapshot like `1.0.0-SNAPSHOT (commit abc1234)`.
+      placeholder: "1.0.3"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Where does it happen?
+      options:
+        - "Singleplayer"
+        - "Dedicated server + client"
+        - "LAN / integrated server"
+        - "Client-only (HUD/tooltip)"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug. What did you see go wrong?
+      placeholder: When I pick up a stack of cobblestone, the weight HUD drops to 0 and the movement penalty sticks even after I drop everything.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: Weight should increase with the picked-up items and the penalty should clear when I'm under the threshold.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps. The more deterministic, the faster this gets fixed.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: related-mods
+    attributes:
+      label: Modpack / related mods
+      description: |
+        If the bug involves another mod's inventory, backpack, or equip slot, name it **with its version**.
+        If you're on a public modpack, link it (with its version).
+      placeholder: |
+        - Modpack: "All the Mods 9" 0.x.y  (or "custom pack")
+        - Suspected interaction: Sophisticated Backpacks 3.x.y, Curios 5.x.y
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / crash report
+      description: |
+        **This is the most useful thing you can give us.** Upload `logs/latest.log` (and the crash report from `crash-reports/` if it crashed).
+        For long logs, paste a link to a [gist](https://gist.github.com) or [mclo.gs](https://mclo.gs) instead of dumping inline.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant config (if you changed defaults)
+      description: |
+        Paste the relevant part of your weight config if you've edited it.
+        `1.12.2` → `config/wfweight/weight_config_1_12.yaml` · `1.20.1`/`1.21.1` → `config/wfweight/weight_config_modern.yaml`
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, video, or extra context. (Drag & drop images here.)
+    validations:
+      required: false

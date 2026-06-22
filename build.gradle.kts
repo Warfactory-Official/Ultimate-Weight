@@ -5,6 +5,7 @@ plugins {
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.gtnewhorizons.retrofuturagradle.mcp.GenSrgMappingsTask
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar
+import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
@@ -52,6 +53,8 @@ prism {
         fabric {
             loaderVersion = "0.18.6"
             fabricApi("0.92.7+1.20.1")
+            // Second client (runClient2) is wired via Loom directly in the project(":1.20.1:fabric")
+            // block below - prism 0.5.15's `runs {}` bridge crashes on the Fabric path.
         }
         forge {
             loaderVersion = "47.4.18"
@@ -69,6 +72,8 @@ prism {
                 modCompileOnly("curse.maven:travelers-backpack-321117:7816782")
                 modRuntimeOnly("curse.maven:travelers-backpack-321117:7816782")
             }
+            // Second client (runClient2) is wired via ModDevGradle directly in the
+            // project(":1.20.1:forge") block below - prism 0.5.15's `runs {}` bridge is broken.
         }
     }
 
@@ -93,21 +98,35 @@ prism {
 
             }
 
+            // Second client (runClient2) is wired via ModDevGradle directly in the
+            // project(":1.21.1:neoforge") block below - prism 0.5.15's `runs {}` bridge is broken.
         }
         lexForge {
             loaderVersion = "52.1.9"
+            // Second client (runClient2) is wired via ForgeGradle directly in the
+            // project(":1.21.1:lexforge") block below - prism 0.5.15's `runs {}` bridge is broken.
         }
         fabric {
            loaderVersion = "0.16.14"
             fabricApi("0.116.11+1.21.1")
+            // Second client (runClient2) is wired via Loom directly in the project(":1.21.1:fabric")
+            // block below - prism 0.5.15's `runs {}` bridge crashes on the Fabric path.
         }
     }
 
-    // Single-loader: just fabric
+    // Minecraft 26.1 - NeoForge + Fabric (ported from the 1.21.1 DataComponents implementation).
+    // Optional mod integrations (Sophisticated/Traveler's Backpacks, Storage Drawers, KubeJS) are not
+    // wired yet because those mods have no 26.1 builds; the generic item-handler / container support
+    // and the core weight + stamina systems are.
+    // MC 26.1 port (versions/26.1) is scaffolded from the 1.21.1 DataComponents implementation but not
+    // yet wired in - see the note in settings.gradle.kts. Intended config once unblocked:
 //    version("26.1") {
+//        neoforge {
+//            loaderVersion = "26.1.1.0-beta"   // blocked: prism 0.5.15 vs MDG additionalRuntimeClasspath
+//        }
 //        fabric {
 //            loaderVersion = "0.18.6"
-//            fabricApi("0.145.2+26.1.1")
+//            fabricApi("0.145.2+26.1.1")       // needs 26.1 API migration (ClickType, GuiGraphics)
 //        }
 //    }
 
@@ -147,6 +166,64 @@ prism {
                 modRuntimeOnly("curse.maven:chameleon-230497:2450900")
 //                modRuntimeOnly("codechicken:codechickenlib:3.2.3.358")
 //                modRuntimeOnly("gregtech:gregtech:2.8.10-beta")
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Second dev client ("runClient2") for two-client / desync testing.
+//
+// prism 0.5.15's `runs { client("client2") }` DSL is broken for the loaders we ship: on Fabric its
+// reflective bridge picks Loom's Closure overload instead of the Action one ("argument type mismatch"),
+// and on ModDevGradle it assigns a File to the Directory-typed `gameDirectory`. So each loader's second
+// client is wired against the loader's own run DSL instead. Each registers a `runClient2` task and an
+// IDE run config with its own run dir + username, so the two clients never share a save lock /
+// options.txt / log. Typical workflow: build once, then launch `runClient` and `runClient2` from two
+// terminals (or the IDE) - one opens its world to LAN, the other joins.
+//   * Fabric (Loom)              -> here
+//   * Forge 1.20.1 (ModDevGradle)-> here
+//   * NeoForge 1.21.1 (MDG)      -> here
+//   * 1.12.2 (RetroFuturaGradle) -> via `-Pclient2` on runClient, in the project(":1.12.2") block below
+//   * LexForge 1.21.1            -> not wired (niche secondary loader); test 1.21.1 desync on NeoForge
+// ---------------------------------------------------------------------------------------------------
+listOf(":1.20.1:fabric", ":1.21.1:fabric").forEach { fabricPath ->
+    project(fabricPath) {
+        plugins.withId("fabric-loom") {
+            extensions.configure<net.fabricmc.loom.api.LoomGradleExtensionAPI> {
+                runs.create("client2") {
+                    client()
+                    configName = "Minecraft Client 2"
+                    ideConfigGenerated(true)
+                    runDir("run/client2")
+                    programArgs("--username", "Dev2")
+                }
+            }
+        }
+    }
+}
+
+project(":1.20.1:forge") {
+    plugins.withId("net.neoforged.moddev.legacyforge") {
+        extensions.configure<net.neoforged.moddevgradle.legacyforge.dsl.LegacyForgeExtension> {
+            runs.register("client2") {
+                client()
+                gameDirectory.set(layout.projectDirectory.dir("run/client2"))
+                programArgument("--username")
+                programArgument("Dev2")
+            }
+        }
+    }
+}
+
+project(":1.21.1:neoforge") {
+    plugins.withId("net.neoforged.moddev") {
+        extensions.configure<net.neoforged.moddevgradle.dsl.NeoForgeExtension> {
+            runs.register("client2") {
+                client()
+                gameDirectory.set(layout.projectDirectory.dir("run/client2"))
+                programArgument("--username")
+                programArgument("Dev2")
             }
         }
     }
@@ -196,6 +273,27 @@ project(":1.20.1:forge") {
         }
     }
 
+    // The secondary `runClient2` (added for two-client testing) gets its own program-args file from
+    // ModDevGradle, which carries the same duplicate `--mixin.config wfweight.mixins.json` that crashes
+    // the primary client. Strip it from every generated run-args file so runClient2 launches cleanly.
+    val sanitizeClient2RunArgs = tasks.register("sanitizeClient2RunArgs") {
+        dependsOn(tasks.matching { it.name.startsWith("prepare") && it.name.endsWith("Run") })
+
+        doLast {
+            val dir = layout.buildDirectory.dir("moddev").get().asFile
+            if (!dir.isDirectory) {
+                return@doLast
+            }
+
+            dir.listFiles { file -> file.name.endsWith("RunProgramArgs.txt") }?.forEach { file ->
+                val sanitized = file.readLines().filterNot { line ->
+                    line == "--mixin.config" || line == "wfweight.mixins.json"
+                }
+                file.writeText(sanitized.joinToString(System.lineSeparator()) + System.lineSeparator())
+            }
+        }
+    }
+
     tasks.withType<ProcessResources>().configureEach {
         dependsOn("compileJava")
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -217,6 +315,9 @@ project(":1.20.1:forge") {
 
     tasks.matching { it.name == "runClient" }.configureEach {
         dependsOn(sanitizeClientRunArgs)
+    }
+    tasks.matching { it.name == "runClient2" }.configureEach {
+        dependsOn(sanitizeClient2RunArgs)
     }
 }
 
@@ -279,6 +380,24 @@ project(":1.12.2") {
         tasks.withType<ShadowJar>().configureEach {
             dependsOn("compileJava")
             from(refmapFile)
+        }
+
+        // Two-client testing for 1.12.2. Prism's `runs { client("client2") }` DSL (used by every other
+        // loader to get a `runClient2` task) is not applied to RetroFuturaGradle, so instead of fragile
+        // duplication of RFG's internal run wiring we launch a SECOND client by reusing the proven
+        // `runClient` with an alternate run dir + username. In a second terminal run:
+        //     ./gradlew :1.12.2:runClient -Pclient2            (username "Dev2")
+        //     ./gradlew :1.12.2:runClient -Pclient2=SomeName   (custom username)
+        // When the property is absent, `runClient` behaves exactly as before, so the primary client and
+        // the second client never share a save lock / options.txt / log.
+        if (project.hasProperty("client2")) {
+            val altName = (project.property("client2") as? String)?.takeIf { it.isNotBlank() } ?: "Dev2"
+            val altRunDir = layout.projectDirectory.dir("run2")
+            tasks.named<RunMinecraftTask>("runClient").configure {
+                username.set(altName)
+                workingDir = altRunDir.asFile
+                doFirst { altRunDir.asFile.mkdirs() }
+            }
         }
     }
 }
