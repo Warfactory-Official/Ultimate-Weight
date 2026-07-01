@@ -22,7 +22,7 @@ public final class UltimateWeightForgeEvents {
 
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof ServerPlayer || event.getObject() instanceof net.minecraft.client.player.LocalPlayer || event.getObject() instanceof net.minecraft.world.entity.player.Player) {
+        if (event.getObject() instanceof net.minecraft.world.entity.player.Player) {
             PlayerWeightProvider1201 provider = new PlayerWeightProvider1201();
             event.addCapability(PLAYER_WEIGHT_KEY, provider);
             event.addListener(provider::invalidate);

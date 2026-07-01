@@ -50,6 +50,9 @@ prism {
 
     // Multi-loader: shared common + fabric + forge
     version("1.20.1") {
+        // Parchment parameter-name + javadoc mappings layered onto Mojmaps (all loaders, via prism).
+        parchmentMinecraftVersion = "1.20.1"
+        parchmentMappingsVersion = "2023.09.03"
         fabric {
             loaderVersion = "0.18.6"
             fabricApi("0.92.7+1.20.1")
@@ -79,6 +82,9 @@ prism {
 
     // Multi-loader: neoforge + lexforge (MinecraftForge via ForgeGradle 7)
     version("1.21.1") {
+        // Parchment parameter-name + javadoc mappings layered onto Mojmaps (all loaders, via prism).
+        parchmentMinecraftVersion = "1.21.1"
+        parchmentMappingsVersion = "2024.11.17"
         neoforge {
             loaderVersion = "21.1.222"
             dependencies {
@@ -250,6 +256,31 @@ project(":common") {
     }
 }
 
+// MDG (via prism) emits `--mixin.config wfweight.mixins.json` twice in the generated dev run args,
+// which crashes the Mixin bootstrap on a duplicate config. Dedupe to a single pair: dropping *every*
+// occurrence (the previous workaround) left the dev client with no mixin config at all, so none of the
+// client mixins - including the exhaustion sprint block - applied in dev.
+fun dedupeMixinConfigArgs(lines: List<String>): List<String> {
+    val out = mutableListOf<String>()
+    var kept = false
+    var i = 0
+    while (i < lines.size) {
+        val line = lines[i]
+        if (line == "--mixin.config" && i + 1 < lines.size && lines[i + 1] == "wfweight.mixins.json") {
+            if (!kept) {
+                out += line
+                out += lines[i + 1]
+                kept = true
+            }
+            i += 2
+        } else {
+            out += line
+            i += 1
+        }
+    }
+    return out
+}
+
 project(":1.20.1:forge") {
     val forgeRefmap = layout.buildDirectory.file("mixin/wfweight.refmap.json")
     val clientRunProgramArgs = layout.buildDirectory.file("moddev/clientRunProgramArgs.txt")
@@ -266,16 +297,16 @@ project(":1.20.1:forge") {
                 return@doLast
             }
 
-            val sanitized = file.readLines().filterNot { line ->
-                line == "--mixin.config" || line == "wfweight.mixins.json"
-            }
-            file.writeText(sanitized.joinToString(System.lineSeparator()) + System.lineSeparator())
+            file.writeText(
+                dedupeMixinConfigArgs(file.readLines()).joinToString(System.lineSeparator()) + System.lineSeparator()
+            )
         }
     }
 
     // The secondary `runClient2` (added for two-client testing) gets its own program-args file from
     // ModDevGradle, which carries the same duplicate `--mixin.config wfweight.mixins.json` that crashes
-    // the primary client. Strip it from every generated run-args file so runClient2 launches cleanly.
+    // the primary client. Dedupe every generated run-args file to a single pair so runClient2 launches
+    // cleanly *and* still loads the mixin config.
     val sanitizeClient2RunArgs = tasks.register("sanitizeClient2RunArgs") {
         dependsOn(tasks.matching { it.name.startsWith("prepare") && it.name.endsWith("Run") })
 
@@ -286,10 +317,9 @@ project(":1.20.1:forge") {
             }
 
             dir.listFiles { file -> file.name.endsWith("RunProgramArgs.txt") }?.forEach { file ->
-                val sanitized = file.readLines().filterNot { line ->
-                    line == "--mixin.config" || line == "wfweight.mixins.json"
-                }
-                file.writeText(sanitized.joinToString(System.lineSeparator()) + System.lineSeparator())
+                file.writeText(
+                    dedupeMixinConfigArgs(file.readLines()).joinToString(System.lineSeparator()) + System.lineSeparator()
+                )
             }
         }
     }
