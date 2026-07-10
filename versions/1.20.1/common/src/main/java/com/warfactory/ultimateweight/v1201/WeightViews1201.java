@@ -5,6 +5,7 @@ import com.warfactory.ultimateweight.api.WeightDataView;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
+import com.warfactory.ultimateweight.core.ResolvedWeight;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -99,6 +100,27 @@ public final class WeightViews1201 {
             return 0.0D;
         }
         return UltimateWeightCommon.bootstrap().resolver().resolveConfigured(new BaseStackView(stack, depth)).singleItemWeightKg();
+    }
+
+    /**
+     * Resolves a configured weight for an arbitrary item-id key using only the rule tables
+     * (exact / wildcard / tag) - no compat providers, no NBT bypass. Returns an empty result when no
+     * rule matches, so callers can tell "configured to 0" apart from "unconfigured".
+     *
+     * <p>Intended for variant-aware providers where many variants share a single registered item and
+     * are told apart by an NBT id (e.g. TACZ guns): look the variant up under its own id rather than
+     * the shared item id.
+     */
+    public static OptionalDouble configuredWeightForId(String itemId) {
+        if (itemId == null || itemId.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+        ResolvedWeight resolved = UltimateWeightCommon.bootstrap()
+            .resolver()
+            .resolveConfigured(new IdStackView(itemId));
+        return resolved.source() == ResolvedWeight.Source.DEFAULT
+            ? OptionalDouble.empty()
+            : OptionalDouble.of(resolved.singleItemWeightKg());
     }
 
     public static int maxNestedDepth() {
@@ -274,6 +296,28 @@ public final class WeightViews1201 {
         @Override
         public int resolutionDepth() {
             return depth;
+        }
+    }
+
+    /**
+     * A stack view carrying only an item-id key (count 1, no NBT), for looking up a configured weight
+     * by an id that is not the stack's real registered item - see {@link #configuredWeightForId}.
+     */
+    private static final class IdStackView implements WeightStackView {
+        private final WeightItemView item;
+
+        private IdStackView(String itemId) {
+            this.item = () -> itemId;
+        }
+
+        @Override
+        public WeightItemView item() {
+            return item;
+        }
+
+        @Override
+        public int count() {
+            return 1;
         }
     }
 

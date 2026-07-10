@@ -74,6 +74,7 @@ prism {
                 modRuntimeOnly("curse.maven:sophisticated-core-618298:7916595")
                 modCompileOnly("curse.maven:travelers-backpack-321117:7816782")
                 modRuntimeOnly("curse.maven:travelers-backpack-321117:7816782")
+                modCompileOnly("curse.maven:timeless-and-classics-zero-1028108:8141310")
             }
             // Second client (runClient2) is wired via ModDevGradle directly in the
             // project(":1.20.1:forge") block below - prism 0.5.15's `runs {}` bridge is broken.
