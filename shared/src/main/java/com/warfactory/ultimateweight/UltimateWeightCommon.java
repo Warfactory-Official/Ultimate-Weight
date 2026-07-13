@@ -157,6 +157,6 @@ public final class UltimateWeightCommon {
     }
 
     private static boolean readDebugProperty() {
-        return Boolean.parseBoolean(System.getProperty(DEBUG_PROPERTY, "true"));
+        return Boolean.parseBoolean(System.getProperty(DEBUG_PROPERTY, "false"));
     }
 }

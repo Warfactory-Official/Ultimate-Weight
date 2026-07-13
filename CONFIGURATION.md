@@ -19,6 +19,7 @@ There is no unified parser between legacy and modern Minecraft versions. The fil
 8. Tooltips And HUD
 9. Full Examples
 10. Practical Notes
+11. Debug Logging
 
 ## Configuration Model
 
@@ -857,3 +858,16 @@ equipmentBonuses:
 ```
 
 mean the feature is enabled structurally but has no configured entries.
+
+## Debug Logging
+
+Debug logging is **off by default** so the mod stays quiet during normal play. In this mode
+the log only contains a one-line startup summary plus any genuine warnings.
+
+The verbose diagnostics — per-slot inventory deltas, menu-click blocks, and compat plugin
+discovery — are gated behind a debug switch. Enable it only when troubleshooting:
+
+- Add the JVM flag `-Dwfweight.debug=true` to your launch arguments (all versions and loaders).
+
+Turning debug on restores the previous behavior and can produce a large amount of log output
+during active gameplay, so leave it off unless you are diagnosing a weight or inventory issue.
