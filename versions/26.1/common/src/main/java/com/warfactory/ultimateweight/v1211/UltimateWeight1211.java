@@ -205,8 +205,13 @@ public final class UltimateWeight1211 {
 
         // A backpack moving in/out of the inventory only shows half of the move here (its worn
         // counterpart lives in a capability/Curios slot), and its weight is dynamic - so do not
-        // predict client-side; let the authoritative server weight update drive it.
-        if (WeightViews1211.isDynamicContainer(oldStack) || WeightViews1211.isDynamicContainer(newStack)) {
+        // predict client-side; let the authoritative server weight update drive it. Likewise, while a
+        // non-inventory container (e.g. a backpack GUI) is open, an item leaving a player slot may be
+        // moving into storage the client cannot see: predicting it would drop the HUD weight, and the
+        // server's net-zero result sends no correction packet to undo it - so skip prediction here too.
+        if (player.containerMenu != player.inventoryMenu
+            || WeightViews1211.isDynamicContainer(oldStack)
+            || WeightViews1211.isDynamicContainer(newStack)) {
             return;
         }
 
@@ -249,7 +254,17 @@ public final class UltimateWeight1211 {
         // inventory-slot delta (the worn half lives in a capability/Curios slot). A numeric delta
         // would double-count or deduct its contents, so fall back to an authoritative full rescan,
         // triggered only by this change event.
-        if (WeightViews1211.isDynamicContainer(oldStack) || WeightViews1211.isDynamicContainer(newStack)) {
+        //
+        // The same trap applies while any non-inventory container (e.g. a backpack GUI) is open: an
+        // item leaving a player slot may be the visible half of a move INTO that container's storage,
+        // which the slot-delta tracker cannot see. Trusting the delta would deduct the item's weight
+        // without adding it back as container contents, letting the backpack "swallow" weight. Fall
+        // back to a full rescan, which reads the container's true contents. This must not rely on the
+        // backpack mod's own contents event firing (the failsafe full scan is off by default, so a
+        // single missed rescan would otherwise persist until an unrelated weight change).
+        if (player.containerMenu != player.inventoryMenu
+            || WeightViews1211.isDynamicContainer(oldStack)
+            || WeightViews1211.isDynamicContainer(newStack)) {
             UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getStringUUID());
             return;
         }
