@@ -317,4 +317,5 @@ jobs:
           gh release create "$RELEASE_TAG" dist/*.jar \
             --target "$GITHUB_SHA" \
             --title "Warfactory: Ultimate Weight $RELEASE_VERSION" \
-            --notes-file dist/release-notes.md
+            --notes-file dist/release-notes.md \
+            --latest=false
