@@ -31,7 +31,28 @@ jobs:
 
       - name: Stage jar
         run: |
-          SRC=$(find versions/1.20.1/forge/build/libs -name '*.jar' ! -name '*-sources*' | head -1)
+          set -euo pipefail
+          # The forge build emits three jars: the reobf *shadow* jar (bundles relocated
+          # snakeyaml/fastutil/caffeine, ~26MB), plus thin `-dev` and `-sources` jars. Only the
+          # shadow jar is runnable - the `-dev` jar references the UNrelocated org.yaml.snakeyaml.*
+          # and bundles no deps, so it NoClassDefFoundErrors on org/yaml/snakeyaml/Yaml at load.
+          # `! -name '*-sources*'` alone left `-dev` as a candidate and `head -1` picked it
+          # nondeterministically, shipping the broken jar to fresh installs. Exclude every thin
+          # classifier explicitly and select deterministically.
+          SRC=$(find versions/1.20.1/forge/build/libs -maxdepth 1 -name 'wfweight-1.20.1-Forge-*.jar' \
+            ! -name '*-sources*' ! -name '*-dev*' ! -name '*-slim*' | sort | head -1)
+          if [ -z "$SRC" ]; then
+            echo "No release jar found in versions/1.20.1/forge/build/libs" >&2
+            ls -la versions/1.20.1/forge/build/libs >&2 || true
+            exit 1
+          fi
+          echo "Staging $SRC"
+          # Guard: the release jar MUST bundle the relocated SnakeYAML. If this ever fails we picked
+          # a thin jar again - fail the release loudly instead of publishing a crash-on-launch jar.
+          if ! unzip -l "$SRC" | grep -q 'ultimateweight/wfweight/shadow/org/yaml/snakeyaml/Yaml.class'; then
+            echo "Staged jar '$SRC' is missing shaded SnakeYAML (thin jar). Refusing to publish." >&2
+            exit 1
+          fi
           cp "$SRC" wfweight.jar
 
       - name: Publish wf release
