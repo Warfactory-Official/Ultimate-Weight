@@ -1,7 +1,5 @@
 package com.warfactory.ultimateweight.core;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.warfactory.ultimateweight.api.*;
 import com.warfactory.ultimateweight.config.WeightConfig;
 import com.warfactory.ultimateweight.config.WeightResolverRules;
@@ -9,23 +7,26 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.OptionalDouble;
 
 public final class WeightResolver {
     private static final String STATIC_OVERRIDE_KEY = "uWeight";
     private static final double COMPAT_MISS = Double.NaN;
+    private static final int COMPLEX_CACHE_MAX = 1024;
 
     private final Object2DoubleOpenHashMap<String> exactWeights;
     private final Object2DoubleOpenHashMap<String> wildcardWeights;
     private final Object2DoubleOpenHashMap<String> matchWeights;
-    private final Cache<String, Double> complexCache;
+    private final Map<String, Double> complexCache;
 
     public WeightResolver(WeightConfig config) {
         WeightResolverRules rules = config == null ? WeightResolverRules.empty() : config.resolverRules();
         this.exactWeights = rules.exactWeights();
         this.wildcardWeights = rules.wildcardWeights();
         this.matchWeights = rules.matchWeights();
-        this.complexCache = Caffeine.newBuilder().maximumSize(1024L).build();
+        this.complexCache = Collections.synchronizedMap(new BoundedLruCache<>(COMPLEX_CACHE_MAX));
     }
 
     public ResolvedWeight resolve(WeightStackView stack) {
@@ -47,7 +48,7 @@ public final class WeightResolver {
 
             String complexKey = stack.complexCacheKey();
             if (complexKey != null && !complexKey.isEmpty()) {
-                Double cached = complexCache.getIfPresent(complexKey);
+                Double cached = complexCache.get(complexKey);
                 if (cached != null) {
                     if (!Double.isNaN(cached.doubleValue())) {
                         return new ResolvedWeight(
@@ -154,5 +155,27 @@ public final class WeightResolver {
 
     private static ResolvedWeight defaultWeight(int count) {
         return new ResolvedWeight(0.0D, count, ResolvedWeight.Source.DEFAULT, null);
+    }
+
+    /**
+     * Fixed-capacity access-ordered LRU. Replaces a shaded Caffeine {@code maximumSize} cache: bundling
+     * Caffeine forced its {@code RemovalCause} enum-body subclasses onto the transforming classloader,
+     * where Forge's EventSubclassTransformer could not resolve the relocated parent and spammed
+     * ClassNotFoundException. A plain {@link LinkedHashMap} keeps the same bounded semantics with no
+     * external dependency; callers wrap it in {@link Collections#synchronizedMap} for thread safety.
+     */
+    private static final class BoundedLruCache<K, V> extends LinkedHashMap<K, V> {
+        private static final long serialVersionUID = 1L;
+        private final int maxSize;
+
+        BoundedLruCache(int maxSize) {
+            super(Math.min(maxSize, 256), 0.75f, true);
+            this.maxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+            return size() > maxSize;
+        }
     }
 }

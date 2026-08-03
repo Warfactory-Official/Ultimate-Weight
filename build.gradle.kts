@@ -40,11 +40,9 @@ prism {
         dependencies {
             api("org.yaml:snakeyaml:2.6")
             api("it.unimi.dsi:fastutil:8.5.9")
-            api("com.github.ben-manes.caffeine:caffeine:2.9.3")
             shadowRelocation(true)
             shadow("org.yaml:snakeyaml:2.6")
             shadow("it.unimi.dsi:fastutil:8.5.9")
-            shadow("com.github.ben-manes.caffeine:caffeine:2.9.3")
         }
     }
 
@@ -370,7 +368,7 @@ listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:
 
 // Prism wires shadow relocation into the reobf step only for moddev-based loaders. The 1.12.2 build
 // uses RetroFuturaGradle, whose `reobfJar` reobfuscates the thin `jar` task and never sees the
-// `shadowJar` - so the relocated snakeyaml/fastutil/caffeine never reached the published jar (it was
+// `shadowJar` - so the relocated snakeyaml/fastutil never reached the published jar (it was
 // just the mod classes, which would NoClassDefFoundError at runtime). Reobfuscate the already
 // relocated `shadowJar` output instead, so the runtime jar bundles the shaded libraries.
 project(":1.12.2") {
