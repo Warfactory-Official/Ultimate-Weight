@@ -222,7 +222,9 @@ public final class UltimateWeight1201 {
 
         double totalWeightKg = Math.max(
             0.0D,
-            latest.totalWeightKg() + (WeightViews1201.weightOf(newStack) - WeightViews1201.weightOf(oldStack))
+            WeightViews1201.totalWeight(player)
+                - WeightViews1201.weightOf(oldStack)
+                + WeightViews1201.weightOf(newStack)
         );
         ThresholdEffect thresholdEffect = resolveThreshold(totalWeightKg, latest.carryCapacityKg());
         UltimateWeightClientState1201.apply(
