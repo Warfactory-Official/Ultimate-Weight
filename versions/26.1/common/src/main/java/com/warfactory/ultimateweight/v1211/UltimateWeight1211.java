@@ -12,11 +12,15 @@ import com.warfactory.ultimateweight.v1211.network.ConfigFragmentPacket1211;
 import com.warfactory.ultimateweight.v1211.network.StaminaUpdatePacket1211;
 import com.warfactory.ultimateweight.v1211.network.WeightUpdatePacket1211;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -46,6 +50,12 @@ public final class UltimateWeight1211 {
         "stamina_update"
     );
 
+    /** Datapack-registered damage type used for the periodic overweight damage. */
+    public static final ResourceKey<DamageType> OVERWEIGHT_DAMAGE_TYPE = ResourceKey.create(
+        Registries.DAMAGE_TYPE,
+        Identifier.fromNamespaceAndPath(UltimateWeightCommon.MOD_ID, "overweight")
+    );
+
     private static final Map<UUID, PlayerRuntime> PLAYER_RUNTIMES = new HashMap<UUID, PlayerRuntime>();
     private static WeightSyncTransport1211 transport = WeightSyncTransport1211.NOOP;
     private static PlayerStateListener stateListener = PlayerStateListener.NOOP;
@@ -67,6 +77,7 @@ public final class UltimateWeight1211 {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             syncPlayer(player, false);
             syncStamina(player, false);
+            applyOverweightDamage(player);
         }
     }
 
@@ -75,6 +86,9 @@ public final class UltimateWeight1211 {
         runtime.lastInventoryChanges = -1;
         runtime.lastMenuStateId = -1;
         runtime.lastEffectImmune = isEffectImmune(player);
+        // Grant a full interval of grace after login/respawn/dimension change instead of hitting a
+        // player the instant they load in already overweight.
+        runtime.lastOverweightDamageTick = serverTicks;
         UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getStringUUID());
         initializeStamina(player, runtime);
         sendConfig(player);
@@ -477,6 +491,62 @@ public final class UltimateWeight1211 {
         return (float) Math.min(
             fallDamage.maxDamageMultiplier(),
             currentMultiplier + extraMultiplier
+        );
+    }
+
+    /**
+     * Deals one {@code overweightDamage} tick to a severely overweight player. The timer is held at
+     * "now" whenever the player is outside the damaging band or exempt from effects, so dropping
+     * below the threshold and climbing back over it always buys a full interval of grace rather than
+     * an immediate hit.
+     */
+    private static void applyOverweightDamage(ServerPlayer player) {
+        WeightConfig.OverweightDamage overweightDamage =
+            UltimateWeightCommon.bootstrap().config().overweightDamage();
+        PlayerRuntime runtime = runtime(player);
+        WeightSnapshot snapshot = runtime.snapshot;
+        if (!overweightDamage.enabled()
+            || snapshot == null
+            || isEffectImmune(player)
+            || player.isSpectator()
+            || !player.isAlive()
+            || !OverweightDamageMath.isOverweight(
+                overweightDamage,
+                snapshot.totalWeightKg(),
+                snapshot.carryCapacityKg()
+            )) {
+            runtime.lastOverweightDamageTick = serverTicks;
+            return;
+        }
+
+        if (!OverweightDamageMath.isDue(overweightDamage, serverTicks, runtime.lastOverweightDamageTick)) {
+            return;
+        }
+
+        runtime.lastOverweightDamageTick = serverTicks;
+        double damage = OverweightDamageMath.clampToMinHealth(
+            overweightDamage,
+            OverweightDamageMath.resolveDamage(
+                overweightDamage,
+                snapshot.totalWeightKg(),
+                snapshot.carryCapacityKg(),
+                snapshot.hardLocked()
+            ),
+            player.getHealth()
+        );
+        if (damage <= EPSILON) {
+            return;
+        }
+
+        player.hurt(overweightDamageSource(player), (float) damage);
+    }
+
+    private static DamageSource overweightDamageSource(ServerPlayer player) {
+        return new DamageSource(
+            player.level()
+                .registryAccess()
+                .registryOrThrow(Registries.DAMAGE_TYPE)
+                .getHolderOrThrow(OVERWEIGHT_DAMAGE_TYPE)
         );
     }
 
@@ -1068,6 +1138,7 @@ public final class UltimateWeight1211 {
         private boolean staminaEnabled;
         private boolean exhausted;
         private long lastStaminaJumpTick = Long.MIN_VALUE;
+        private long lastOverweightDamageTick = Long.MIN_VALUE;
         private double lastSentStamina = Double.NaN;
         private double lastSentMaxStamina = Double.NaN;
         private boolean lastSentStaminaEnabled;

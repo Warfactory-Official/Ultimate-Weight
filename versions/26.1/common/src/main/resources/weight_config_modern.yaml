@@ -61,6 +61,16 @@ fallDamage:
   hardLockMultiplierBonus: 0.75
   maxDamageMultiplier: 3.5
 
+overweightDamage:
+  enabled: false
+  startLoadPercent: 1.2
+  damagePerInterval: 1.0
+  extraDamagePerLoadPercent: 2.0
+  hardLockDamageBonus: 1.0
+  maxDamagePerInterval: 6.0
+  intervalTicks: 40
+  minHealth: 0.0
+
 stamina:
   enabled: true
   totalStamina: 100.0

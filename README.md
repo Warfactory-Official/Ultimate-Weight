@@ -20,6 +20,7 @@ It is built around a shared core with version-specific runtime hooks. The mod cu
 - HUD and tooltip weight display
 - Weight-based movement and jump penalties
 - Hard-lock threshold for blocking pickups and transfers
+- Optional periodic damage while severely overweight (off by default)
 - Config sync from server to client
 - Delta-based inventory weight updates where supported
 - Stamina system with:
@@ -58,6 +59,7 @@ Ultimate Weight reads the contents of modded storage items so an item's weight s
 | Superb Warfare | Ammo box (per-type ammo counts) |
 | Storage Drawers | Drawer contents |
 | TACZ (Timeless & Classics Zero) | Per-gun weight by `GunId` and per-ammo weight by `AmmoId` — all guns (and all rounds) are one item each, weighed individually |
+| Tool Belt | Worn (native belt slot / Curios) + carried belt contents |
 | *Any item with an `IItemHandler`* | Nested contents counted generically |
 
 Every integration above is a `@CompatPlugin` discovered at load time, and the same hooks are exposed as a public API so other mods (or you) can add support without forking — see [`COMPATIBILITY.md`](./COMPATIBILITY.md). On the 1.20.1 **Fabric** build, vanilla nested containers are counted, but the mod-specific handlers and the generic item-handler reader above are Forge-only.

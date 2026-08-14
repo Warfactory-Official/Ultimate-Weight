@@ -38,6 +38,7 @@ Both config files share the same top-level section layout:
 - `equipmentBonuses`
 - `movement`
 - `fallDamage`
+- `overweightDamage`
 - `stamina`
 
 The difference is inside `rules` and in how item identity is written.
@@ -176,6 +177,56 @@ Fields:
   Extra fall damage added while hard-locked.
 - `maxDamageMultiplier`
   Hard cap for the final fall damage multiplier.
+
+### `overweightDamage`
+
+Periodically damages players who are severely overweight. **Disabled by default**, so existing
+worlds keep their behavior until a pack opts in.
+
+```yaml
+overweightDamage:
+  enabled: false
+  startLoadPercent: 1.2
+  damagePerInterval: 1.0
+  extraDamagePerLoadPercent: 2.0
+  hardLockDamageBonus: 1.0
+  maxDamagePerInterval: 6.0
+  intervalTicks: 40
+  minHealth: 0.0
+```
+
+Fields:
+
+- `enabled`
+  Enables or disables the system.
+- `startLoadPercent`
+  Damage starts only above this load percentage. The default `1.2` lines up with the harshest
+  `movement` threshold, so damage begins exactly where movement is already crippled.
+- `damagePerInterval`
+  Base damage dealt once per interval while above the start threshold. `1.0` is half a heart.
+- `extraDamagePerLoadPercent`
+  Extra damage added per `1.0` load above the start threshold.
+- `hardLockDamageBonus`
+  Extra damage added while hard-locked.
+- `maxDamagePerInterval`
+  Hard cap for a single damage tick.
+- `intervalTicks`
+  Ticks between damage applications (`40` = every 2 seconds). Values below `1` are treated as `1`.
+- `minHealth`
+  Health floor. Damage is reduced so it never takes a player below this value, and is skipped
+  entirely once they are at the floor. `0.0` (the default) lets overweight damage kill.
+
+Behavior:
+
+- The damage bypasses armor. Armor cannot cushion being crushed by your own load, and the armor
+  is itself part of that load.
+- Load percentage is `totalWeightKg / effectiveCarryCapacityKg`, the same value the `movement`
+  thresholds use, so equipment carry-capacity bonuses raise the damage threshold too.
+- Creative and spectator players are never damaged.
+- The interval timer resets whenever a player drops back below `startLoadPercent`, and on login,
+  respawn, and dimension change. Crossing the threshold therefore always grants one full interval
+  of grace before the first hit.
+- Deaths use the `death.attack.wfweight.overweight` message.
 
 ### `stamina`
 
@@ -710,6 +761,16 @@ fallDamage:
   hardLockMultiplierBonus: 0.75
   maxDamageMultiplier: 3.5
 
+overweightDamage:
+  enabled: false
+  startLoadPercent: 1.2
+  damagePerInterval: 1.0
+  extraDamagePerLoadPercent: 2.0
+  hardLockDamageBonus: 1.0
+  maxDamagePerInterval: 6.0
+  intervalTicks: 40
+  minHealth: 0.0
+
 stamina:
   totalStamina: 100.0
   sprintStaminaLossRate: 0.1
@@ -784,6 +845,16 @@ fallDamage:
   extraDamageMultiplierPerLoadPercent: 1.2
   hardLockMultiplierBonus: 0.75
   maxDamageMultiplier: 3.5
+
+overweightDamage:
+  enabled: false
+  startLoadPercent: 1.2
+  damagePerInterval: 1.0
+  extraDamagePerLoadPercent: 2.0
+  hardLockDamageBonus: 1.0
+  maxDamagePerInterval: 6.0
+  intervalTicks: 40
+  minHealth: 0.0
 
 stamina:
   totalStamina: 100.0

@@ -98,6 +98,47 @@ public class WeightGroovyConfig extends NamedRegistry {
         return overrides().setFallDamageMaxMultiplier(multiplier);
     }
 
+    // overweight damage
+    public ScriptConfigOverrides setOverweightDamageEnabled(boolean enabled) {
+        return overrides().setOverweightDamageEnabled(enabled);
+    }
+
+    public ScriptConfigOverrides enableOverweightDamage() {
+        return overrides().enableOverweightDamage();
+    }
+
+    public ScriptConfigOverrides disableOverweightDamage() {
+        return overrides().disableOverweightDamage();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageStartLoadPercent(double percent) {
+        return overrides().setOverweightDamageStartLoadPercent(percent);
+    }
+
+    public ScriptConfigOverrides setOverweightDamagePerInterval(double damage) {
+        return overrides().setOverweightDamagePerInterval(damage);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageExtraPerLoadPercent(double damage) {
+        return overrides().setOverweightDamageExtraPerLoadPercent(damage);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageHardLockBonus(double bonus) {
+        return overrides().setOverweightDamageHardLockBonus(bonus);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageMaxPerInterval(double damage) {
+        return overrides().setOverweightDamageMaxPerInterval(damage);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageIntervalTicks(long ticks) {
+        return overrides().setOverweightDamageIntervalTicks(ticks);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageMinHealth(double health) {
+        return overrides().setOverweightDamageMinHealth(health);
+    }
+
     // stamina
     public ScriptConfigOverrides setStaminaEnabled(boolean enabled) {
         return overrides().setStaminaEnabled(enabled);

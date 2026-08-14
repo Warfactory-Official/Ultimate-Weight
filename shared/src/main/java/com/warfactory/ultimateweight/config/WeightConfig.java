@@ -13,6 +13,7 @@ public final class WeightConfig {
     private final EquipmentBonusRules equipmentBonusRules;
     private final List<ThresholdRule> thresholds;
     private final FallDamage fallDamage;
+    private final OverweightDamage overweightDamage;
     private final Stamina stamina;
 
     public WeightConfig(
@@ -26,6 +27,7 @@ public final class WeightConfig {
         EquipmentBonusRules equipmentBonusRules,
         Collection<ThresholdRule> thresholds,
         FallDamage fallDamage,
+        OverweightDamage overweightDamage,
         Stamina stamina
     ) {
         this.precision = precision == null ? Precision.defaults() : precision;
@@ -38,6 +40,7 @@ public final class WeightConfig {
         this.equipmentBonusRules = equipmentBonusRules == null ? EquipmentBonusRules.empty() : equipmentBonusRules;
         this.thresholds = immutableThresholds(thresholds);
         this.fallDamage = fallDamage == null ? FallDamage.defaults() : fallDamage;
+        this.overweightDamage = overweightDamage == null ? OverweightDamage.defaults() : overweightDamage;
         this.stamina = stamina == null ? Stamina.defaults() : stamina;
     }
 
@@ -63,6 +66,7 @@ public final class WeightConfig {
             EquipmentBonusRules.empty(),
             thresholds,
             FallDamage.defaults(),
+            OverweightDamage.defaults(),
             Stamina.defaults()
         );
     }
@@ -105,6 +109,10 @@ public final class WeightConfig {
 
     public FallDamage fallDamage() {
         return fallDamage;
+    }
+
+    public OverweightDamage overweightDamage() {
+        return overweightDamage;
     }
 
     public Stamina stamina() {
@@ -227,6 +235,85 @@ public final class WeightConfig {
 
         public double maxDamageMultiplier() {
             return maxDamageMultiplier;
+        }
+    }
+
+
+    public static final class OverweightDamage {
+        private final boolean enabled;
+        private final double startLoadPercent;
+        private final double damagePerInterval;
+        private final double extraDamagePerLoadPercent;
+        private final double hardLockDamageBonus;
+        private final double maxDamagePerInterval;
+        private final long intervalTicks;
+        private final double minHealth;
+
+        public OverweightDamage(
+            boolean enabled,
+            double startLoadPercent,
+            double damagePerInterval,
+            double extraDamagePerLoadPercent,
+            double hardLockDamageBonus,
+            double maxDamagePerInterval,
+            long intervalTicks,
+            double minHealth
+        ) {
+            this.enabled = enabled;
+            this.startLoadPercent = startLoadPercent;
+            this.damagePerInterval = damagePerInterval;
+            this.extraDamagePerLoadPercent = extraDamagePerLoadPercent;
+            this.hardLockDamageBonus = hardLockDamageBonus;
+            this.maxDamagePerInterval = maxDamagePerInterval;
+            this.intervalTicks = intervalTicks <= 0L ? 1L : intervalTicks;
+            this.minHealth = Math.max(0.0D, minHealth);
+        }
+
+        public static OverweightDamage defaults() {
+            return new OverweightDamage(false, 1.20D, 1.0D, 2.0D, 1.0D, 6.0D, 40L, 0.0D);
+        }
+
+        /** Master switch. When false no overweight damage is ever dealt. */
+        public boolean enabled() {
+            return enabled;
+        }
+
+        /** Damage starts only above this load percentage (weight / effective carry capacity). */
+        public double startLoadPercent() {
+            return startLoadPercent;
+        }
+
+        /** Base damage dealt once per interval while above {@link #startLoadPercent()}. */
+        public double damagePerInterval() {
+            return damagePerInterval;
+        }
+
+        /** Extra damage added per {@code 1.0} load above the start threshold. */
+        public double extraDamagePerLoadPercent() {
+            return extraDamagePerLoadPercent;
+        }
+
+        /** Extra damage added while hard-locked. */
+        public double hardLockDamageBonus() {
+            return hardLockDamageBonus;
+        }
+
+        /** Hard cap for a single damage tick. */
+        public double maxDamagePerInterval() {
+            return maxDamagePerInterval;
+        }
+
+        /** Ticks between damage applications. Clamped to at least {@code 1}. */
+        public long intervalTicks() {
+            return intervalTicks;
+        }
+
+        /**
+         * Health floor: damage is reduced so it never takes a player below this value. {@code 0}
+         * (the default) lets overweight damage kill.
+         */
+        public double minHealth() {
+            return minHealth;
         }
     }
 

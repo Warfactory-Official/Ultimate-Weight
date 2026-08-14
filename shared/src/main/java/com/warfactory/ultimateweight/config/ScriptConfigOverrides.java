@@ -35,6 +35,15 @@ public final class ScriptConfigOverrides {
     private Double fallDamageHardLockBonus;
     private Double fallDamageMaxMultiplier;
 
+    private Boolean overweightDamageEnabled;
+    private Double overweightDamageStartLoadPercent;
+    private Double overweightDamagePerInterval;
+    private Double overweightDamageExtraPerLoadPercent;
+    private Double overweightDamageHardLockBonus;
+    private Double overweightDamageMaxPerInterval;
+    private Long overweightDamageIntervalTicks;
+    private Double overweightDamageMinHealth;
+
     private Boolean staminaEnabled;
     private Double staminaTotal;
     private Double staminaSprintLossRate;
@@ -79,6 +88,10 @@ public final class ScriptConfigOverrides {
             && fallDamageEnabled == null && fallDamageStartLoadPercent == null
             && fallDamageExtraPerLoadPercent == null && fallDamageHardLockBonus == null
             && fallDamageMaxMultiplier == null
+            && overweightDamageEnabled == null && overweightDamageStartLoadPercent == null
+            && overweightDamagePerInterval == null && overweightDamageExtraPerLoadPercent == null
+            && overweightDamageHardLockBonus == null && overweightDamageMaxPerInterval == null
+            && overweightDamageIntervalTicks == null && overweightDamageMinHealth == null
             && staminaEnabled == null && staminaTotal == null && staminaSprintLossRate == null
             && staminaJumpLoss == null && staminaGainRate == null && staminaExhaustionThreshold == null
             && staminaRecoveryPercent == null && staminaDrainWhileRunning == null
@@ -101,6 +114,14 @@ public final class ScriptConfigOverrides {
         fallDamageExtraPerLoadPercent = null;
         fallDamageHardLockBonus = null;
         fallDamageMaxMultiplier = null;
+        overweightDamageEnabled = null;
+        overweightDamageStartLoadPercent = null;
+        overweightDamagePerInterval = null;
+        overweightDamageExtraPerLoadPercent = null;
+        overweightDamageHardLockBonus = null;
+        overweightDamageMaxPerInterval = null;
+        overweightDamageIntervalTicks = null;
+        overweightDamageMinHealth = null;
         staminaEnabled = null;
         staminaTotal = null;
         staminaSprintLossRate = null;
@@ -212,7 +233,57 @@ public final class ScriptConfigOverrides {
         return changed();
     }
 
-    // --- stamina ------------------------------------------------------------------------------
+    //overweight damage
+
+    public ScriptConfigOverrides setOverweightDamageEnabled(boolean enabled) {
+        overweightDamageEnabled = Boolean.valueOf(enabled);
+        return changed();
+    }
+
+    public ScriptConfigOverrides enableOverweightDamage() {
+        return setOverweightDamageEnabled(true);
+    }
+
+    public ScriptConfigOverrides disableOverweightDamage() {
+        return setOverweightDamageEnabled(false);
+    }
+
+    public ScriptConfigOverrides setOverweightDamageStartLoadPercent(double percent) {
+        overweightDamageStartLoadPercent = Double.valueOf(percent);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamagePerInterval(double damage) {
+        overweightDamagePerInterval = Double.valueOf(damage);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageExtraPerLoadPercent(double damage) {
+        overweightDamageExtraPerLoadPercent = Double.valueOf(damage);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageHardLockBonus(double bonus) {
+        overweightDamageHardLockBonus = Double.valueOf(bonus);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageMaxPerInterval(double damage) {
+        overweightDamageMaxPerInterval = Double.valueOf(damage);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageIntervalTicks(long ticks) {
+        overweightDamageIntervalTicks = Long.valueOf(ticks);
+        return changed();
+    }
+
+    public ScriptConfigOverrides setOverweightDamageMinHealth(double health) {
+        overweightDamageMinHealth = Double.valueOf(health);
+        return changed();
+    }
+
+    // stamina
 
     public ScriptConfigOverrides setStaminaEnabled(boolean enabled) {
         staminaEnabled = Boolean.valueOf(enabled);
@@ -386,6 +457,30 @@ public final class ScriptConfigOverrides {
             fallDamageMaxMultiplier != null ? fallDamageMaxMultiplier.doubleValue() : baseFall.maxDamageMultiplier()
         );
 
+        WeightConfig.OverweightDamage baseOverweight = base.overweightDamage();
+        WeightConfig.OverweightDamage overweightDamage = new WeightConfig.OverweightDamage(
+            overweightDamageEnabled != null ? overweightDamageEnabled.booleanValue() : baseOverweight.enabled(),
+            overweightDamageStartLoadPercent != null
+                ? overweightDamageStartLoadPercent.doubleValue()
+                : baseOverweight.startLoadPercent(),
+            overweightDamagePerInterval != null
+                ? overweightDamagePerInterval.doubleValue()
+                : baseOverweight.damagePerInterval(),
+            overweightDamageExtraPerLoadPercent != null
+                ? overweightDamageExtraPerLoadPercent.doubleValue()
+                : baseOverweight.extraDamagePerLoadPercent(),
+            overweightDamageHardLockBonus != null
+                ? overweightDamageHardLockBonus.doubleValue()
+                : baseOverweight.hardLockDamageBonus(),
+            overweightDamageMaxPerInterval != null
+                ? overweightDamageMaxPerInterval.doubleValue()
+                : baseOverweight.maxDamagePerInterval(),
+            overweightDamageIntervalTicks != null
+                ? overweightDamageIntervalTicks.longValue()
+                : baseOverweight.intervalTicks(),
+            overweightDamageMinHealth != null ? overweightDamageMinHealth.doubleValue() : baseOverweight.minHealth()
+        );
+
         WeightConfig.Stamina baseStamina = base.stamina();
         WeightConfig.Stamina stamina = new WeightConfig.Stamina(
             staminaEnabled != null ? staminaEnabled.booleanValue() : baseStamina.enabled(),
@@ -413,6 +508,7 @@ public final class ScriptConfigOverrides {
             buildEquipmentRules(base.equipmentBonusRules()),
             movementThresholds != null ? movementThresholds : base.thresholds(),
             fallDamage,
+            overweightDamage,
             stamina
         );
     }

@@ -53,9 +53,10 @@ public final class InventoryHook1211 {
     }
 
     public static List<ItemStack> captureMenuSlots(AbstractContainerMenu menu) {
-        ArrayList<ItemStack> slotItems = new ArrayList<ItemStack>(menu.slots.size());
+        ArrayList<ItemStack> slotItems = new ArrayList<>(menu.slots.size());
         for (int index = 0; index < menu.slots.size(); index++) {
-            slotItems.add(menu.getSlot(index).getItem().copy());
+            Slot slot = menu.getSlot(index);
+            slotItems.add(slot.container instanceof Inventory ? slot.getItem().copy() : ItemStack.EMPTY);
         }
         return slotItems;
     }
@@ -71,13 +72,17 @@ public final class InventoryHook1211 {
 
         int size = Math.min(previousItems.size(), menu.slots.size());
         for (int slotIndex = 0; slotIndex < size; slotIndex++) {
+            Slot slot = menu.getSlot(slotIndex);
+            if (!(slot.container instanceof Inventory)) {
+                continue;
+            }
+
             ItemStack oldStack = previousItems.get(slotIndex);
-            ItemStack newStack = menu.getSlot(slotIndex).getItem();
+            ItemStack newStack = slot.getItem();
             if (sameStack(oldStack, newStack)) {
                 continue;
             }
 
-            Slot slot = menu.getSlot(slotIndex);
             for (ContainerListener listener : listeners) {
                 if (!(listener instanceof ServerPlayer player) || slot.container != player.getInventory()) {
                     continue;

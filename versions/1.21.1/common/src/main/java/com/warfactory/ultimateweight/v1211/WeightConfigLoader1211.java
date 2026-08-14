@@ -69,6 +69,7 @@ public final class WeightConfigLoader1211 implements IConfigLoader {
         root.put("equipmentBonuses", equipmentBonusesMap(config));
         root.put("movement", movementMap(config));
         root.put("fallDamage", fallDamageMap(config));
+        root.put("overweightDamage", overweightDamageMap(config));
         root.put("stamina", staminaMap(config));
 
         DumperOptions options = new DumperOptions();
@@ -86,6 +87,7 @@ public final class WeightConfigLoader1211 implements IConfigLoader {
         Map<String, Object> rules = mapValue(root.get("rules"));
         Map<String, Object> movement = mapValue(root.get("movement"));
         Map<String, Object> fallDamage = mapValue(root.get("fallDamage"));
+        Map<String, Object> overweightDamage = mapValue(root.get("overweightDamage"));
         Map<String, Object> stamina = mapValue(root.get("stamina"));
         Map<String, Object> groupLimits = mapValue(root.get("groupLimits"));
         Map<String, Object> equipmentBonuses = mapValue(root.get("equipmentBonuses"));
@@ -118,6 +120,36 @@ public final class WeightConfigLoader1211 implements IConfigLoader {
                     defaults.fallDamage().hardLockMultiplierBonus()
                 ),
                 doubleValue(fallDamage, "maxDamageMultiplier", defaults.fallDamage().maxDamageMultiplier())
+            ),
+            new WeightConfig.OverweightDamage(
+                booleanValue(overweightDamage, "enabled", defaults.overweightDamage().enabled()),
+                doubleValue(
+                    overweightDamage,
+                    "startLoadPercent",
+                    defaults.overweightDamage().startLoadPercent()
+                ),
+                doubleValue(
+                    overweightDamage,
+                    "damagePerInterval",
+                    defaults.overweightDamage().damagePerInterval()
+                ),
+                doubleValue(
+                    overweightDamage,
+                    "extraDamagePerLoadPercent",
+                    defaults.overweightDamage().extraDamagePerLoadPercent()
+                ),
+                doubleValue(
+                    overweightDamage,
+                    "hardLockDamageBonus",
+                    defaults.overweightDamage().hardLockDamageBonus()
+                ),
+                doubleValue(
+                    overweightDamage,
+                    "maxDamagePerInterval",
+                    defaults.overweightDamage().maxDamagePerInterval()
+                ),
+                longValue(overweightDamage, "intervalTicks", defaults.overweightDamage().intervalTicks()),
+                doubleValue(overweightDamage, "minHealth", defaults.overweightDamage().minHealth())
             ),
             new WeightConfig.Stamina(
                 booleanValue(stamina, "enabled", defaults.stamina().enabled()),
@@ -375,6 +407,20 @@ public final class WeightConfigLoader1211 implements IConfigLoader {
         fallDamage.put("hardLockMultiplierBonus", Double.valueOf(config.fallDamage().hardLockMultiplierBonus()));
         fallDamage.put("maxDamageMultiplier", Double.valueOf(config.fallDamage().maxDamageMultiplier()));
         return fallDamage;
+    }
+
+    private static Map<String, Object> overweightDamageMap(WeightConfig config) {
+        WeightConfig.OverweightDamage overweightDamage = config.overweightDamage();
+        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("enabled", Boolean.valueOf(overweightDamage.enabled()));
+        map.put("startLoadPercent", Double.valueOf(overweightDamage.startLoadPercent()));
+        map.put("damagePerInterval", Double.valueOf(overweightDamage.damagePerInterval()));
+        map.put("extraDamagePerLoadPercent", Double.valueOf(overweightDamage.extraDamagePerLoadPercent()));
+        map.put("hardLockDamageBonus", Double.valueOf(overweightDamage.hardLockDamageBonus()));
+        map.put("maxDamagePerInterval", Double.valueOf(overweightDamage.maxDamagePerInterval()));
+        map.put("intervalTicks", Long.valueOf(overweightDamage.intervalTicks()));
+        map.put("minHealth", Double.valueOf(overweightDamage.minHealth()));
+        return map;
     }
 
     private static Map<String, Object> staminaMap(WeightConfig config) {

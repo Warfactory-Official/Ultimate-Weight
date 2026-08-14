@@ -73,10 +73,8 @@ prism {
                 modCompileOnly("curse.maven:travelers-backpack-321117:7816782")
                 modRuntimeOnly("curse.maven:travelers-backpack-321117:7816782")
                 modCompileOnly("curse.maven:timeless-and-classics-zero-1028108:8141310")
-                // AE2: read storage-cell contents so a cell full of weighted items weighs its contents
-                // (Ae2StorageCellWeightPatch1201). Compile-only; the pack provides AE2 at runtime and the
-                // @CompatPlugin(requiredMods="ae2") gate keeps the plugin dormant when AE2 is absent.
                 modCompileOnly("curse.maven:applied-energistics-2-223794:7148487")
+                modRuntimeOnly("curse.maven:tool-belt-260262:7906260")
             }
             // Second client (runClient2) is wired via ModDevGradle directly in the
             // project(":1.20.1:forge") block below - prism 0.5.15's `runs {}` bridge is broken.

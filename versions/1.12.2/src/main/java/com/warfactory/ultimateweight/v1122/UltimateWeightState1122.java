@@ -26,6 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -39,6 +40,7 @@ public final class UltimateWeightState1122 {
     private static final double EPSILON = 0.000001D;
     private static final int EXHAUSTED_HUD_COLOR = 11184810;
     private static final Map<UUID, ServerPlayerState> SERVER_STATES = new Object2ObjectOpenHashMap<UUID, ServerPlayerState>();
+    private static final DamageSource OVERWEIGHT_DAMAGE = new OverweightDamageSource();
     private static volatile PacketWeightUpdate1122 latestClientUpdate = PacketWeightUpdate1122.empty();
     private static volatile PacketStaminaUpdate1122 latestClientStaminaUpdate = PacketStaminaUpdate1122.empty();
 
@@ -53,6 +55,7 @@ public final class UltimateWeightState1122 {
         state.lastFullScanFingerprint = currentFingerprint;
         state.acceptedSnapshot = InventorySnapshot.capture(player);
         state.acceptedWeightKg = WeightViews1122.totalWeight(player);
+        state.lastOverweightDamageTick = player.ticksExisted;
         UltimateWeightCommon.bootstrap().playerWeightTracker().markDirty(player.getUniqueID().toString());
         initializeStamina(player);
         sendConfig(player);
@@ -110,6 +113,54 @@ public final class UltimateWeightState1122 {
     public static void onServerPlayerTick(EntityPlayerMP player) {
         synchronize(player, false);
         syncStamina(player, false);
+        applyOverweightDamage(player);
+    }
+
+    /**
+     * Deals one {@code overweightDamage} tick to a severely overweight player. The timer is held at
+     * "now" whenever the player is outside the damaging band or exempt from effects, so dropping
+     * below the threshold and climbing back over it always buys a full interval of grace rather than
+     * an immediate hit.
+     */
+    private static void applyOverweightDamage(EntityPlayerMP player) {
+        WeightConfig.OverweightDamage overweightDamage =
+            UltimateWeightCommon.bootstrap().config().overweightDamage();
+        ServerPlayerState state = getState(player);
+        IPlayerWeightData1122 data = UltimateWeightCapabilities1122.get(player);
+        double carryCapacityKg = data != null && data.getCarryCapacityKg() > EPSILON
+            ? data.getCarryCapacityKg()
+            : UltimateWeightCommon.bootstrap().config().defaultCarryCapacityKg();
+        double totalWeightKg = data != null ? data.getCurrentWeightKg() : WeightViews1122.totalWeight(player);
+
+        if (!overweightDamage.enabled()
+            || isEffectImmune(player)
+            || player.isSpectator()
+            || !player.isEntityAlive()
+            || !OverweightDamageMath.isOverweight(overweightDamage, totalWeightKg, carryCapacityKg)) {
+            state.lastOverweightDamageTick = player.ticksExisted;
+            return;
+        }
+
+        if (!OverweightDamageMath.isDue(overweightDamage, player.ticksExisted, state.lastOverweightDamageTick)) {
+            return;
+        }
+
+        state.lastOverweightDamageTick = player.ticksExisted;
+        double damage = OverweightDamageMath.clampToMinHealth(
+            overweightDamage,
+            OverweightDamageMath.resolveDamage(
+                overweightDamage,
+                totalWeightKg,
+                carryCapacityKg,
+                data != null && data.isHardLocked()
+            ),
+            player.getHealth()
+        );
+        if (damage <= EPSILON) {
+            return;
+        }
+
+        player.attackEntityFrom(OVERWEIGHT_DAMAGE, (float) damage);
     }
 
     public static void onInventoryDelta(EntityPlayerMP player, WeightInventoryChangeEvent event) {
@@ -826,6 +877,14 @@ public final class UltimateWeightState1122 {
         private int lastThresholdIndex = Integer.MIN_VALUE;
         private boolean lastEffectImmune;
         private long lastStaminaJumpTick = Long.MIN_VALUE;
+        private long lastOverweightDamageTick = Long.MIN_VALUE;
+    }
+
+    private static final class OverweightDamageSource extends DamageSource {
+        private OverweightDamageSource() {
+            super("wfweight.overweight");
+            setDamageBypassesArmor();
+        }
     }
 
     private static final class InventorySnapshot {

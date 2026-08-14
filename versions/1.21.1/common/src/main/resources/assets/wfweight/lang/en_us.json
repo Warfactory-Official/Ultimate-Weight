@@ -10,5 +10,7 @@
   "tooltip.wfweight.group_limit": "Group: %s (%s max)",
   "tooltip.wfweight.attr_carry_capacity": "Carry Capacity Bonus: +%s",
   "tooltip.wfweight.attr_stamina": "Max Stamina Bonus: +%s",
-  "tooltip.wfweight.attr_group_limit": "Group Limit Bonus: %s +%s"
+  "tooltip.wfweight.attr_group_limit": "Group Limit Bonus: %s +%s",
+  "death.attack.wfweight.overweight": "%1$s was crushed under their own load",
+  "death.attack.wfweight.overweight.player": "%1$s was crushed under their own load while fighting %2$s"
 }

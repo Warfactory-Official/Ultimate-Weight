@@ -132,6 +132,7 @@ class WeightResolverTest {
             EquipmentBonusRules.empty(),
             WeightConfig.defaults().thresholds(),
             WeightConfig.FallDamage.defaults(),
+            WeightConfig.OverweightDamage.defaults(),
             WeightConfig.Stamina.defaults()
         );
     }
