@@ -58,6 +58,14 @@ jobs:
             !versions/**/build/libs/*-sources.jar
             !versions/**/build/libs/*-javadoc.jar
 
+      - name: Publish 1.21.1 NeoForge snapshot to Warfactory Maven
+        env:
+          WARFACTORY_MAVEN_USER: ${{ secrets.WARFACTORY_MAVEN_USER }}
+          WARFACTORY_MAVEN_TOKEN: ${{ secrets.WARFACTORY_MAVEN_TOKEN }}
+        run: >
+          bash gradlew --no-daemon -PmodVersion=1.0.0-SNAPSHOT
+          :1.21.1:neoforge:publish
+
   publish:
     name: Publish rolling snapshot release
     runs-on: ubuntu-latest

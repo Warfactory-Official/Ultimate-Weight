@@ -233,6 +233,30 @@ project(":1.21.1:neoforge") {
                 programArgument("Dev2")
             }
         }
+
+        apply(plugin = "maven-publish")
+        extensions.configure<org.gradle.api.publish.PublishingExtension> {
+            publications {
+                create<org.gradle.api.publish.maven.MavenPublication>("mavenJava") {
+                    from(components["java"])
+                    groupId = "warfactory.ultimateweight"
+                    artifactId = "wfweight-1.21.1-neoforge"
+                    version = rootProject.version.toString().let { if (it.endsWith("-SNAPSHOT")) it else "$it-SNAPSHOT" }
+                }
+            }
+            repositories {
+                maven {
+                    name = "WarfactorySnapshots"
+                    url = uri("https://repo.warfactory.co/snapshots")
+                    val warfactoryUser = (project.findProperty("warfactoryUser") as String?) ?: System.getenv("WARFACTORY_MAVEN_USER")
+                    val warfactoryToken = (project.findProperty("warfactoryToken") as String?) ?: System.getenv("WARFACTORY_MAVEN_TOKEN")
+                    credentials {
+                        username = warfactoryUser
+                        password = warfactoryToken
+                    }
+                }
+            }
+        }
     }
 }
 
