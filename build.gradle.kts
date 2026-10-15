@@ -6,6 +6,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.gtnewhorizons.retrofuturagradle.mcp.GenSrgMappingsTask
 import com.gtnewhorizons.retrofuturagradle.mcp.ReobfuscatedJar
 import com.gtnewhorizons.retrofuturagradle.minecraft.RunMinecraftTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginExtension
@@ -39,7 +40,7 @@ prism {
     sharedCommon {
         dependencies {
             api("org.yaml:snakeyaml:2.6")
-            api("it.unimi.dsi:fastutil:8.5.9")
+            implementation("it.unimi.dsi:fastutil:8.5.9")
             shadowRelocation(true)
             shadow("org.yaml:snakeyaml:2.6")
             shadow("it.unimi.dsi:fastutil:8.5.9")
@@ -384,6 +385,24 @@ listOf(":1.12.2", ":1.20.1:common", ":1.20.1:forge", ":1.20.1:fabric", ":1.21.1:
             dependencies {
                 add("annotationProcessor", project(":compat-processor"))
             }
+        }
+    }
+}
+
+// Shaded fastutil whole = ~67 MB unpacked per jar; minimize to the reachable classes. Everything else
+// excluded: snakeyaml + compat plugins are reached reflectively. fastutil `api` => minimize keeps it whole.
+// Fabric: no shading; Minecraft ships fastutil => jar-in-jar copy (23 MB) dropped.
+subprojects {
+    tasks.withType<ShadowJar>().configureEach {
+        minimize { exclude { it.moduleGroup != "it.unimi.dsi" } }
+    }
+}
+gradle.projectsEvaluated {
+    subprojects {
+        tasks.matching { it.name == "remapJar" }.configureEach {
+            val nested = property("nestedJars") as ConfigurableFileCollection
+            val from = nested.from.toList()
+            nested.setFrom(files(from).filter { !it.name.startsWith("fastutil-") })
         }
     }
 }

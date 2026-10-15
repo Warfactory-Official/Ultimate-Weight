@@ -11,7 +11,7 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-    id("dev.prism.settings") version "+"
+    id("dev.prism.settings") version "0.5.17"
 }
 
 rootProject.name = "warfactory-ultimate-weight"
