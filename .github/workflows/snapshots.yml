@@ -32,7 +32,7 @@ jobs:
 
       - name: Build
         run: >
-          bash gradlew --no-daemon -PmodVersion=1.0.0-SNAPSHOT
+          bash gradlew --no-daemon -PmodVersion=1.0.0
           :1.12.2:build
           :1.20.1:fabric:build
           :1.20.1:forge:build
@@ -63,7 +63,7 @@ jobs:
           WARFACTORY_MAVEN_USER: ${{ secrets.WARFACTORY_MAVEN_USER }}
           WARFACTORY_MAVEN_TOKEN: ${{ secrets.WARFACTORY_MAVEN_TOKEN }}
         run: >
-          bash gradlew --no-daemon -PmodVersion=1.0.0-SNAPSHOT
+          bash gradlew --no-daemon -PmodVersion=1.0.0
           :1.21.1:neoforge:publish
 
   publish:
