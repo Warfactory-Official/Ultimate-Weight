@@ -42,23 +42,6 @@ jobs:
           :1.21.1:lexforge:build
           :1.21.1:lexforge:shadowJar
 
-      - name: Upload jars
-        uses: actions/upload-artifact@v4
-        continue-on-error: true  # org artifact quota full => still publish
-        with:
-          name: snapshot-jars
-          if-no-files-found: error
-          path: |
-            versions/1.12.2/build/libs/*.jar
-            versions/1.20.1/fabric/build/libs/*.jar
-            versions/1.20.1/forge/build/libs/*.jar
-            versions/1.21.1/fabric/build/libs/*.jar
-            versions/1.21.1/neoforge/build/libs/*.jar
-            versions/1.21.1/lexforge/build/libs/*.jar
-            !versions/**/build/libs/*-dev.jar
-            !versions/**/build/libs/*-sources.jar
-            !versions/**/build/libs/*-javadoc.jar
-
       - name: Publish 1.21.1 NeoForge snapshot to Warfactory Maven
         env:
           WARFACTORY_MAVEN_USER: ${{ secrets.WARFACTORY_MAVEN_USER }}
@@ -67,21 +50,6 @@ jobs:
           bash gradlew --no-daemon -PmodVersion=1.0.0
           :1.21.1:neoforge:publish
 
-  publish:
-    name: Publish rolling snapshot release
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download jars
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
-
       - name: Publish snapshots
         env:
           GH_TOKEN: ${{ github.token }}
@@ -89,7 +57,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          mapfile -t jars < <(find dist -type f -name '*.jar' | sort)
+          mapfile -t jars < <(find versions/1.12.2/build/libs versions/1.20.1/fabric/build/libs versions/1.20.1/forge/build/libs versions/1.21.1/fabric/build/libs versions/1.21.1/neoforge/build/libs versions/1.21.1/lexforge/build/libs \
+            -maxdepth 1 -name '*.jar' ! -name '*-dev.jar' ! -name '*-sources.jar' ! -name '*-javadoc.jar' | sort)
           if [ "${#jars[@]}" -eq 0 ]; then
             echo "No jars found to publish" >&2
             exit 1
