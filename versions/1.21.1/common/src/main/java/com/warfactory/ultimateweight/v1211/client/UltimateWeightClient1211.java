@@ -28,7 +28,7 @@ public final class UltimateWeightClient1211 {
     public static void renderHud(GuiGraphics graphics) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
-        if (minecraft.options.hideGui || player == null) {
+        if (minecraft.options.hideGui || player == null || FlashbackReplay1211.active()) {
             return;
         }
 
