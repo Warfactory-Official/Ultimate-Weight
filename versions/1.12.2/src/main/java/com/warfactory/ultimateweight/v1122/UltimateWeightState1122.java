@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1122;
 
+import com.warfactory.ultimateweight.api.StaminaModifiers;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.api.WeightItemView;
 import com.warfactory.ultimateweight.api.WeightStackView;
@@ -652,6 +653,9 @@ public final class UltimateWeightState1122 {
             if (!drained && !jumpedThisTick) {
                 currentStamina = StaminaMath.clamp(currentStamina + stamina.staminaGainRate(), maxStamina);
             }
+            // Other mods' recovery modifiers (artefacts, drugs): a share of max a tick, resting or sprinting.
+            currentStamina = StaminaMath.clamp(currentStamina + StaminaModifiers.recoveryPerTick(player) * maxStamina,
+                maxStamina);
         }
 
         currentStamina = StaminaMath.clamp(currentStamina, maxStamina);

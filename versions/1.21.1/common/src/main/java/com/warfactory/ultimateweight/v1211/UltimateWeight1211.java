@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.v1211;
 
+import com.warfactory.ultimateweight.api.StaminaModifiers;
 import com.warfactory.ultimateweight.UltimateWeightCommon;
 import com.warfactory.ultimateweight.config.EquipmentBonusRules;
 import com.warfactory.ultimateweight.config.InventoryGroupRules;
@@ -883,6 +884,11 @@ public final class UltimateWeight1211 {
                     runtime.maxStamina
                 );
             }
+            // Other mods' recovery modifiers (artefacts, drugs): a share of max a tick, resting or sprinting.
+            runtime.currentStamina = StaminaMath.clamp(
+                runtime.currentStamina + StaminaModifiers.recoveryPerTick(player) * runtime.maxStamina,
+                runtime.maxStamina
+            );
         }
 
         runtime.currentStamina = StaminaMath.clamp(runtime.currentStamina, runtime.maxStamina);
