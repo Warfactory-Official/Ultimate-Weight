@@ -174,7 +174,7 @@ public final class WeightViews1201 {
 
             @Override
             public double carryCapacityKg() {
-                return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
+                return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this, player);
             }
 
             private static void addStacks(List<WeightStackView> target, List<ItemStack> source) {

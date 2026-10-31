@@ -116,6 +116,11 @@ public final class WeightViews1211 {
     private record PlayerView(Player player) implements WeightPlayerView {
 
         @Override
+        public Object handle() {
+            return player;
+        }
+
+        @Override
             public String playerId() {
                 return player.getStringUUID();
             }
@@ -153,7 +158,7 @@ public final class WeightViews1211 {
 
             @Override
             public double carryCapacityKg() {
-                return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
+                return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this, player);
             }
 
             private static void addStacks(List<WeightStackView> target, List<ItemStack> source) {

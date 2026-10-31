@@ -12,4 +12,9 @@ public interface WeightPlayerView {
     }
 
     double carryCapacityKg();
+
+    /** The loader's player object, as passed to {@link CarryModifiers}; null when the view has none. */
+    default Object handle() {
+        return null;
+    }
 }

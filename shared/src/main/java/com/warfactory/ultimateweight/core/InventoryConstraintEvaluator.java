@@ -1,5 +1,7 @@
 package com.warfactory.ultimateweight.core;
 
+import com.warfactory.ultimateweight.api.CarryModifiers;
+import com.warfactory.ultimateweight.api.GroupLimitModifiers;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.api.WeightStackView;
 import com.warfactory.ultimateweight.config.EquipmentBonusRules;
@@ -19,19 +21,37 @@ public final class InventoryConstraintEvaluator {
         return Math.max(0.0D, config.defaultCarryCapacityKg() + resolveEquipmentStats(player).carryCapacityKgBonus());
     }
 
+    /** With {@link CarryModifiers} for {@code handle} (the loader's player object). */
+    public double resolveCarryCapacityKg(WeightPlayerView player, Object handle) {
+        return Math.max(0.0D, config.defaultCarryCapacityKg() + resolveEquipmentStats(player).carryCapacityKgBonus()
+            + CarryModifiers.bonusKg(handle));
+    }
+
     public double resolveMaxStamina(WeightPlayerView player) {
         return Math.max(0.0D, config.stamina().totalStamina() + resolveEquipmentStats(player).staminaBonus());
     }
 
     public EquipmentStats resolveEquipmentStats(WeightPlayerView player) {
         EquipmentBonusRules rules = config.equipmentBonusRules();
-        if (player == null || rules == null) {
+        if (player == null) {
             return EquipmentStats.empty();
         }
 
         double carryCapacity = 0.0D;
         double stamina = 0.0D;
         LinkedHashMap<String, Integer> groupBonuses = new LinkedHashMap<String, Integer>();
+        InventoryGroupRules groups = config.inventoryGroupRules();
+        if (groups != null && player.handle() != null) {
+            for (InventoryGroupRules.GroupDefinition definition : groups.definitions()) {
+                int extra = GroupLimitModifiers.bonus(player.handle(), definition.id());
+                if (extra != 0) {
+                    groupBonuses.put(definition.id(), Integer.valueOf(extra));
+                }
+            }
+        }
+        if (rules == null) {
+            return new EquipmentStats(0.0D, 0.0D, groupBonuses);
+        }
         for (WeightStackView stack : player.equipped()) {
             if (stack == null) {
                 continue;

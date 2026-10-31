@@ -230,7 +230,7 @@ public final class WeightViews1122 {
 
         @Override
         public double carryCapacityKg() {
-            return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this);
+            return UltimateWeightCommon.bootstrap().constraintEvaluator().resolveCarryCapacityKg(this, player);
         }
     }
 
