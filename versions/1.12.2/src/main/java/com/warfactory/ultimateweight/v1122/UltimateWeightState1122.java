@@ -135,7 +135,6 @@ public final class UltimateWeightState1122 {
 
         if (!overweightDamage.enabled()
             || isEffectImmune(player)
-            || player.isSpectator()
             || !player.isEntityAlive()
             || !OverweightDamageMath.isOverweight(overweightDamage, totalWeightKg, carryCapacityKg)) {
             state.lastOverweightDamageTick = player.ticksExisted;
@@ -869,7 +868,7 @@ public final class UltimateWeightState1122 {
     }
 
     private static boolean isEffectImmune(EntityPlayer player) {
-        return player.capabilities.isCreativeMode;
+        return player.capabilities.isCreativeMode || player.isSpectator();
     }
 
     private static final class ServerPlayerState {

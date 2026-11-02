@@ -162,7 +162,7 @@ public final class UltimateWeight1201 {
     }
 
     public static boolean isTransferAllowed(Player player, Slot slot, ClickType clickType, int dragType) {
-        if (player == null || player.getAbilities().instabuild || slot == null) {
+        if (player == null || isEffectImmune(player) || slot == null) {
             return true;
         }
 
@@ -503,7 +503,6 @@ public final class UltimateWeight1201 {
         if (!overweightDamage.enabled()
             || snapshot == null
             || isEffectImmune(player)
-            || player.isSpectator()
             || !player.isAlive()
             || !OverweightDamageMath.isOverweight(
                 overweightDamage,
@@ -1036,7 +1035,7 @@ public final class UltimateWeight1201 {
     }
 
     private static boolean isEffectImmune(Player player) {
-        return player.getAbilities().instabuild;
+        return player.getAbilities().instabuild || player.isSpectator();
     }
 
     private static void restoreMenu(ServerPlayer player, AbstractContainerMenu menu, MenuClickSnapshot snapshot) {

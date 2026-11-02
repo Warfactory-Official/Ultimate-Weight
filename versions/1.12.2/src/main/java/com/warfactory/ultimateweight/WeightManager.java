@@ -34,7 +34,7 @@ public final class WeightManager {
     }
 
     public static boolean isTransferAllowed(EntityPlayer player, Slot slot, ClickType clickType, int dragType) {
-        if (player == null || player.capabilities.isCreativeMode || slot == null) {
+        if (player == null || player.capabilities.isCreativeMode || player.isSpectator() || slot == null) {
             return true;
         }
 
@@ -107,7 +107,7 @@ public final class WeightManager {
             return;
         }
         EntityPlayerMP serverPlayer = (EntityPlayerMP) player;
-        if (serverPlayer.capabilities.isCreativeMode) {
+        if (serverPlayer.capabilities.isCreativeMode || serverPlayer.isSpectator()) {
             return;
         }
 
