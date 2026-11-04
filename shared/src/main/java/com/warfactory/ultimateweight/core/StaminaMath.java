@@ -52,6 +52,21 @@ public final class StaminaMath {
         return multiplier;
     }
 
+    /** Stamina after one drain of {@code baseLoss} (sprint tick or jump) at the given load. */
+    public static double drained(
+        WeightConfig.Stamina stamina,
+        double currentStamina,
+        double maxStamina,
+        double baseLoss,
+        double totalWeightKg,
+        double carryCapacityKg
+    ) {
+        return clamp(
+            currentStamina - (baseLoss * resolveUseMultiplier(stamina, totalWeightKg, carryCapacityKg)),
+            maxStamina
+        );
+    }
+
     public static double exhaustionThreshold(WeightConfig.Stamina stamina, double maxStamina) {
         if (stamina == null || maxStamina <= 0.0D) {
             return 0.0D;

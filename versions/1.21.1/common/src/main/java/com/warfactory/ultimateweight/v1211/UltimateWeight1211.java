@@ -946,14 +946,17 @@ public final class UltimateWeight1211 {
         }
 
         WeightSnapshot snapshot = runtime.snapshot;
-        double useMultiplier = snapshot == null
-            ? 1.0D
-            : StaminaMath.resolveUseMultiplier(
-                UltimateWeightCommon.bootstrap().config().stamina(),
+        WeightConfig.Stamina stamina = UltimateWeightCommon.bootstrap().config().stamina();
+        return snapshot == null
+            ? StaminaMath.clamp(runtime.currentStamina - baseLoss, runtime.maxStamina)
+            : StaminaMath.drained(
+                stamina,
+                runtime.currentStamina,
+                runtime.maxStamina,
+                baseLoss,
                 snapshot.totalWeightKg(),
                 snapshot.carryCapacityKg()
             );
-        return StaminaMath.clamp(runtime.currentStamina - (baseLoss * useMultiplier), runtime.maxStamina);
     }
 
     private static boolean isRunning(Player player) {
