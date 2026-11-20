@@ -1,5 +1,6 @@
 package com.warfactory.ultimateweight.forge.capability;
 
+import com.warfactory.ultimateweight.core.WeightSnapshot;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.capabilities.Capability;
@@ -37,7 +38,7 @@ public final class UltimateWeightCapabilities1201 {
         newData.setExhausted(oldData.isExhausted());
     }
 
-    public static void update(ServerPlayer player, com.warfactory.ultimateweight.core.WeightSnapshot snapshot, boolean effectImmune) {
+    public static void update(ServerPlayer player, WeightSnapshot snapshot, boolean effectImmune) {
         IPlayerWeightData1201 data = get(player);
         if (data == null) {
             return;

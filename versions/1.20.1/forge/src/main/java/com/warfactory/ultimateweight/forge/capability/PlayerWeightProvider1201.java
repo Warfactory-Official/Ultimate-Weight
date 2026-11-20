@@ -2,6 +2,7 @@ package com.warfactory.ultimateweight.forge.capability;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +14,7 @@ public final class PlayerWeightProvider1201 implements ICapabilitySerializable<C
 
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(
-        @NotNull net.minecraftforge.common.capabilities.Capability<T> capability,
+        @NotNull Capability<T> capability,
         @Nullable Direction side
     ) {
         return UltimateWeightCapabilities1201.PLAYER_WEIGHT_CAPABILITY.orEmpty(capability, optional);

@@ -10,6 +10,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Forge-side backpack integration for the weight system, kept fully decoupled from the backpack
@@ -140,7 +141,7 @@ public final class BackpackSupport1201 {
             if (!curiosResolved) {
                 try {
                     Class<?> api = Class.forName(CURIOS_API_CLASS);
-                    curiosGetInventory = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class);
+                    curiosGetInventory = api.getMethod("getCuriosInventory", LivingEntity.class);
                 } catch (Throwable ignored) {
                     curiosGetInventory = null;
                 }

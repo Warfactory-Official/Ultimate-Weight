@@ -7,6 +7,8 @@ import com.warfactory.ultimateweight.core.InventoryConstraintEvaluator;
 import com.warfactory.ultimateweight.v1122.UltimateWeightConfigFile1122;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
 import com.warfactory.ultimateweight.v1122.WeightViews1122;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
@@ -126,7 +128,7 @@ public final class UltimateWeightClientEvents1122 {
         UltimateWeightConfigFile1122.reloadFromDisk();
     }
 
-    private static void appendTooltip(ItemStack stack, java.util.List<String> lines, EntityPlayer player) {
+    private static void appendTooltip(ItemStack stack, List<String> lines, EntityPlayer player) {
         if (stack.isEmpty()) {
             return;
         }
@@ -170,7 +172,7 @@ public final class UltimateWeightClientEvents1122 {
                 UltimateWeightCommon.bootstrap().formatter().formatStaminaValue(bonus.stamina())
             ));
         }
-        for (java.util.Map.Entry<String, Integer> entry : bonus.groupLimitBonuses().entrySet()) {
+        for (Map.Entry<String, Integer> entry : bonus.groupLimitBonuses().entrySet()) {
             InventoryGroupRules.GroupDefinition definition = UltimateWeightCommon.bootstrap().config().inventoryGroupRules().definition(entry.getKey());
             lines.add(TextFormatting.BLUE + I18n.format(
                 "tooltip.wfweight.attr_group_limit",

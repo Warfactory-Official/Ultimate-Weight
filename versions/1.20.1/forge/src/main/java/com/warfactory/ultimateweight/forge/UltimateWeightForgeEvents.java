@@ -6,6 +6,7 @@ import com.warfactory.ultimateweight.v1201.UltimateWeight1201;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingFallEvent;
@@ -22,7 +23,7 @@ public final class UltimateWeightForgeEvents {
 
     @SubscribeEvent
     public static void onAttachCapabilities(AttachCapabilitiesEvent<Entity> event) {
-        if (event.getObject() instanceof net.minecraft.world.entity.player.Player) {
+        if (event.getObject() instanceof Player) {
             PlayerWeightProvider1201 provider = new PlayerWeightProvider1201();
             event.addCapability(PLAYER_WEIGHT_KEY, provider);
             event.addListener(provider::invalidate);
@@ -71,7 +72,7 @@ public final class UltimateWeightForgeEvents {
 
     @SubscribeEvent
     public static void onLivingFall(LivingFallEvent event) {
-        if (event.getEntity() instanceof net.minecraft.world.entity.player.Player player) {
+        if (event.getEntity() instanceof Player player) {
             event.setDamageMultiplier(
                 UltimateWeight1201.adjustFallDamageMultiplier(player, event.getDamageMultiplier())
             );

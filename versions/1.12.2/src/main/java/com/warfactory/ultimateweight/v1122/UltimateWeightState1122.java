@@ -34,6 +34,8 @@ import net.minecraftforge.fml.common.FMLCommonHandler;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.event.entity.living.LivingFallEvent;
 
 public final class UltimateWeightState1122 {
     private static final UUID SPEED_MODIFIER_ID = UUID.fromString("8f13a597-e735-4a4f-90b3-6eea0430e255");
@@ -101,7 +103,7 @@ public final class UltimateWeightState1122 {
     }
 
     public static void onNestedBackpackContentsChanged() {
-        net.minecraft.server.MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+        MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         if (server == null || server.getPlayerList() == null) {
             return;
         }
@@ -266,7 +268,7 @@ public final class UltimateWeightState1122 {
         }
     }
 
-    public static void onLivingFall(EntityPlayer player, net.minecraftforge.event.entity.living.LivingFallEvent event) {
+    public static void onLivingFall(EntityPlayer player, LivingFallEvent event) {
         if (player.world.isRemote || isEffectImmune(player)) {
             return;
         }

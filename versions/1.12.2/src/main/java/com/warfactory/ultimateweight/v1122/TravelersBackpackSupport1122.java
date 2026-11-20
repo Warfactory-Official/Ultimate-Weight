@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import net.minecraft.util.ResourceLocation;
 
 public final class TravelersBackpackSupport1122 {
     private static final String MOD_ID = "travelersbackpack";
@@ -31,7 +32,7 @@ public final class TravelersBackpackSupport1122 {
         if (stack == null || stack.isEmpty()) {
             return false;
         }
-        net.minecraft.util.ResourceLocation id = stack.getItem().getRegistryName();
+        ResourceLocation id = stack.getItem().getRegistryName();
         return id != null && BACKPACK_ITEM_ID.equals(id.toString());
     }
 

@@ -2,6 +2,7 @@ package com.warfactory.ultimateweight.mixin;
 
 import com.mojang.authlib.GameProfile;
 import com.warfactory.ultimateweight.v1122.UltimateWeightState1122;
+import com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.MovementInput;
@@ -25,7 +26,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
 
     @Inject(method = "setSprinting(Z)V", at = @At("HEAD"), cancellable = true)
     private void ultimateweight$preventExhaustedSprint(boolean sprinting, CallbackInfo ci) {
-        com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122 data =
+        IPlayerWeightData1122 data =
             UltimateWeightState1122.resolveWeightData((EntityPlayerSP) (Object) this);
         if (sprinting && data != null && data.isExhausted()) {
             ci.cancel();
@@ -35,7 +36,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
 
     @Inject(method = "onLivingUpdate()V", at = @At("TAIL"))
     private void ultimateweight$stopSprintWhileExhausted(CallbackInfo ci) {
-        com.warfactory.ultimateweight.v1122.capability.IPlayerWeightData1122 data =
+        IPlayerWeightData1122 data =
             UltimateWeightState1122.resolveWeightData((EntityPlayerSP) (Object) this);
         if (this.isSprinting() && data != null && data.isExhausted()) {
             this.setSprinting(false);

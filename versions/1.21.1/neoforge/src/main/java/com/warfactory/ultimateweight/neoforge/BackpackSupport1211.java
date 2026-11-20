@@ -9,6 +9,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * NeoForge backpack integration, fully decoupled from the backpack mods: Sophisticated Backpacks is
@@ -152,7 +153,7 @@ public final class BackpackSupport1211 {
             if (!curiosResolved) {
                 try {
                     Class<?> api = Class.forName(CURIOS_API_CLASS);
-                    curiosGetInventory = api.getMethod("getCuriosInventory", net.minecraft.world.entity.LivingEntity.class);
+                    curiosGetInventory = api.getMethod("getCuriosInventory", LivingEntity.class);
                 } catch (Throwable ignored) {
                     curiosGetInventory = null;
                 }

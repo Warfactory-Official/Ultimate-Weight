@@ -4,6 +4,7 @@ import com.warfactory.ultimateweight.UltimateWeightCommon;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
 
 public final class WeightLoggers {
     private static final ConcurrentMap<String, WeightLogger> CACHE = new ConcurrentHashMap<String, WeightLogger>();
@@ -60,7 +61,7 @@ public final class WeightLoggers {
             }
             String rendered = message;
             for (Object arg : args) {
-                rendered = rendered.replaceFirst("\\{\\}", java.util.regex.Matcher.quoteReplacement(String.valueOf(arg)));
+                rendered = rendered.replaceFirst("\\{\\}", Matcher.quoteReplacement(String.valueOf(arg)));
             }
             return rendered;
         }
