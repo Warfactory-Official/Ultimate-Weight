@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /** Game-bus event handlers for the NeoForge loader, registered manually from the entrypoint. */
@@ -14,7 +15,8 @@ public final class UltimateWeightNeoForgeEvents {
     }
 
     public static void register(IEventBus gameBus) {
-        gameBus.addListener(UltimateWeightNeoForgeEvents::onServerTick);
+        gameBus.addListener(UltimateWeightNeoForgeEvents::onServerTickPre);
+        gameBus.addListener(UltimateWeightNeoForgeEvents::onPlayerTick);
         gameBus.addListener(UltimateWeightNeoForgeEvents::onPlayerLogin);
         gameBus.addListener(UltimateWeightNeoForgeEvents::onPlayerLogout);
         gameBus.addListener(UltimateWeightNeoForgeEvents::onPlayerRespawn);
@@ -23,8 +25,14 @@ public final class UltimateWeightNeoForgeEvents {
         gameBus.addListener(UltimateWeightNeoForgeEvents::onLivingFall);
     }
 
-    private static void onServerTick(ServerTickEvent.Post event) {
-        UltimateWeight1211.onServerTick(event.getServer());
+    private static void onServerTickPre(ServerTickEvent.Pre event) {
+        UltimateWeight1211.onServerTickStart();
+    }
+
+    private static void onPlayerTick(PlayerTickEvent.Post event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            UltimateWeight1211.onPlayerTick(player);
+        }
     }
 
     private static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {

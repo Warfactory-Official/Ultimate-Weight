@@ -3,41 +3,40 @@ package com.warfactory.ultimateweight.core;
 import com.warfactory.ultimateweight.api.WeightPlayerView;
 import com.warfactory.ultimateweight.config.WeightConfig;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class PlayerWeightTracker {
     private static final double EPSILON = 0.000001D;
 
     private final WeightConfig config;
     private final WeightInventoryCalculator inventoryCalculator;
-    private final Map<String, TrackedState> states = new HashMap<String, TrackedState>();
+    private final Map<String, TrackedState> states = new ConcurrentHashMap<String, TrackedState>();
 
     public PlayerWeightTracker(WeightConfig config, WeightInventoryCalculator inventoryCalculator) {
         this.config = config;
         this.inventoryCalculator = inventoryCalculator;
     }
 
-    public synchronized void markDirty(String playerId) {
-        TrackedState state = states.get(playerId);
-        if (state == null) {
-            states.put(playerId, new TrackedState(null, true, Long.MIN_VALUE));
-        } else {
+    public void markDirty(String playerId) {
+        TrackedState state = states.computeIfAbsent(playerId, id -> new TrackedState(null, true, Long.MIN_VALUE));
+        synchronized (state) {
             state.dirty = true;
         }
     }
 
-    public synchronized void clear(String playerId) {
+    public void clear(String playerId) {
         states.remove(playerId);
     }
 
-    public synchronized WeightUpdate refresh(WeightPlayerView player, long gameTick) {
-        TrackedState state = states.get(player.playerId());
-        if (state == null) {
-            state = new TrackedState(null, true, Long.MIN_VALUE);
-            states.put(player.playerId(), state);
+    public WeightUpdate refresh(WeightPlayerView player, long gameTick) {
+        TrackedState state = states.computeIfAbsent(player.playerId(), id -> new TrackedState(null, true, Long.MIN_VALUE));
+        synchronized (state) {
+            return refresh(state, player, gameTick);
         }
+    }
 
+    private WeightUpdate refresh(TrackedState state, WeightPlayerView player, long gameTick) {
         boolean fullScanDue = config.enableFailsafeFullScan()
             && (state.lastFullScanTick == Long.MIN_VALUE
             || gameTick - state.lastFullScanTick >= config.fullScanIntervalTicks());
@@ -73,15 +72,29 @@ public final class PlayerWeightTracker {
         );
     }
 
-    public synchronized WeightUpdate applyDelta(
+    public WeightUpdate applyDelta(
         WeightPlayerView player,
         double previousStackWeightKg,
         double newStackWeightKg,
         long gameTick
     ) {
         TrackedState state = states.get(player.playerId());
-        if (state == null || state.snapshot == null || state.dirty) {
-            return new WeightUpdate(state == null ? null : state.snapshot, false, false, false);
+        if (state == null) {
+            return new WeightUpdate(null, false, false, false);
+        }
+        synchronized (state) {
+            return applyDelta(state, player, previousStackWeightKg, newStackWeightKg);
+        }
+    }
+
+    private WeightUpdate applyDelta(
+        TrackedState state,
+        WeightPlayerView player,
+        double previousStackWeightKg,
+        double newStackWeightKg
+    ) {
+        if (state.snapshot == null || state.dirty) {
+            return new WeightUpdate(state.snapshot, false, false, false);
         }
 
         double carryCapacityKg = player.carryCapacityKg() > 0.0D

@@ -32,6 +32,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class UltimateWeight1211 {
     private static final ResourceLocation SPEED_MODIFIER_ID =
@@ -56,10 +57,10 @@ public final class UltimateWeight1211 {
         ResourceLocation.fromNamespaceAndPath(UltimateWeightCommon.MOD_ID, "overweight")
     );
 
-    private static final Map<UUID, PlayerRuntime> PLAYER_RUNTIMES = new HashMap<UUID, PlayerRuntime>();
-    private static WeightSyncTransport1211 transport = WeightSyncTransport1211.NOOP;
-    private static PlayerStateListener stateListener = PlayerStateListener.NOOP;
-    private static long serverTicks;
+    private static final Map<UUID, PlayerRuntime> PLAYER_RUNTIMES = new ConcurrentHashMap<UUID, PlayerRuntime>();
+    private static volatile WeightSyncTransport1211 transport = WeightSyncTransport1211.NOOP;
+    private static volatile PlayerStateListener stateListener = PlayerStateListener.NOOP;
+    private static volatile long serverTicks;
 
     private UltimateWeight1211() {
     }
@@ -72,16 +73,26 @@ public final class UltimateWeight1211 {
         stateListener = listener == null ? PlayerStateListener.NOOP : listener;
     }
 
-    public static synchronized void onServerTick(MinecraftServer server) {
-        serverTicks++;
+    public static void onServerTick(MinecraftServer server) {
+        onServerTickStart();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            syncPlayer(player, false);
-            syncStamina(player, false);
-            applyOverweightDamage(player);
+            onPlayerTick(player);
         }
     }
 
-    public static synchronized void onPlayerJoin(ServerPlayer player) {
+    /** Main thread only; sole writer of {@code serverTicks}. */
+    public static void onServerTickStart() {
+        serverTicks++;
+    }
+
+    /** Owner thread of {@code player}. */
+    public static void onPlayerTick(ServerPlayer player) {
+        syncPlayer(player, false);
+        syncStamina(player, false);
+        applyOverweightDamage(player);
+    }
+
+    public static void onPlayerJoin(ServerPlayer player) {
         PlayerRuntime runtime = runtime(player);
         runtime.lastInventoryChanges = -1;
         runtime.lastMenuStateId = -1;
@@ -96,7 +107,7 @@ public final class UltimateWeight1211 {
         syncStamina(player, true);
     }
 
-    public static synchronized void onPlayerLeave(ServerPlayer player) {
+    public static void onPlayerLeave(ServerPlayer player) {
         PLAYER_RUNTIMES.remove(player.getUUID());
         UltimateWeightCommon.bootstrap().playerWeightTracker().clear(player.getStringUUID());
         stateListener.onPlayerLeave(player);
@@ -112,7 +123,7 @@ public final class UltimateWeight1211 {
      * closed). Marks tracked players dirty so the next server tick performs one authoritative
      * rescan - it never polls. No-ops on the client, where the runtime map is empty.
      */
-    public static synchronized void onBackpackContentsChanged() {
+    public static void onBackpackContentsChanged() {
         if (PLAYER_RUNTIMES.isEmpty()) {
             return;
         }
@@ -121,7 +132,7 @@ public final class UltimateWeight1211 {
         }
     }
 
-    public static synchronized Component pickupBlockMessage(ServerPlayer player, ItemStack stack) {
+    public static Component pickupBlockMessage(ServerPlayer player, ItemStack stack) {
         if (isEffectImmune(player)) {
             return null;
         }
@@ -144,7 +155,7 @@ public final class UltimateWeight1211 {
             : null;
     }
 
-    public static synchronized boolean shouldRejectPickup(ServerPlayer player, ItemStack stack) {
+    public static boolean shouldRejectPickup(ServerPlayer player, ItemStack stack) {
         Component message = pickupBlockMessage(player, stack);
         return message != null;
     }
@@ -252,7 +263,7 @@ public final class UltimateWeight1211 {
         );
     }
 
-    public static synchronized void onServerInventoryDelta(
+    public static void onServerInventoryDelta(
         ServerPlayer player,
         int slotIndex,
         ItemStack oldStack,
@@ -313,7 +324,7 @@ public final class UltimateWeight1211 {
         }
     }
 
-    public static synchronized MenuClickSnapshot snapshotMenuClick(
+    public static MenuClickSnapshot snapshotMenuClick(
         AbstractContainerMenu menu,
         Player player,
         int clickedSlot
@@ -335,7 +346,7 @@ public final class UltimateWeight1211 {
         );
     }
 
-    public static synchronized void finishMenuClick(
+    public static void finishMenuClick(
         AbstractContainerMenu menu,
         Player player,
         MenuClickSnapshot snapshot
@@ -386,7 +397,7 @@ public final class UltimateWeight1211 {
         syncPlayer(serverPlayer, true);
     }
 
-    public static synchronized void resyncMenu(ServerPlayer player, AbstractContainerMenu menu, int clickedSlot) {
+    public static void resyncMenu(ServerPlayer player, AbstractContainerMenu menu, int clickedSlot) {
         menu.broadcastFullState();
         if (clickedSlot >= 0 && clickedSlot < menu.slots.size()) {
             player.connection.send(
@@ -1079,11 +1090,7 @@ public final class UltimateWeight1211 {
 
     private static PlayerRuntime runtime(ServerPlayer player) {
         PlayerRuntime runtime = PLAYER_RUNTIMES.get(player.getUUID());
-        if (runtime == null) {
-            runtime = new PlayerRuntime();
-            PLAYER_RUNTIMES.put(player.getUUID(), runtime);
-        }
-        return runtime;
+        return runtime != null ? runtime : PLAYER_RUNTIMES.computeIfAbsent(player.getUUID(), id -> new PlayerRuntime());
     }
 
     public static final class MenuClickSnapshot {
